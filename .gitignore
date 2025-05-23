@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Rider-specific
+.idea/
+*.sln.iml
+
 # User-specific files
 *.rsuser
 *.suo
