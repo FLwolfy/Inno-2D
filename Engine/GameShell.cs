@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Engine
 {
-    /** @brief Core game application class using MonoGame framework. */
     public class GameShell : Game
     {
         private GraphicsDeviceManager _graphics;

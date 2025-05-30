@@ -2,9 +2,6 @@
 
 namespace Sandbox;
 
-/*
- * This is the entry point of the game runtime.
- */
 class Program
 {
     /** @brief Entry point of the test sandbox application. */

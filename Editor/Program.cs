@@ -1,8 +1,5 @@
 ﻿namespace Editor;
 
-/*
- * This is the entry point of the editor
- */
 class Program
 {
     static void Main(string[] args)
