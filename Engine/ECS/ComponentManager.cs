@@ -182,10 +182,14 @@ public class ComponentManager
     /// <summary>
     /// Gets all components of a specific type.
     /// </summary>
-    public IEnumerable<GameComponent> GetAll<T>() where T : GameComponent
+    public IEnumerable<T> GetAll<T>() where T : GameComponent
     {
-        // TODO complete this
+        foreach (var comp in m_componentsByEntity.Values.SelectMany(entityComponents => entityComponents.Values))
+        {
+            if (comp is T typed) { yield return typed; }
+        }
     }
+
     
     /// <summary>
     /// Checks if entity has component of type T.

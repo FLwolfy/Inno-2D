@@ -105,7 +105,7 @@ namespace Engine.ECS.Components
         /// <summary>
         /// Read-only list of children transforms.
         /// </summary>
-        public IReadOnlyList<Transform> Children => m_children;
+        public IReadOnlyList<Transform> Children => m_children.AsReadOnly();
 
         /// <summary>
         /// Sets the parent transform.
