@@ -15,10 +15,7 @@ public class ComponentManager
     
     private readonly List<Action> m_pendingAddRemoves = [];
     private readonly List<GameComponent> m_pendingStart = [];
-
-    /// <summary>
-    /// 
-    /// </summary>
+    
     public ComponentManager()
     {
         foreach (var tag in Enum.GetValues<ComponentTag>())
@@ -156,6 +153,7 @@ public class ComponentManager
 
     /// <summary>
     /// Gets the component of type T for the entity. Returns null if not found.
+    /// TODO: IMPROVE EFFICIENCY
     /// </summary>
     public T? Get<T>(Guid entityId) where T : GameComponent
     {
@@ -180,8 +178,15 @@ public class ComponentManager
         if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents)) {return [];}
         return entityComponents.Values.ToArray();
     }
-
-
+    
+    /// <summary>
+    /// Gets all components of a specific type.
+    /// </summary>
+    public IEnumerable<GameComponent> GetAll<T>() where T : GameComponent
+    {
+        // TODO complete this
+    }
+    
     /// <summary>
     /// Checks if entity has component of type T.
     /// </summary>
