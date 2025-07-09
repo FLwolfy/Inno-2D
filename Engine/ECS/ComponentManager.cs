@@ -5,8 +5,8 @@ namespace Engine.ECS;
 /// </summary>
 public class ComponentManager
 {
-    private bool m_isRunning = false;
-    private bool m_isUpdating = false;
+    private bool m_isRunning;
+    private bool m_isUpdating;
     
     private static readonly ComponentTag[] ORDERED_TAGS = Enum.GetValues<ComponentTag>();
 
@@ -34,20 +34,13 @@ public class ComponentManager
     {
         m_isRunning = true;
     }
-
-
+    
     /// <summary>
     /// Adds a component of type T to the entity if it doesn't exist.
     /// Returns the existing or new component instance.
     /// </summary>
     public T Add<T>(Guid entityId) where T : GameComponent, new()
     {
-        if (m_isUpdating)
-        {
-            m_pendingAddRemoves.Add(() => Add<T>(entityId));
-            return null!;
-        }
-        
         // Initialize the List for a new entity
         if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents))
         {
@@ -67,7 +60,10 @@ public class ComponentManager
         var component = new T();
         component.Initialize(entityId);
         entityComponents[type] = component;
-        m_componentsByTag[component.OrderTag].Add(component);
+        
+        // Add or delay add
+        if (m_isUpdating) { m_pendingAddRemoves.Add(() => m_componentsByTag[component.OrderTag].Add(component)); }
+        else { m_componentsByTag[component.OrderTag].Add(component); }
         
         // Game already started, execute Awake()
         if (m_isRunning && !component.HasAwakened)
@@ -76,12 +72,12 @@ public class ComponentManager
             component.HasAwakened = true;
         }
 
-        // Game already started, delay Start()
+        // Delay Start()
         if (component.IsActive && !component.HasStarted)
         {
             m_pendingStart.Add(component);
         }
-
+        
         return component;
     }
 
@@ -118,6 +114,45 @@ public class ComponentManager
             m_componentsByEntity.Remove(entityId);
         }
     }
+    
+    /// <summary>
+    /// Removes the specified component instance from the entity.
+    /// </summary>
+    public void Remove(Guid entityId, GameComponent component)
+    {
+        if (m_isUpdating)
+        {
+            m_pendingAddRemoves.Add(() => Remove(entityId, component));
+            return;
+        }
+    
+        if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents))
+        {
+            return;
+        }
+
+        var type = component.GetType();
+
+        if (!entityComponents.TryGetValue(type, out var existingComponent))
+        {
+            return;
+        }
+    
+        if (!ReferenceEquals(existingComponent, component))
+        {
+            return;
+        }
+    
+        // Remove the component from the dictionaries
+        component.OnDetach();
+        entityComponents.Remove(type);
+        m_componentsByTag[component.OrderTag].Remove(component);
+
+        if (entityComponents.Count == 0)
+        {
+            m_componentsByEntity.Remove(entityId);
+        }
+    }
 
     /// <summary>
     /// Gets the component of type T for the entity. Returns null if not found.
@@ -138,15 +173,12 @@ public class ComponentManager
     }
     
     /// <summary>
-    /// Gets all the components of type T within the current manager.
+    /// Gets all components of a specific entity.
     /// </summary>
-    public IEnumerable<T> GetAll<T>() where T : GameComponent
+    public IEnumerable<GameComponent> GetAll(Guid entityId)
     {
-        var tag = Activator.CreateInstance<T>().OrderTag;
-        foreach (var component in m_componentsByTag[tag])
-        {
-            if (component is T tComp) { yield return tComp;}
-        }
+        if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents)) {return [];}
+        return entityComponents.Values.ToArray();
     }
 
 
