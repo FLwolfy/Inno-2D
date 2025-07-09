@@ -41,7 +41,7 @@ namespace Engine.ECS
         /// </summary>
         public T AddComponent<T>() where T : GameComponent, new()
         {
-            return m_scene.GetComponentManager().Add<T>(Id);
+            return m_scene.GetComponentManager().Add<T>(Id, this);
         }
 
         /// <summary>

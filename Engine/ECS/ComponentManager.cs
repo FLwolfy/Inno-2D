@@ -39,7 +39,7 @@ public class ComponentManager
     /// Adds a component of type T to the entity if it doesn't exist.
     /// Returns the existing or new component instance.
     /// </summary>
-    public T Add<T>(Guid entityId) where T : GameComponent, new()
+    public T Add<T>(Guid entityId, GameObject obj) where T : GameComponent, new()
     {
         // Initialize the List for a new entity
         if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents))
@@ -58,7 +58,7 @@ public class ComponentManager
 
         // Create new component instance
         var component = new T();
-        component.Initialize(entityId);
+        component.Initialize(entityId, obj);
         entityComponents[type] = component;
         
         // Add or delay add

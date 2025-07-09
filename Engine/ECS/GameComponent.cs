@@ -5,19 +5,18 @@ namespace Engine.ECS;
 /// </summary>
 public abstract class GameComponent
 {
-    public Guid EntityId { get; private set; }
+    protected GameObject gameObject { get; private set; }
+    
     public bool IsActive { get; protected set; } = true;
-
     public bool HasAwakened { get; internal set; }
     public bool HasStarted { get; internal set; }
 
     /// <summary>
     /// Initialize the gameComponent to bind it with its entity.
     /// </summary>
-    /// <param name="entityId"></param>
-    public void Initialize(Guid entityId)
+    public void Initialize(Guid entityId, GameObject obj)
     {
-        EntityId = entityId;
+        gameObject = obj;
     }
     
     /// <summary>
@@ -44,4 +43,36 @@ public abstract class GameComponent
     /// Called when the component is destroyed or removed.
     /// </summary>
     public virtual void OnDetach() {}
+    
+    /// <summary>
+    /// Adds a component of type T to its GameObject.
+    /// </summary>
+    protected T AddComponent<T>() where T : GameComponent, new()
+    {
+        return gameObject.AddComponent<T>();
+    }
+
+    /// <summary>
+    /// Gets a component of type T from its GameObject.
+    /// </summary>
+    protected T? GetComponent<T>() where T : GameComponent
+    {
+        return gameObject.GetComponent<T>();
+    }
+
+    /// <summary>
+    /// Checks whether its GameObject has a component of type T.
+    /// </summary>
+    protected bool HasComponent<T>() where T : GameComponent
+    {
+        return gameObject.HasComponent<T>();
+    }
+
+    /// <summary>
+    /// Removes a component of type T from its GameObject.
+    /// </summary>
+    protected void RemoveComponent<T>() where T : GameComponent
+    {
+        gameObject.RemoveComponent<T>();
+    }
 }

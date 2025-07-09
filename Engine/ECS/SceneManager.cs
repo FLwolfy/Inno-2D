@@ -8,6 +8,10 @@ namespace Engine.ECS
         private static readonly Dictionary<Guid, GameScene> SCENES = [];
         private static GameScene? m_activeScene;
 
+        // TODO: Add scene asset loading and unloading
+        // public static void loadScene(SceneAsset sceneAsset) {}
+        // public static void unloadScene(Scene scene) {}
+
         /// <summary>
         /// Creates and registers a new scene.
         /// </summary>
