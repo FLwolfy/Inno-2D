@@ -1,8 +1,9 @@
+using Engine.ECS;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Engine
+namespace Engine.Core
 {
     public class GameShell : Game
     {
@@ -26,6 +27,12 @@ namespace Engine
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            
+            /////////
+            // TODO: MAKE HERE FLEXIBLE
+            var activeScene = SceneManager.GetActiveScene();
+            activeScene?.Update();
+            /////////
 
             base.Update(gameTime);
         }

@@ -1,3 +1,5 @@
+using Engine.ECS.Components;
+
 namespace Engine.ECS;
 
 /// <summary>
@@ -5,7 +7,8 @@ namespace Engine.ECS;
 /// </summary>
 public abstract class GameComponent
 {
-    protected GameObject gameObject { get; private set; }
+    public GameObject gameObject { get; private set; }
+    public Transform transform => gameObject.transform;
     
     public bool IsActive { get; protected set; } = true;
     public bool HasAwakened { get; internal set; }

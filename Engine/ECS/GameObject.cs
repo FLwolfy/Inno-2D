@@ -1,3 +1,5 @@
+using Engine.ECS.Components;
+
 namespace Engine.ECS
 {
     /// <summary>
@@ -9,11 +11,14 @@ namespace Engine.ECS
         public string Name = "GameObject";
         
         private readonly GameScene m_scene;
+        public readonly Transform transform;
 
         public GameObject()
         {
             m_scene = SceneManager.GetActiveScene();
             m_scene.RegisterGameObject(this);
+            
+            transform = AddComponent<Transform>();
         }
         
         public GameObject(string name)
@@ -21,12 +26,16 @@ namespace Engine.ECS
             m_scene = SceneManager.GetActiveScene();
             m_scene.RegisterGameObject(this);
             Name = name;
+            
+            transform = AddComponent<Transform>();
         }
 
         public GameObject(GameScene scene)
         {
             m_scene = scene;
             scene.RegisterGameObject(this);
+            
+            transform = AddComponent<Transform>();
         }
 
         public GameObject(GameScene scene, string name)
@@ -34,6 +43,8 @@ namespace Engine.ECS
             m_scene = scene;
             scene.RegisterGameObject(this);
             Name = name;
+            
+            transform = AddComponent<Transform>();
         }
 
         /// <summary>
