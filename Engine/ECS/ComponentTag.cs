@@ -1,4 +1,4 @@
-namespace Engine.Core;
+namespace Engine.ECS;
 
 /// <summary>
 /// This is the tag indicating the component's category.

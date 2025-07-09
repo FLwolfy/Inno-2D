@@ -1,4 +1,4 @@
-namespace Engine.Core;
+namespace Engine.ECS;
 
 public class GameObject
 {

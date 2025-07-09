@@ -1,4 +1,4 @@
-namespace Engine.Core;
+namespace Engine.ECS;
 
 /// <summary>
 /// Abstract class for game components.
@@ -6,6 +6,10 @@ namespace Engine.Core;
 public abstract class GameComponent
 {
     public Guid EntityId { get; private set; }
+    public bool IsActive { get; protected set; } = true;
+
+    public bool HasAwakened { get; internal set; }
+    public bool HasStarted { get; internal set; }
 
     /// <summary>
     /// Initialize the gameComponent to bind it with its entity.

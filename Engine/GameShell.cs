@@ -6,19 +6,19 @@ namespace Engine
 {
     public class GameShell : Game
     {
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        private GraphicsDeviceManager m_graphics;
+        private SpriteBatch m_spriteBatch;
 
         public GameShell()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            m_graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            m_spriteBatch = new SpriteBatch(GraphicsDevice);
             // Load game assets here
         }
 
@@ -34,9 +34,9 @@ namespace Engine
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin();
+            m_spriteBatch.Begin();
             // draw sprites here
-            _spriteBatch.End();
+            m_spriteBatch.End();
 
             base.Draw(gameTime);
         }
