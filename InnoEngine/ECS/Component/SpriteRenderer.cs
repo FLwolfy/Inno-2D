@@ -10,6 +10,8 @@ namespace InnoEngine.ECS.Component;
 /// </summary>
 public class SpriteRenderer : GameBehavior
 {
+    private static readonly int MAX_LAYER_DEPTH = 1000;
+    
     public override ComponentTag orderTag => ComponentTag.Render;
 
     public Sprite sprite { get; set; } = Resources.spriteManager.CreateColorSprite(Color.White, 50, 50);
@@ -25,18 +27,17 @@ public class SpriteRenderer : GameBehavior
         set => m_opacity = MathHelper.Clamp(value, 0f, 1f);
     }
     
+    /// <summary>
+    /// Layer depth for sorting sprites. It is ranged from 0 to 1000, where 0 is the lowest layer and 1000 is the highest layer.
+    /// </summary>
     public int layerDepth
     {
         get => m_layerDepth;
         set
         {
-            if (m_layerDepth != value)
-            {
-                m_layerDepth = value;
-                
-                // TODO: let gameobject has the reference of the scene
-                SceneManager.GetActiveScene()?.GetComponentManager().MarkSortDirty(this);
-            }
+            if (m_layerDepth == value) return;
+            MathHelper.Clamp(value, 0, 1000);
+            m_layerDepth = value;
         }
     }
     
@@ -46,8 +47,8 @@ public class SpriteRenderer : GameBehavior
         Vector2 scale = new Vector2(transform.worldScale.X, transform.worldScale.Y);
         Color drawColor = color * opacity;
                 
-        // TODO: make rotation a vector3 not only z
         float rotation = transform.worldRotation.ToEulerAnglesZYX().Z;
+        float depth = m_layerDepth + (float)((Math.Tanh(transform.worldPosition.Z / MAX_LAYER_DEPTH) + 1.0) / 2.0);
 
         spriteBatch.Draw(
             sprite.texture,
@@ -58,16 +59,6 @@ public class SpriteRenderer : GameBehavior
             sprite.origin,
             scale,
             spriteEffects,
-            layerDepth);
-    }
-    
-    protected override int Compare(GameComponent other)
-    {
-        if (other is not SpriteRenderer otherRenderer) {return base.Compare(other);}
-
-        int cmp = layerDepth.CompareTo(otherRenderer.layerDepth);
-        if (cmp != 0) return cmp;
-
-        return transform.worldPosition.Z.CompareTo(otherRenderer.transform.worldPosition.Z);
+            depth / MAX_LAYER_DEPTH);
     }
 }

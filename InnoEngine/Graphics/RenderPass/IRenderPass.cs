@@ -1,4 +1,4 @@
-namespace InnoEngine.Graphics;
+namespace InnoEngine.Graphics.RenderPass;
 
 /// <summary>
 /// Represents a rendering stage in the pipeline.
@@ -11,7 +11,7 @@ public interface IRenderPass
     RenderPassTag tag { get; }
     
     /// <summary>
-    /// This method is used for each concrete renderPass classes to render details based on the given RenderContext.
+    /// This method is used for each concrete renderPass class to render details based on the given RenderContext.
     /// </summary>
     void Render(RenderContext context);
 }

@@ -32,7 +32,7 @@ namespace InnoEngine.Graphics
 
         public void RenderScene(GameScene scene, GameTime gameTime)
         {
-            m_renderContext.Reset(m_graphicsDevice, m_spriteBatch, gameTime);
+            m_renderContext.Reset(m_graphicsDevice, m_spriteBatch, gameTime, scene);
             m_renderPipeline.Render(m_renderContext);
         }
     }

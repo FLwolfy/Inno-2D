@@ -7,7 +7,7 @@ public enum RenderPassTag
 {
     ClearScreen,
     Background,
-    World,
+    Sprite,
     Lighting,
     PostProcessing,
     UI

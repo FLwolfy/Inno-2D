@@ -9,42 +9,40 @@ public class GameObject
 {
     public readonly Guid id = Guid.NewGuid();
     public readonly Transform transform;
+    public readonly GameScene scene;
     
     public string name = "GameObject";
-    private readonly GameScene m_scene;
 
     public GameObject()
     {
-        m_scene = SceneManager.GetActiveScene();
-        m_scene.RegisterGameObject(this);
+        GameScene? activeScene = SceneManager.GetActiveScene();
+        if (activeScene == null)
+        {
+            throw new InvalidOperationException("Can not attach GameObject to a null scene.");
+        }
+
+        scene = activeScene;
+        scene.RegisterGameObject(this);
         
         transform = AddComponent<Transform>();
     }
     
-    public GameObject(string name)
+    public GameObject(string name) : this()
     {
-        m_scene = SceneManager.GetActiveScene();
-        m_scene.RegisterGameObject(this);
         this.name = name;
-        
-        transform = AddComponent<Transform>();
     }
 
     public GameObject(GameScene scene)
     {
-        m_scene = scene;
+        this.scene = scene;
         scene.RegisterGameObject(this);
         
         transform = AddComponent<Transform>();
     }
 
-    public GameObject(GameScene scene, string name)
+    public GameObject(GameScene scene, string name) : this(scene)
     {
-        m_scene = scene;
-        scene.RegisterGameObject(this);
         this.name = name;
-        
-        transform = AddComponent<Transform>();
     }
 
     /// <summary>
@@ -52,7 +50,7 @@ public class GameObject
     /// </summary>
     public T AddComponent<T>() where T : GameComponent, new()
     {
-        return m_scene.GetComponentManager().Add<T>(this);
+        return scene.GetComponentManager().Add<T>(this);
     }
 
     /// <summary>
@@ -60,7 +58,7 @@ public class GameObject
     /// </summary>
     public T? GetComponent<T>() where T : GameComponent
     {
-        return m_scene.GetComponentManager().Get<T>(id);
+        return scene.GetComponentManager().Get<T>(id);
     }
 
     /// <summary>
@@ -68,7 +66,7 @@ public class GameObject
     /// </summary>
     public bool HasComponent<T>() where T : GameComponent
     {
-        return m_scene.GetComponentManager().Has<T>(id);
+        return scene.GetComponentManager().Has<T>(id);
     }
 
     /// <summary>
@@ -76,6 +74,6 @@ public class GameObject
     /// </summary>
     public void RemoveComponent<T>() where T : GameComponent
     {
-        m_scene.GetComponentManager().Remove<T>(id);
+        scene.GetComponentManager().Remove<T>(id);
     }
 }

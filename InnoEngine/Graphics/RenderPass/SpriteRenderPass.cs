@@ -1,4 +1,3 @@
-using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,15 +8,13 @@ namespace InnoEngine.Graphics.RenderPass;
 /// </summary>
 public class SpriteRenderPass : IRenderPass
 {
-    public RenderPassTag tag => RenderPassTag.World;
+    public RenderPassTag tag => RenderPassTag.Sprite;
 
     public void Render(RenderContext context)
     {
-        var scene = SceneManager.GetActiveScene();
-
         using (new RenderBatchScope(context.spriteBatch, SpriteSortMode.FrontToBack))
         {
-            var renderers = scene.GetComponentManager().GetAll<SpriteRenderer>();
+            var renderers = context.gameScene.GetComponentManager().GetAll<SpriteRenderer>();
             foreach (var r in renderers)
             {
                 if (!r.isActive) continue;

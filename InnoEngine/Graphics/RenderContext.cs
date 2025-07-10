@@ -1,3 +1,4 @@
+using InnoEngine.ECS;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,17 +14,20 @@ public class RenderContext
     public GraphicsDevice graphicsDevice = null!;
     public SpriteBatch spriteBatch = null!;
     public GameTime gameTime = null!;
+    public GameScene gameScene = null!;
+    
     // TODO: Add Camera to RenderContext for culling
     // public Camera Camera;
     
     /// <summary>
     /// Reset the render context for new rendering.
     /// </summary>
-    public void Reset(GraphicsDevice gd, SpriteBatch sb, GameTime time)
+    public void Reset(GraphicsDevice gd, SpriteBatch sb, GameTime time, GameScene scene)
     {
         graphicsDevice = gd;
         spriteBatch = sb;
         gameTime = time;
+        gameScene = scene;
         
         m_renderTargets.Clear();
     }

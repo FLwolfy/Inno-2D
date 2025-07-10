@@ -7,10 +7,12 @@ namespace InnoEngine.Graphics.RenderPass;
 /// </summary>
 public class ClearScreenPass : IRenderPass
 {
+    private static readonly Color CLEAR_COLOR = Color.CornflowerBlue;
+    
     public RenderPassTag tag => RenderPassTag.ClearScreen;
 
     public void Render(RenderContext context)
     {
-        context.graphicsDevice.Clear(Color.CornflowerBlue);
+        context.graphicsDevice.Clear(CLEAR_COLOR);
     }
 }
