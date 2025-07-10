@@ -1,38 +1,69 @@
 using Engine.Graphics;
+using Engine.Extension;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ECS.Components
+namespace Engine.ECS.Components;
+
+/// <summary>
+/// SpriteRenderer component draws a 2D texture with sorting support.
+/// </summary>
+public class SpriteRenderer : GameBehavior
 {
-    /// <summary>
-    /// SpriteRenderer component draws a 2D texture with sorting support.
-    /// </summary>
-    public class SpriteRenderer : GameBehavior, IRenderable
+    public override ComponentTag orderTag => ComponentTag.Render;
+    
+    public Sprite sprite { get; set; }
+    public Color color { get; set; } = Color.White;
+    public SpriteEffects spriteEffects { get; set; } = SpriteEffects.None;
+    
+    private float m_opacity = 1f;
+    private int m_layerDepth = 0;
+    
+    public float opacity
     {
-        public Sprite Sprite;
-        public Vector2 Origin;
-        public Color Color = Color.White;
-        public float Layer = 0f; // Z-Sorting
-
-        public override ComponentTag OrderTag => ComponentTag.Render;
-
-        public void Render(SpriteBatch spriteBatch)
-        {
-            var transform = this.transform;
-
-            spriteBatch.Draw(
-                Sprite.Texture,
-                new Vector2(transform.WorldPosition.X, transform.WorldPosition.Y),
-                Sprite.SourceRect,
-                Color,
-                Sprite.RotationZ,
-                Origin,
-                new Vector2(transform.WorldScale.X, transform.WorldScale.Y),
-                SpriteEffects.None,
-                Layer
-            );
-        }
-
+        get => m_opacity;
+        set => m_opacity = MathHelper.Clamp(value, 0f, 1f);
     }
+    
+    public int layerDepth
+    {
+        get => m_layerDepth;
+        set
+        {
+            if (m_layerDepth != value)
+            {
+                m_layerDepth = value;
+                SceneManager.GetActiveScene().GetComponentManager().MarkSortDirty(this);
+            }
+        }
+    }
+    
+    public void Render(SpriteBatch spriteBatch)
+    {
+        Vector2 pos = new Vector2(transform.worldPosition.X, transform.worldPosition.Y);
+        float rotation = transform.worldRotation.ToEulerAnglesZYX().Z;
+        Vector2 scale = new Vector2(transform.worldScale.X, transform.worldScale.Y);
+        Color drawColor = color * opacity;
 
+        spriteBatch.Draw(
+            sprite.texture,
+            pos,
+            sprite.sourceRect,
+            drawColor,
+            rotation,
+            sprite.origin,
+            scale,
+            spriteEffects,
+            layerDepth);
+    }
+    
+    protected override int Compare(GameComponent other)
+    {
+        if (other is not SpriteRenderer otherRenderer) {return base.Compare(other);}
+
+        int cmp = layerDepth.CompareTo(otherRenderer.layerDepth);
+        if (cmp != 0) return cmp;
+
+        return transform.worldPosition.Z.CompareTo(otherRenderer.transform.worldPosition.Z);
+    }
 }

@@ -4,7 +4,9 @@ namespace Sandbox;
 
 class Program
 {
-    /** @brief Entry point of the test sandbox application. */
+    /// <summary>
+    /// Entry point of the test sandbox application.
+    /// </summary>
     static void Main()
     {
         using var game = new GameShell();

@@ -3,6 +3,7 @@ using System.Linq;
 using Engine.ECS;
 using Microsoft.Xna.Framework.Graphics;
 using Engine.ECS.Components;
+using Engine.Graphics.RenderPass;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Graphics
@@ -12,24 +13,30 @@ namespace Engine.Graphics
     /// </summary>
     public class RenderSystem
     {
-        private SpriteBatch _spriteBatch;
-        private GraphicsDevice _graphicsDevice;
+        private readonly SpriteBatch m_spriteBatch;
+        private readonly GraphicsDevice m_graphicsDevice;
+        private readonly RenderPipeline m_renderPipeline;
+        private readonly RenderContext m_renderContext;
 
         public RenderSystem(GraphicsDevice device)
         {
-            _graphicsDevice = device;
-            _spriteBatch = new SpriteBatch(device);
+            m_graphicsDevice = device;
+            m_spriteBatch = new SpriteBatch(device);
+            m_renderPipeline = new RenderPipeline();
+            m_renderContext = new RenderContext();
         }
 
-        public void RenderScene(GameScene scene)
+        public void LoadRenderPasses()
         {
-            _graphicsDevice.Clear(Color.CornflowerBlue);
+            // TODO: Add more RenderPasses here
+            m_renderPipeline.Register(new ClearScreenPass());
+            m_renderPipeline.Register(new SpriteRenderPass());
+        }
 
-            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
-
-            // TODO: rendering order by sorting layer and orderZ
-
-            _spriteBatch.End();
+        public void RenderScene(GameScene scene, GameTime gameTime)
+        {
+            m_renderContext.Reset(m_graphicsDevice, m_spriteBatch, gameTime);
+            m_renderPipeline.Render(m_renderContext);
         }
     }
 

@@ -6,10 +6,10 @@ namespace Engine.ECS;
 /// </summary>
 public abstract class GameBehavior : GameComponent
 {
-    public new bool IsActive
+    public new bool isActive
     {
-        get => base.IsActive;
-        private set => base.IsActive = value;
+        get => base.isActive;
+        private set => base.isActive = value;
     }
     
     /// <summary>
@@ -28,9 +28,9 @@ public abstract class GameBehavior : GameComponent
     /// <param name="active">The active state</param>
     public void SetActive(bool active)
     {
-        if (IsActive == active) return;
+        if (isActive == active) return;
 
-        IsActive = active;
+        isActive = active;
 
         if (active) {OnEnable();}
         else {OnDisable();}

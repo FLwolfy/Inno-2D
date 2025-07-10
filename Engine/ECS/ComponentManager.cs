@@ -10,11 +10,13 @@ public class ComponentManager
     
     private static readonly ComponentTag[] ORDERED_TAGS = Enum.GetValues<ComponentTag>();
 
-    private readonly Dictionary<ComponentTag, HashSet<GameComponent>> m_componentsByTag = new();
+    private readonly Dictionary<ComponentTag, List<GameComponent>> m_componentsByTag = new();
+    private readonly Dictionary<Type, List<GameComponent>> m_componentsByType = new();
     private readonly Dictionary<Guid, Dictionary<Type, GameComponent>> m_componentsByEntity = new();
     
     private readonly List<Action> m_pendingAddRemoves = [];
     private readonly List<GameComponent> m_pendingStart = [];
+    private readonly List<List<GameComponent>> m_pendingSorts = [];
     
     public ComponentManager()
     {
@@ -36,13 +38,13 @@ public class ComponentManager
     /// Adds a component of type T to the entity if it doesn't exist.
     /// Returns the existing or new component instance.
     /// </summary>
-    public T Add<T>(Guid entityId, GameObject obj) where T : GameComponent, new()
+    public T Add<T>(GameObject obj) where T : GameComponent, new()
     {
         // Initialize the List for a new entity
-        if (!m_componentsByEntity.TryGetValue(entityId, out var entityComponents))
+        if (!m_componentsByEntity.TryGetValue(obj.id, out var entityComponents))
         {
             entityComponents = new Dictionary<Type, GameComponent>();
-            m_componentsByEntity[entityId] = entityComponents;
+            m_componentsByEntity[obj.id] = entityComponents;
         }
 
         var type = typeof(T);
@@ -55,22 +57,23 @@ public class ComponentManager
 
         // Create new component instance
         var component = new T();
-        component.Initialize(entityId, obj);
+        component.Initialize(obj);
         entityComponents[type] = component;
+        AddToTypeMap(component);
         
-        // Add or delay add
-        if (m_isUpdating) { m_pendingAddRemoves.Add(() => m_componentsByTag[component.OrderTag].Add(component)); }
-        else { m_componentsByTag[component.OrderTag].Add(component); }
+        // Add or delay add to tag map (for safe iterations)
+        if (m_isUpdating) { m_pendingAddRemoves.Add(() => InsertSorted(m_componentsByTag[component.orderTag], component)); }
+        else { InsertSorted(m_componentsByTag[component.orderTag], component); }
         
         // Game already started, execute Awake()
-        if (m_isRunning && !component.HasAwakened)
+        if (m_isRunning && !component.hasAwakened)
         {
             component.Awake();
-            component.HasAwakened = true;
+            component.hasAwakened = true;
         }
 
         // Delay Start()
-        if (component.IsActive && !component.HasStarted)
+        if (component.isActive && !component.hasStarted)
         {
             m_pendingStart.Add(component);
         }
@@ -104,7 +107,8 @@ public class ComponentManager
         // Remove the component from the dictionaries
         component.OnDetach();
         entityComponents.Remove(type);
-        m_componentsByTag[component.OrderTag].Remove(component);
+        m_componentsByTag[component.orderTag].Remove(component);
+        RemoveFromTypeMap(component);
 
         if (entityComponents.Count == 0)
         {
@@ -143,7 +147,7 @@ public class ComponentManager
         // Remove the component from the dictionaries
         component.OnDetach();
         entityComponents.Remove(type);
-        m_componentsByTag[component.OrderTag].Remove(component);
+        m_componentsByTag[component.orderTag].Remove(component);
 
         if (entityComponents.Count == 0)
         {
@@ -153,7 +157,6 @@ public class ComponentManager
 
     /// <summary>
     /// Gets the component of type T for the entity. Returns null if not found.
-    /// TODO: IMPROVE EFFICIENCY
     /// </summary>
     public T? Get<T>(Guid entityId) where T : GameComponent
     {
@@ -184,12 +187,30 @@ public class ComponentManager
     /// </summary>
     public IEnumerable<T> GetAll<T>() where T : GameComponent
     {
-        foreach (var comp in m_componentsByEntity.Values.SelectMany(entityComponents => entityComponents.Values))
+        if (!m_componentsByType.TryGetValue(typeof(T), out var comps)) yield break;
+        foreach (var c in comps)
         {
-            if (comp is T typed) { yield return typed; }
+            yield return (T)c;
         }
     }
 
+    /// <summary>
+    /// Gets all components assignable to a specific type.
+    /// </summary>
+    public IEnumerable<T> GetAllAssignableTo<T>() where T : GameComponent
+    {
+        var type = typeof(T);
+        foreach (var kvp in m_componentsByType)
+        {
+            if (type.IsAssignableFrom(kvp.Key))
+            {
+                foreach (var c in kvp.Value)
+                {
+                    yield return (T)c;
+                }
+            }
+        }
+    }
     
     /// <summary>
     /// Checks if entity has component of type T.
@@ -213,6 +234,9 @@ public class ComponentManager
         
         // Execute pending adds and removes
         ApplyPendingAddRemoves();
+        
+        // Execute pending sorts
+        ApplyPendingSorts();
     }
 
     /// <summary>
@@ -225,21 +249,36 @@ public class ComponentManager
         {
             foreach (var component in m_componentsByTag[tag])
             {
-                if (component.HasAwakened) continue;
+                if (component.hasAwakened) continue;
                 component.Awake();
-                component.HasAwakened = true;
+                component.hasAwakened = true;
             }
         }
     }
+    
+    public void MarkSortDirty(GameComponent comp)
+    {
+        if (m_componentsByTag.TryGetValue(comp.orderTag, out var tagList))
+        {
+            m_pendingSorts.Add(tagList);
+        }
+
+        var type = comp.GetType();
+        if (m_componentsByType.TryGetValue(type, out var typeList))
+        {
+            m_pendingSorts.Add(typeList);
+        }
+    }
+
     
     private void ProcessPendingStarts()
     {
         foreach (var component in m_pendingStart)
         {
-            if (component.IsActive && !component.HasStarted)
+            if (component.isActive && !component.hasStarted)
             {
                 component.Start();
-                component.HasStarted = true;
+                component.hasStarted = true;
             }
         }
         m_pendingStart.Clear();
@@ -251,9 +290,9 @@ public class ComponentManager
         {
             foreach (var component in m_componentsByTag[tag])
             {
-                if (!component.IsActive) {continue;}
+                if (!component.isActive) {continue;}
 
-                if (component.HasStarted) { component.Update(); }
+                if (component.hasStarted) { component.Update(); }
                 else { m_pendingStart.Add(component); }
             }
         }
@@ -261,7 +300,42 @@ public class ComponentManager
     
     private void ApplyPendingAddRemoves()
     {
-        foreach (var action in m_pendingAddRemoves) {action();}
+        foreach (var action in m_pendingAddRemoves) { action(); }
         m_pendingAddRemoves.Clear();
     }
+
+    private void ApplyPendingSorts()
+    {
+        foreach (var objectList in m_pendingSorts) { objectList.Sort(); }
+        m_pendingSorts.Clear();
+    }
+    
+    private void AddToTypeMap(GameComponent component)
+    {
+        var type = component.GetType();
+        if (!m_componentsByType.TryGetValue(type, out var list))
+        {
+            list = new List<GameComponent>();
+            m_componentsByType[type] = list;
+        }
+        InsertSorted(list, component);
+    }
+
+    private void RemoveFromTypeMap(GameComponent component)
+    {
+        var type = component.GetType();
+        if (m_componentsByType.TryGetValue(type, out var list))
+        {
+            list.Remove(component);
+            if (list.Count == 0) { m_componentsByType.Remove(type); }
+        }
+    }
+    
+    private static void InsertSorted(List<GameComponent> list, GameComponent component)
+    {
+        int index = list.BinarySearch(component);
+        if (index < 0) index = ~index;
+        list.Insert(index, component);
+    }
+
 }

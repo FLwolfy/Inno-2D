@@ -5,19 +5,21 @@ namespace Engine.ECS;
 /// <summary>
 /// Abstract class for game components.
 /// </summary>
-public abstract class GameComponent
+public abstract class GameComponent : IComparable<GameComponent>
 {
-    public GameObject gameObject { get; private set; }
+    public GameObject gameObject { get; private set; } = null!;
     public Transform transform => gameObject.transform;
     
-    public bool IsActive { get; protected set; } = true;
-    public bool HasAwakened { get; internal set; }
-    public bool HasStarted { get; internal set; }
-
+    public bool isActive { get; protected set; } = true;
+    public bool hasAwakened { get; internal set; }
+    public bool hasStarted { get; internal set; }
+    
+    public int CompareTo(GameComponent? other) => other == null ? 1 : orderTag.CompareTo(other.orderTag);
+    
     /// <summary>
     /// Initialize the gameComponent to bind it with its entity.
     /// </summary>
-    public void Initialize(Guid entityId, GameObject obj)
+    public void Initialize(GameObject obj)
     {
         gameObject = obj;
     }
@@ -25,7 +27,15 @@ public abstract class GameComponent
     /// <summary>
     /// This is the component Tag of the game component. This is used for indicating the component's update order.
     /// </summary>
-    public abstract ComponentTag OrderTag { get; }
+    public abstract ComponentTag orderTag { get; }
+    
+    /// <summary>
+    /// Ways to sort a list of GameComponents, using orderTag as default.
+    /// </summary>
+    protected virtual int Compare(GameComponent other)
+    {
+        return orderTag.CompareTo(other.orderTag);
+    }
 
     /// <summary>
     /// Called when the component is first initialized.
