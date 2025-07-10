@@ -1,15 +1,34 @@
 ﻿using Engine.Core;
+using Engine.ECS;
+using Engine.ECS.Component;
+using Engine.Extension;
+using Microsoft.Xna.Framework;
 
 namespace Sandbox;
 
-class Program
+public static class Program
 {
     /// <summary>
     /// Entry point of the test sandbox application.
     /// </summary>
-    static void Main()
+    public static void Main()
     {
-        using var game = new GameShell();
+        using var game = new TestGame();
         game.Run();
+    }
+}
+
+public class TestGame : GameShell
+{
+    public override void SetUp()
+    {
+        GameScene testScene = SceneManager.CreateScene("Test Scene");
+        SceneManager.SetActiveScene(testScene);
+        
+        GameObject testObject = new GameObject("Test Object");
+        testObject.transform.worldPosition = new Vector3(300, 300, 1);
+        
+        testObject.AddComponent<SpriteRenderer>();
+        testObject.AddComponent<TestComponent>();
     }
 }

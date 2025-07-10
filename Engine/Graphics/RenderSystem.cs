@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using Engine.ECS;
 using Microsoft.Xna.Framework.Graphics;
-using Engine.ECS.Components;
 using Engine.Graphics.RenderPass;
 using Microsoft.Xna.Framework;
 
@@ -13,12 +10,12 @@ namespace Engine.Graphics
     /// </summary>
     public class RenderSystem
     {
-        private readonly SpriteBatch m_spriteBatch;
-        private readonly GraphicsDevice m_graphicsDevice;
-        private readonly RenderPipeline m_renderPipeline;
-        private readonly RenderContext m_renderContext;
+        private SpriteBatch m_spriteBatch = null!;
+        private GraphicsDevice m_graphicsDevice = null!;
+        private RenderPipeline m_renderPipeline = null!;
+        private RenderContext m_renderContext = null!;
 
-        public RenderSystem(GraphicsDevice device)
+        public void Initialize(GraphicsDevice device)
         {
             m_graphicsDevice = device;
             m_spriteBatch = new SpriteBatch(device);

@@ -1,5 +1,5 @@
 using Engine.ECS;
-using Engine.ECS.Components;
+using Engine.ECS.Component;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics.RenderPass;
@@ -18,7 +18,7 @@ public class SpriteRenderPass : IRenderPass
         using (new RenderBatchScope(context.spriteBatch, SpriteSortMode.FrontToBack))
         {
             var renderers = scene.GetComponentManager().GetAll<SpriteRenderer>();
-            foreach (var r in renderers.OrderBy(r => r.layerDepth).ThenBy(r => r.transform.worldPosition.Z))
+            foreach (var r in renderers)
             {
                 if (!r.isActive) continue;
                 r.Render(context.spriteBatch);

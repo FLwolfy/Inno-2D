@@ -1,9 +1,9 @@
-using Engine.Graphics;
 using Engine.Extension;
+using Engine.Graphics.Manager;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ECS.Components;
+namespace Engine.ECS.Component;
 
 /// <summary>
 /// SpriteRenderer component draws a 2D texture with sorting support.
@@ -11,8 +11,8 @@ namespace Engine.ECS.Components;
 public class SpriteRenderer : GameBehavior
 {
     public override ComponentTag orderTag => ComponentTag.Render;
-    
-    public Sprite sprite { get; set; }
+
+    public Sprite sprite { get; set; } = Resources.spriteManager.CreateColorSprite(Color.White, 50, 50);
     public Color color { get; set; } = Color.White;
     public SpriteEffects spriteEffects { get; set; } = SpriteEffects.None;
     
@@ -33,7 +33,9 @@ public class SpriteRenderer : GameBehavior
             if (m_layerDepth != value)
             {
                 m_layerDepth = value;
-                SceneManager.GetActiveScene().GetComponentManager().MarkSortDirty(this);
+                
+                // TODO: let gameobject has the reference of the scene
+                SceneManager.GetActiveScene()?.GetComponentManager().MarkSortDirty(this);
             }
         }
     }
@@ -41,9 +43,11 @@ public class SpriteRenderer : GameBehavior
     public void Render(SpriteBatch spriteBatch)
     {
         Vector2 pos = new Vector2(transform.worldPosition.X, transform.worldPosition.Y);
-        float rotation = transform.worldRotation.ToEulerAnglesZYX().Z;
         Vector2 scale = new Vector2(transform.worldScale.X, transform.worldScale.Y);
         Color drawColor = color * opacity;
+                
+        // TODO: make rotation a vector3 not only z
+        float rotation = transform.worldRotation.ToEulerAnglesZYX().Z;
 
         spriteBatch.Draw(
             sprite.texture,

@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework;
 
-namespace Engine.ECS.Components;
+namespace Engine.ECS.Component;
 
 /// <summary>
 /// Transform component manages position, rotation, scale and parent-child hierarchy.

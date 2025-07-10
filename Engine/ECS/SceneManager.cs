@@ -41,11 +41,10 @@ public static class SceneManager
     }
 
     /// <summary>
-    /// Gets the currently active scene. Throws if not set.
+    /// Gets the currently active scene. Null if not set.
     /// </summary>
-    public static GameScene GetActiveScene()
+    public static GameScene? GetActiveScene()
     {
-        if (m_activeScene == null) {throw new InvalidOperationException("No active scene is set.");}
         return m_activeScene;
     }
 

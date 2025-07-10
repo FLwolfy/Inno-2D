@@ -1,4 +1,4 @@
-using Engine.ECS.Components;
+using Engine.ECS.Component;
 
 namespace Engine.ECS;
 

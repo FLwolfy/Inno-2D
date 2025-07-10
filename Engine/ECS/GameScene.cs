@@ -72,18 +72,18 @@ public class GameScene
     }
 
     /// <summary>
-    /// Called at the very first of the very first frame.
+    /// Called when the game started.
     /// </summary>
-    public void Start()
+    internal void Start()
     {
-        m_componentManager.BeginRuntime();
         m_componentManager.WakeAll();
+        m_componentManager.BeginRuntime();
     }
 
     /// <summary>
     /// Update the GameScene and its gameObjects and components.
     /// </summary>
-    public void Update()
+    internal void Update()
     {
         m_componentManager.UpdateAll();
         
