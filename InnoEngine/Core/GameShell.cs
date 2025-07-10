@@ -40,7 +40,9 @@ public abstract class GameShell : Game
     protected sealed override void Update(GameTime gameTime)
     {
         if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Exit();}
-        SceneManager.GetActiveScene()?.Update();
+
+        Step(gameTime);
+        
         base.Update(gameTime);
     }
 
@@ -56,5 +58,5 @@ public abstract class GameShell : Game
     }
 
     public abstract void SetUp();
-    
+    public abstract void Step(GameTime gameTime);
 }

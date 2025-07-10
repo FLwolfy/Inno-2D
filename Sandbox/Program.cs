@@ -1,7 +1,8 @@
 ﻿using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
-using InnoEngine.Extension;
+
+// TODO: Get rid of this and encapsulate the vectors
 using Microsoft.Xna.Framework;
 
 namespace Sandbox;
@@ -18,7 +19,7 @@ public static class Program
     }
 }
 
-public class TestGame : GameShell
+public class TestGame : SandboxShell
 {
     public override void SetUp()
     {
@@ -30,6 +31,7 @@ public class TestGame : GameShell
         
         testObject.AddComponent<SpriteRenderer>();
         TestComponent tc = testObject.AddComponent<TestComponent>();
+        testObject.transform.worldScale = new Vector3(0.5f, 2f, 1.0f);
         // tc.SetActive(false);
         
         GameObject testObject2 = new GameObject("Test Object2");
@@ -38,6 +40,6 @@ public class TestGame : GameShell
         SpriteRenderer sr2 = testObject2.AddComponent<SpriteRenderer>();
         sr2.color = Color.Black;
         sr2.layerDepth = 0;
-        sr2.SetActive(false);
+        // sr2.SetActive(false);
     }
 }

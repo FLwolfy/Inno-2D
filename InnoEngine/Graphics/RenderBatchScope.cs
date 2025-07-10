@@ -12,7 +12,7 @@ public class RenderBatchScope : IDisposable
     /// <summary>
     /// Using this scope will automatically call Begin() on the SpriteBatch, and call End() when the scope ends.
     /// </summary>
-    public RenderBatchScope(SpriteBatch spriteBatch, SpriteSortMode sortMode = SpriteSortMode.Deferred)
+    internal RenderBatchScope(SpriteBatch spriteBatch, SpriteSortMode sortMode = SpriteSortMode.Deferred)
     {
         m_spriteBatch = spriteBatch;
         m_spriteBatch.Begin(sortMode, BlendState.AlphaBlend);
