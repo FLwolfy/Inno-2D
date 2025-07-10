@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{4362A58A-86A8-409A-A975-C397127D213E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnoEngine", "InnoEngine\InnoEngine.csproj", "{4362A58A-86A8-409A-A975-C397127D213E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Editor", "Editor\Editor.csproj", "{B53A8DD1-B969-4C9B-AC38-6EC8409AA3F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnoEditor", "InnoEditor\InnoEditor.csproj", "{B53A8DD1-B969-4C9B-AC38-6EC8409AA3F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{AF599774-F7F9-4C76-89D6-3380DBF72E33}"
 EndProject
