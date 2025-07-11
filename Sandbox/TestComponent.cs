@@ -1,6 +1,5 @@
+using InnoEngine.Base;
 using InnoEngine.ECS;
-using InnoEngine.Extension;
-using Microsoft.Xna.Framework;
 
 namespace Sandbox;
 
@@ -10,7 +9,7 @@ public class TestComponent : GameBehavior
 
     public override void Update()
     {
-        float oldRotationZ = transform.worldRotation.ToEulerAnglesZYX().Z;
-        transform.worldRotation = QuaternionExtension.FromEulerAnglesZYX(new Vector3(0, 0, oldRotationZ + 0.05f));
+        float oldRotationZ = transform.worldRotation.ToEulerAnglesZYX().z;
+        transform.worldRotation = Quaternion.FromEulerAnglesZYX(new Vector3(0, 0, oldRotationZ + 0.05f));
     }
 }

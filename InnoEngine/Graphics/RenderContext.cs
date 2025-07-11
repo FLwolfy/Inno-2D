@@ -1,5 +1,4 @@
 using InnoEngine.ECS;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace InnoEngine.Graphics;
@@ -7,13 +6,12 @@ namespace InnoEngine.Graphics;
 /// <summary>
 /// Shared data between render passes.
 /// </summary>
-public class RenderContext
+internal class RenderContext
 {
     private readonly Dictionary<string, RenderTarget2D> m_renderTargets = new();
     
     public GraphicsDevice graphicsDevice = null!;
     public SpriteBatch spriteBatch = null!;
-    public GameTime gameTime = null!;
     public GameScene gameScene = null!;
     
     // TODO: Add Camera to RenderContext for culling
@@ -22,11 +20,10 @@ public class RenderContext
     /// <summary>
     /// Reset the render context for new rendering.
     /// </summary>
-    public void Reset(GraphicsDevice gd, SpriteBatch sb, GameTime time, GameScene scene)
+    public void Reset(GraphicsDevice gd, SpriteBatch sb, GameScene scene)
     {
         graphicsDevice = gd;
         spriteBatch = sb;
-        gameTime = time;
         gameScene = scene;
         
         m_renderTargets.Clear();

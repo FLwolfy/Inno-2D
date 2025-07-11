@@ -1,19 +1,23 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace InnoEngine.Graphics.Manager;
+using MGColor = Microsoft.Xna.Framework.Color;
+using MGTexture2D = Microsoft.Xna.Framework.Graphics.Texture2D;
+using Color = InnoEngine.Base.Color;
+using Texture2D = InnoEngine.Resource.Primitive.Texture2D;
+
+namespace InnoEngine.Resource.Manager;
 
 /// <summary>
 /// Manages loading and caching of Texture2D assets.
 /// </summary>
-public class TextureManager
+public class Texture2DManager
 {
     private readonly GraphicsDevice m_graphicsDevice;
     private readonly ContentManager m_content;
     private readonly Dictionary<string, Texture2D> m_textures = new();
 
-    internal TextureManager(GraphicsDevice graphicsDevice, ContentManager content)
+    internal Texture2DManager(GraphicsDevice graphicsDevice, ContentManager content)
     {
         m_graphicsDevice = graphicsDevice;
         m_content = content;
@@ -27,9 +31,11 @@ public class TextureManager
         if (m_textures.TryGetValue(assetName, out var cached))
             return cached;
 
-        var texture = m_content.Load<Texture2D>(assetName);
-        m_textures[assetName] = texture;
-        return texture;
+        var mgTexture2D = m_content.Load<MGTexture2D>(assetName);
+        var texture2D = new Texture2D(mgTexture2D);
+        
+        m_textures[assetName] = texture2D;
+        return texture2D;
     }
 
     /// <summary>
@@ -37,11 +43,11 @@ public class TextureManager
     /// </summary>
     public Texture2D CreateColorTexture(Color color, int width = 1, int height = 1)
     {
-        var texture = new Texture2D(m_graphicsDevice, width, height);
-        Color[] data = new Color[width * height];
-        for (int i = 0; i < data.Length; i++) data[i] = color;
+        var texture = new MGTexture2D(m_graphicsDevice, width, height);
+        MGColor[] data = new MGColor[width * height];
+        for (int i = 0; i < data.Length; i++) data[i] = color.ToXnaColor();
         texture.SetData(data);
-        return texture;
+        return new Texture2D(texture);
     }
 
     /// <summary>

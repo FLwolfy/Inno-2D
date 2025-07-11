@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework;
+using InnoEngine.Base;
 
 namespace InnoEngine.ECS.Component;
 
@@ -11,17 +11,17 @@ public class Transform : GameComponent
     public override ComponentTag orderTag => ComponentTag.Transform;
     
     // Local transform relative to parent
-    private Vector3 m_localPosition = Vector3.Zero;
-    private Quaternion m_localRotation = Quaternion.Identity;
-    private Vector3 m_localScale = Vector3.One;
+    private Vector3 m_localPosition = Vector3.zero;
+    private Quaternion m_localRotation = Quaternion.identity;
+    private Vector3 m_localScale = Vector3.one;
 
     // Children transforms
     private readonly List<Transform> m_children = [];
 
     // Cached world transform, updated lazily
-    private Vector3 m_worldPosition = Vector3.Zero;
-    private Quaternion m_worldRotation = Quaternion.Identity;
-    private Vector3 m_worldScale = Vector3.One;
+    private Vector3 m_worldPosition = Vector3.zero;
+    private Quaternion m_worldRotation = Quaternion.identity;
+    private Vector3 m_worldScale = Vector3.one;
 
     // Dirty flag to mark transform changes needing update
     private bool m_isDirty = true;
@@ -81,7 +81,7 @@ public class Transform : GameComponent
                 var parentScale = parent.worldScale;
 
                 var delta = value - parent.worldPosition;
-                var scaled = new Vector3(delta.X / parentScale.X, delta.Y / parentScale.Y, delta.Z / parentScale.Z);
+                var scaled = new Vector3(delta.x / parentScale.x, delta.y / parentScale.y, delta.z / parentScale.z);
                 localPosition = Vector3.Transform(scaled, invParentRot);
             }
             MarkDirty();
@@ -133,9 +133,9 @@ public class Transform : GameComponent
             {
                 var parentScale = parent.worldScale;
                 localScale = new Vector3(
-                    value.X / parentScale.X,
-                    value.Y / parentScale.Y,
-                    value.Z / parentScale.Z
+                    value.x / parentScale.x,
+                    value.y / parentScale.y,
+                    value.z / parentScale.z
                 );
             }
             MarkDirty();
@@ -195,14 +195,14 @@ public class Transform : GameComponent
                 var parentScale = parent.worldScale;
                 
                 var delta = (currentWorldPos - parent.worldPosition);
-                var scaled = new Vector3(delta.X / parentScale.X, delta.Y / parentScale.Y, delta.Z / parentScale.Z);
+                var scaled = new Vector3(delta.x / parentScale.x, delta.y / parentScale.y, delta.z / parentScale.z);
                 
                 localPosition = Vector3.Transform(scaled, invParentRot);
                 localRotation = invParentRot * currentWorldRot;
                 localScale = new Vector3(
-                    currentWorldScale.X / parentScale.X,
-                    currentWorldScale.Y / parentScale.Y,
-                    currentWorldScale.Z / parentScale.Z
+                    currentWorldScale.x / parentScale.x,
+                    currentWorldScale.y / parentScale.y,
+                    currentWorldScale.z / parentScale.z
                 );
             }
         }
@@ -239,14 +239,14 @@ public class Transform : GameComponent
         {
             // Compose world transform: scale, rotate, translate
             m_worldScale = new Vector3(
-                m_localScale.X * parent.worldScale.X,
-                m_localScale.Y * parent.worldScale.Y,
-                m_localScale.Z * parent.worldScale.Z
+                m_localScale.x * parent.worldScale.x,
+                m_localScale.y * parent.worldScale.y,
+                m_localScale.z * parent.worldScale.z
             );
 
             m_worldRotation = parent.worldRotation * m_localRotation;
             
-            var scaled = new Vector3(m_localPosition.X * parent.worldScale.X, m_localPosition.Y * parent.worldScale.Y, m_localPosition.Z * parent.worldScale.Z);
+            var scaled = new Vector3(m_localPosition.x * parent.worldScale.x, m_localPosition.y * parent.worldScale.y, m_localPosition.z * parent.worldScale.z);
             var rotated = Vector3.Transform(scaled, parent.worldRotation);
 
             m_worldPosition = parent.worldPosition + rotated;

@@ -1,7 +1,7 @@
-using InnoEngine.Extension;
-using InnoEngine.Graphics.Manager;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using InnoEngine.Base;
+using InnoEngine.Graphics.RenderCommand;
+using InnoEngine.Resource.Manager;
+using InnoEngine.Resource.Primitive;
 
 namespace InnoEngine.ECS.Component;
 
@@ -14,9 +14,8 @@ public class SpriteRenderer : GameBehavior
     
     public override ComponentTag orderTag => ComponentTag.Render;
 
-    public Sprite sprite { get; set; } = Resources.spriteManager.CreateColorSprite(Color.White, 50, 50);
-    public Color color { get; set; } = Color.White;
-    public SpriteEffects spriteEffects { get; set; } = SpriteEffects.None;
+    public Sprite sprite { get; set; } = ResourceManager.spriteManager.CreateColorSprite(Color.WHITE, 50, 50);
+    public Color color { get; set; } = Color.WHITE;
     
     private float m_opacity = 1f;
     private int m_layerDepth = 0;
@@ -24,7 +23,7 @@ public class SpriteRenderer : GameBehavior
     public float opacity
     {
         get => m_opacity;
-        set => m_opacity = MathHelper.Clamp(value, 0f, 1f);
+        set => m_opacity = Mathematics.Clamp(value, 0f, 1f);
     }
     
     /// <summary>
@@ -36,29 +35,23 @@ public class SpriteRenderer : GameBehavior
         set
         {
             if (m_layerDepth == value) return;
-            MathHelper.Clamp(value, 0, 1000);
+            Mathematics.Clamp(value, 0, 1000);
             m_layerDepth = value;
         }
     }
     
-    public void Render(SpriteBatch spriteBatch)
+    internal SpriteRenderCommand GenerateRenderCommand()
     {
-        Vector2 pos = new Vector2(transform.worldPosition.X, transform.worldPosition.Y);
-        Vector2 scale = new Vector2(transform.worldScale.X, transform.worldScale.Y);
-        Color drawColor = color * opacity;
-                
-        float rotation = transform.worldRotation.ToEulerAnglesZYX().Z;
-        float depth = m_layerDepth + (float)((Math.Tanh(transform.worldPosition.Z / MAX_LAYER_DEPTH) + 1.0) / 2.0);
-
-        spriteBatch.Draw(
-            sprite.texture,
-            pos,
-            sprite.sourceRect,
-            drawColor,
-            rotation,
-            sprite.origin,
-            scale,
-            spriteEffects,
-            depth / MAX_LAYER_DEPTH);
+        return new SpriteRenderCommand
+        {
+            sprite = sprite,
+            position = new Vector2(transform.worldPosition.x, transform.worldPosition.y),
+            scale = new Vector2(transform.worldScale.x, transform.worldScale.y),
+            rotation = transform.worldRotation.ToEulerAnglesZYX().z,
+            depth = m_layerDepth + (float)((Math.Tanh(transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0) / 1000.0f,
+            color = color * opacity,
+            origin = sprite.origin
+        };
     }
+
 }

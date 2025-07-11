@@ -1,5 +1,4 @@
 using InnoEngine.ECS;
-using Microsoft.Xna.Framework;
 
 namespace InnoEngine.Core;
 
@@ -9,8 +8,11 @@ namespace InnoEngine.Core;
 /// </summary>
 public abstract class SandboxShell : GameShell
 {
-    public sealed override void Step(GameTime gameTime)
+    public sealed override void Step()
     {
+        // TODO: Physics Update
+
+        // Regular Update
         SceneManager.GetActiveScene()?.Update();
     }
 }

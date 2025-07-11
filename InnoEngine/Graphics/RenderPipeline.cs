@@ -5,7 +5,7 @@ namespace InnoEngine.Graphics;
 /// <summary>
 /// Controls and organizes all render passes.
 /// </summary>
-public class RenderPipeline
+internal class RenderPipeline
 {
     private readonly List<IRenderPass> m_passes = [];
 

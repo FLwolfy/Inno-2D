@@ -3,7 +3,7 @@ namespace InnoEngine.Graphics.RenderPass;
 /// <summary>
 /// Represents a rendering stage in the pipeline.
 /// </summary>
-public interface IRenderPass
+internal interface IRenderPass
 {
     /// <summary>
     /// This is the tag representing the render sequence of render passes inside the render pipeline.

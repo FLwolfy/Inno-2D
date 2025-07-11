@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework;
-
 namespace InnoEngine.Core;
 
 /// <summary>
@@ -12,7 +10,7 @@ public class EditorShell : GameShell
         throw new NotImplementedException();
     }
 
-    public override void Step(GameTime gameTime)
+    public override void Step()
     {
         throw new NotImplementedException();
     }

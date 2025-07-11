@@ -3,7 +3,7 @@ namespace InnoEngine.Graphics;
 /// <summary>
 /// Defines the order of rendering passes.
 /// </summary>
-public enum RenderPassTag
+internal enum RenderPassTag
 {
     ClearScreen,
     Background,

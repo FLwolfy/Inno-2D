@@ -1,9 +1,8 @@
-﻿using InnoEngine.Core;
+﻿using InnoEngine.Base;
+using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 
-// TODO: Get rid of this and encapsulate the vectors
-using Microsoft.Xna.Framework;
 
 namespace Sandbox;
 
@@ -38,7 +37,7 @@ public class TestGame : SandboxShell
         testObject2.transform.worldPosition = new Vector3(300, 300, 2);
         
         SpriteRenderer sr2 = testObject2.AddComponent<SpriteRenderer>();
-        sr2.color = Color.Black;
+        sr2.color = Color.BLACK;
         sr2.layerDepth = 0;
         // sr2.SetActive(false);
     }

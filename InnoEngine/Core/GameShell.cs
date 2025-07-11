@@ -1,9 +1,11 @@
+using InnoEngine.Base;
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
-using InnoEngine.Graphics.Manager;
+using InnoEngine.Resource.Manager;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Input;
+
+using Color = InnoEngine.Base.Color;
 
 namespace InnoEngine.Core;
 
@@ -26,7 +28,7 @@ public abstract class GameShell : Game
     protected sealed override void LoadContent()
     {
         // Render Initialization
-        Resources.Initialize(GraphicsDevice, m_contents);
+        Resource.Manager.ResourceManager.Initialize(GraphicsDevice, m_contents);
         m_renderSystem.Initialize(GraphicsDevice);
         m_renderSystem.LoadRenderPasses();
         
@@ -39,24 +41,28 @@ public abstract class GameShell : Game
 
     protected sealed override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Exit();}
-
-        Step(gameTime);
+        // Time Update
+        Time.Update(gameTime.TotalGameTime.Milliseconds / 1000.0f, gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+        
+        // Regular Update
+        Step();
         
         base.Update(gameTime);
     }
 
     protected sealed override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.LightGray);
-
+        // Render Time Update
+        Time.RenderUpdate(gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+        
+        GraphicsDevice.Clear(Color.LIGHTGRAY.ToXnaColor());
         var scene = SceneManager.GetActiveScene();
         if (scene == null) { return; }
-        m_renderSystem.RenderScene(scene, gameTime);
+        m_renderSystem.RenderScene(scene);
 
         base.Draw(gameTime);
     }
 
     public abstract void SetUp();
-    public abstract void Step(GameTime gameTime);
+    public abstract void Step();
 }
