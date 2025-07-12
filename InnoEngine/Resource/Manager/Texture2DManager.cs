@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 using MGColor = Microsoft.Xna.Framework.Color;
 using MGTexture2D = Microsoft.Xna.Framework.Graphics.Texture2D;
-using Color = InnoEngine.Base.Color;
+using Color = InnoEngine.Internal.Base.Color;
 using Texture2D = InnoEngine.Resource.Primitive.Texture2D;
 
 namespace InnoEngine.Resource.Manager;

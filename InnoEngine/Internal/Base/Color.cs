@@ -1,6 +1,4 @@
-using MGColor = Microsoft.Xna.Framework.Color;
-
-namespace InnoEngine.Base;
+namespace InnoEngine.Internal.Base;
 
 /// <summary>
 /// Represents an RGBA color with float components in the range [0, 1].
@@ -63,20 +61,5 @@ public readonly struct Color
             c.b * factor,
             c.a * factor
         );
-    }
-
-    
-    internal Color(MGColor color)
-    {
-        r = color.R / 255f;
-        g = color.G / 255f;
-        b = color.B / 255f;
-        a = color.A / 255f;
-    }
-
-    internal MGColor ToXnaColor()
-    {
-        var (r1, g1, b1, a1) = ToBytes();
-        return new Microsoft.Xna.Framework.Color(r1, g1, b1, a1);
     }
 }

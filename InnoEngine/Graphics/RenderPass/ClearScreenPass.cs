@@ -1,4 +1,5 @@
-using Color = InnoEngine.Base.Color;
+using InnoEngine.Internal.Base;
+using InnoEngine.Internal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 
@@ -11,8 +12,8 @@ internal class ClearScreenPass : IRenderPass
     
     public RenderPassTag tag => RenderPassTag.ClearScreen;
 
-    public void Render(RenderContext context)
+    public void Render(IRenderAPI api)
     {
-        context.graphicsDevice.Clear(CLEAR_COLOR.ToXnaColor());
+        api.command.Clear(CLEAR_COLOR);
     }
 }

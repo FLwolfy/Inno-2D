@@ -1,7 +1,7 @@
-﻿using InnoEngine.Base;
-using InnoEngine.Core;
+﻿using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
+using InnoEngine.Internal.Base;
 
 
 namespace Sandbox;

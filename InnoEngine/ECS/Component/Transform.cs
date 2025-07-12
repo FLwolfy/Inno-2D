@@ -1,4 +1,4 @@
-using InnoEngine.Base;
+using InnoEngine.Internal.Base;
 
 namespace InnoEngine.ECS.Component;
 

@@ -1,5 +1,5 @@
 using InnoEngine.Resource.Primitive;
-using InnoEngine.Base;
+using InnoEngine.Internal.Base;
 
 namespace InnoEngine.Resource.Manager;
 

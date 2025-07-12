@@ -1,5 +1,5 @@
 #nullable disable
-namespace InnoEngine.Base;
+namespace InnoEngine.Internal.Base;
 
 /// <summary>
 /// Contains commonly used precalculated values and mathematical operations.

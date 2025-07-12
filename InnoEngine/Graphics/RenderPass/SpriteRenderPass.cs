@@ -1,5 +1,5 @@
 using InnoEngine.ECS.Component;
-using Microsoft.Xna.Framework.Graphics;
+using InnoEngine.Internal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 
@@ -10,9 +10,10 @@ internal class SpriteRenderPass : IRenderPass
 {
     public RenderPassTag tag => RenderPassTag.Sprite;
 
-    public void Render(RenderContext context)
+    public void Render(IRenderAPI api)
     {
-        context.spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+        // TODO: allow blendAlpha and sortMode, currently FRONT_TO_BACK and ALPHA_BLEND are hardcoded
+        api.spriteBatch.Begin();
         
         var renderers = context.gameScene.GetComponentManager().GetAll<SpriteRenderer>();
         foreach (var r in renderers)
@@ -20,7 +21,7 @@ internal class SpriteRenderPass : IRenderPass
             if (!r.isActive) continue;
             var drawCommand = r.GenerateRenderCommand();
             
-            context.spriteBatch.Draw(
+            api.spriteBatch.DrawQuad(
                 drawCommand.sprite.texture.native,
                 drawCommand.position,
                 drawCommand.sprite.sourceRect?.ToXnaRect(),
@@ -28,11 +29,10 @@ internal class SpriteRenderPass : IRenderPass
                 drawCommand.rotation,
                 drawCommand.origin,
                 drawCommand.scale,
-                SpriteEffects.None,
                 drawCommand.depth
             );
         }
 
-        context.spriteBatch.End();
+        api.spriteBatch.End();
     }
 }

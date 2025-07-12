@@ -1,5 +1,4 @@
-using InnoEngine.Base;
-
+using InnoEngine.Internal.Base;
 using MGTexture2D = Microsoft.Xna.Framework.Graphics.Texture2D;
 
 namespace InnoEngine.Resource.Primitive;

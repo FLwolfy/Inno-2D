@@ -1,5 +1,5 @@
-using InnoEngine.Base;
 using InnoEngine.Graphics.RenderCommand;
+using InnoEngine.Internal.Base;
 using InnoEngine.Resource.Manager;
 using InnoEngine.Resource.Primitive;
 
@@ -40,9 +40,9 @@ public class SpriteRenderer : GameBehavior
         }
     }
     
-    internal SpriteRenderCommand GenerateRenderCommand()
+    internal {} GenerateRenderCommand()
     {
-        return new SpriteRenderCommand
+        return new 
         {
             sprite = sprite,
             position = new Vector2(transform.worldPosition.x, transform.worldPosition.y),

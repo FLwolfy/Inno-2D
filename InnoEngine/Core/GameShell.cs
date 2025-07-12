@@ -1,36 +1,20 @@
-using InnoEngine.Base;
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
-using InnoEngine.Resource.Manager;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-
-using Color = InnoEngine.Base.Color;
+using InnoEngine.Internal.Render.Bridge;
+using InnoEngine.Internal.Shell;
 
 namespace InnoEngine.Core;
 
-public abstract class GameShell : Game
+public abstract class GameShell : MonoGameShell
 {
-    private readonly GraphicsDeviceManager m_graphics;
-    private readonly ContentManager m_contents;
-    private readonly RenderSystem m_renderSystem;
-
-    protected GameShell()
-    {
-        m_graphics = new GraphicsDeviceManager(this);
-        m_contents = Content;
-        m_renderSystem = new RenderSystem();
-        
-        Content.RootDirectory = "Content";
-        IsMouseVisible = true;
-    }
-
-    protected sealed override void LoadContent()
+    private readonly RenderSystem m_renderSystem = new RenderSystem();
+    
+    public sealed override void Load()
     {
         // Render Initialization
-        Resource.Manager.ResourceManager.Initialize(GraphicsDevice, m_contents);
-        m_renderSystem.Initialize(GraphicsDevice);
-        m_renderSystem.LoadRenderPasses();
+        // Resource.Manager.ResourceManager.Initialize(GraphicsDevice, m_contents);
+        m_renderSystem.Initialize(new MonoGameRenderAPI(GraphicsDevice));
+        m_renderSystem.LoadPasses();
         
         // Load Contents
         SetUp();
@@ -39,30 +23,31 @@ public abstract class GameShell : Game
         foreach (var scene in SceneManager.GetAllScenes()) { scene.Start(); }
     }
 
-    protected sealed override void Update(GameTime gameTime)
+    public sealed override void Step(float totalTime, float deltaTime)
     {
         // Time Update
-        Time.Update(gameTime.TotalGameTime.Milliseconds / 1000.0f, gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+        Time.Update(totalTime, deltaTime);
         
         // Regular Update
         Step();
-        
-        base.Update(gameTime);
     }
 
-    protected sealed override void Draw(GameTime gameTime)
+    public sealed override void Draw(float deltaTime)
     {
         // Render Time Update
-        Time.RenderUpdate(gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+        Time.RenderUpdate(deltaTime);
         
-        GraphicsDevice.Clear(Color.LIGHTGRAY.ToXnaColor());
+        // Start Render
+        m_renderSystem.Begin();
+        
         var scene = SceneManager.GetActiveScene();
         if (scene == null) { return; }
-        m_renderSystem.RenderScene(scene);
-
-        base.Draw(gameTime);
+        m_renderSystem.RenderPasses();
+        
+        // End Render
+        m_renderSystem.End();
     }
 
-    public abstract void SetUp();
+    public abstract override void SetUp();
     public abstract void Step();
 }

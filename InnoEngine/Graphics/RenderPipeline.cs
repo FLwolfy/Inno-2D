@@ -1,4 +1,5 @@
 using InnoEngine.Graphics.RenderPass;
+using InnoEngine.Internal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 
@@ -15,11 +16,11 @@ internal class RenderPipeline
         m_passes.Sort((a, b) => a.tag.CompareTo(b.tag));
     }
 
-    public void Render(RenderContext context)
+    public void Render(IRenderAPI api)
     {
         foreach (var pass in m_passes)
         {
-            pass.Render(context);
+            pass.Render(api);
         }
     }
 }

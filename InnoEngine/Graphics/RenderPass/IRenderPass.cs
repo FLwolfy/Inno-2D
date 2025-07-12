@@ -1,3 +1,5 @@
+using InnoEngine.Internal.Render.Impl;
+
 namespace InnoEngine.Graphics.RenderPass;
 
 /// <summary>
@@ -13,5 +15,5 @@ internal interface IRenderPass
     /// <summary>
     /// This method is used for each concrete renderPass class to render details based on the given RenderContext.
     /// </summary>
-    void Render(RenderContext context);
+    void Render(IRenderAPI api);
 }
