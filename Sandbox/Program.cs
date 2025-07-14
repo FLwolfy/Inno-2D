@@ -18,7 +18,7 @@ public static class Program
     }
 }
 
-public class TestGame : SandboxCore
+public class TestGame : EngineCore
 {
     public override void SetUp()
     {

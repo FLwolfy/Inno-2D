@@ -8,14 +8,10 @@ namespace InnoEngine.Internal.Render.Bridge;
 internal class MonoGameRenderCommand : IRenderCommand
 {
     private readonly GraphicsDevice m_device;
-    private readonly Texture2D m_whitePixel;
 
     public MonoGameRenderCommand(GraphicsDevice device)
     {
         m_device = device ?? throw new ArgumentNullException(nameof(device));
-
-        m_whitePixel = new Texture2D(m_device, 1, 1);
-        m_whitePixel.SetData(new[] { Microsoft.Xna.Framework.Color.White });
     }
 
     public void Clear(Color color)

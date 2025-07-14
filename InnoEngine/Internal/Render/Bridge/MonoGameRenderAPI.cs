@@ -6,9 +6,9 @@ namespace InnoEngine.Internal.Render.Bridge;
 
 internal class MonoGameRenderAPI : IRenderAPI
 {
-    public IRenderContext context { get; private set; }
-    public IRenderCommand command { get; private set; }
-    public ISpriteBatch spriteBatch { get; private set; }
+    public IRenderContext context { get; private set; } = null!;
+    public IRenderCommand command { get; private set; } = null!;
+    public ISpriteBatch spriteBatch { get; private set; } = null!;
 
     public void Initialize(object data)
     {

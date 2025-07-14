@@ -53,8 +53,8 @@ public abstract class EngineCore
         // Time Update
         Time.Update(totalTime, deltaTime);
         
-        // Regular Update
-        Step();
+        // Scene Update
+        SceneManager.GetActiveScene()?.Update();
     }
 
     private void Draw(float deltaTime)
@@ -71,11 +71,16 @@ public abstract class EngineCore
         m_renderSystem.End();
     }
     
+    /// <summary>
+    /// Runs the game shell, starting the main loop of the engine.
+    /// </summary>
     public void Run()
     {
         m_gameShell.Run();
     }
 
+    /// <summary>
+    /// Sets up the engine core.
+    /// </summary>
     public abstract void SetUp();
-    public abstract void Step();
 }
