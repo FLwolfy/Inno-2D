@@ -1,43 +1,59 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 
 namespace InnoEngine.Internal.Shell;
 
-public abstract class MonoGameShell : Game
+internal sealed class MonoGameShell : Game, IGameShell
 {
     private readonly GraphicsDeviceManager m_graphics;
-    private readonly ContentManager m_contents;
-        
-    protected MonoGameShell()
+
+    private Action? m_onLoad;
+    private Action? m_onSetUp;
+    private Action<float, float>? m_onStep;
+    private Action<float>? m_onDraw;
+    private Action? m_onClose;
+
+    internal MonoGameShell()
     {
         m_graphics = new GraphicsDeviceManager(this);
-        m_contents = Content;
-
-        Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
-        
-    protected sealed override void LoadContent()
+
+    protected override void LoadContent()
     {
-        Load();
-        SetUp();
+        m_onLoad?.Invoke();
+        m_onSetUp?.Invoke();
     }
 
-    protected sealed override void Update(GameTime gameTime)
+    protected override void Update(GameTime gameTime)
     {
-        Step(gameTime.TotalGameTime.Milliseconds / 1000.0f, gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+        float total = (float)gameTime.TotalGameTime.TotalSeconds;
+        float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+        m_onStep?.Invoke(total, delta);
+
         base.Update(gameTime);
     }
 
-    protected sealed override void Draw(GameTime gameTime)
+    protected override void Draw(GameTime gameTime)
     {
+        float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
         GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Gray);
-        Draw(gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+
+        m_onDraw?.Invoke(delta);
+
         base.Draw(gameTime);
     }
 
-    public abstract void Load();
-    public abstract void SetUp();
-    public abstract void Step(float totalTime, float deltaTime);
-    public abstract void Draw(float deltaTime);
+    protected override void OnExiting(object sender, ExitingEventArgs args)
+    {
+        m_onClose?.Invoke();
+        base.OnExiting(sender, args);
+    }
+
+    public void SetOnLoad(Action callback) => m_onLoad = callback;
+    public void SetOnSetUp(Action callback) => m_onSetUp = callback;
+    public void SetOnStep(Action<float, float> callback) => m_onStep = callback;
+    public void SetOnDraw(Action<float> callback) => m_onDraw = callback;
+    public void SetOnClose(Action callback) => m_onClose = callback;
 }

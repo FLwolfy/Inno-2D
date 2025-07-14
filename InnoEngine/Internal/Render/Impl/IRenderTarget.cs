@@ -1,4 +1,5 @@
 using InnoEngine.Internal.Base;
+using InnoEngine.Internal.Resource.Impl;
 
 namespace InnoEngine.Internal.Render.Impl;
 

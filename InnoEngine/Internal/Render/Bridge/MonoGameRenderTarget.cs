@@ -1,6 +1,7 @@
 using InnoEngine.Internal.Base;
 using InnoEngine.Internal.Render.Impl;
-
+using InnoEngine.Internal.Resource.Bridge;
+using InnoEngine.Internal.Resource.Impl;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace InnoEngine.Internal.Render.Bridge;

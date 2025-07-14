@@ -10,8 +10,13 @@ internal class MonoGameRenderAPI : IRenderAPI
     public IRenderCommand command { get; private set; }
     public ISpriteBatch spriteBatch { get; private set; }
 
-    public MonoGameRenderAPI(GraphicsDevice device)
+    public void Initialize(object data)
     {
+        if (data is not GraphicsDevice device)
+        {
+            throw new ArgumentException("Invalid data type. Expected GraphicsDevice.", nameof(data));
+        }
+        
         context = new MonoGameRenderContext(device);
         command = new MonoGameRenderCommand(device);
         spriteBatch = new MonoGameSpriteBatch(device);

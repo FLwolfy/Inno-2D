@@ -1,4 +1,6 @@
+using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
+using InnoEngine.Internal.Base;
 using InnoEngine.Internal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
@@ -12,27 +14,39 @@ internal class SpriteRenderPass : IRenderPass
 
     public void Render(IRenderAPI api)
     {
-        // TODO: allow blendAlpha and sortMode, currently FRONT_TO_BACK and ALPHA_BLEND are hardcoded
         api.spriteBatch.Begin();
-        
-        var renderers = context.gameScene.GetComponentManager().GetAll<SpriteRenderer>();
-        foreach (var r in renderers)
+
+        var renderers = SceneManager.GetActiveScene()?.GetComponentManager().GetAll<SpriteRenderer>();
+        if (renderers != null)
         {
-            if (!r.isActive) continue;
-            var drawCommand = r.GenerateRenderCommand();
-            
-            api.spriteBatch.DrawQuad(
-                drawCommand.sprite.texture.native,
-                drawCommand.position,
-                drawCommand.sprite.sourceRect?.ToXnaRect(),
-                drawCommand.color.ToXnaColor(),
-                drawCommand.rotation,
-                drawCommand.origin,
-                drawCommand.scale,
-                drawCommand.depth
-            );
+            foreach (var r in renderers)
+            {
+                if (!r.isActive) continue;
+
+                var cmd = r.GenerateRenderCommand();
+
+                var sprite = cmd.sprite;
+                var position = cmd.position;
+                var scale = cmd.scale;
+
+                float width = sprite.width * scale.x;
+                float height = sprite.height * scale.y;
+
+                var destinationRect = new Rect((int)position.x, (int)position.y, (int)width, (int)height);
+
+                api.spriteBatch.DrawQuad(
+                    destinationRect,
+                    sprite.sourceRect,
+                    sprite.texture.texture2DImpl,
+                    cmd.color,
+                    cmd.rotation,
+                    cmd.depth,
+                    cmd.origin
+                );
+            }
         }
 
         api.spriteBatch.End();
     }
+
 }

@@ -3,7 +3,7 @@ namespace InnoEngine.Core;
 /// <summary>
 /// This is the base class for all editor shells. This is used for the editor implementation.
 /// </summary>
-public class EditorShell : GameShell
+public class EditorCore : EngineCore
 {
     public override void SetUp()
     {

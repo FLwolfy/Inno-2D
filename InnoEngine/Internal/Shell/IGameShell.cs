@@ -1,9 +1,12 @@
 namespace InnoEngine.Internal.Shell;
 
-public interface IGameShell
+internal interface IGameShell
 {
-    void Load();
-    void SetUp();
-    void Step(float totalTime, float deltaTime);
-    void Draw(float deltaTime);
+    void SetOnLoad(Action callback);
+    void SetOnSetUp(Action callback);
+    void SetOnStep(Action<float, float> callback); // totalTime, deltaTime
+    void SetOnDraw(Action<float> callback);        // deltaTime
+    void SetOnClose(Action callback);
+
+    void Run();
 }

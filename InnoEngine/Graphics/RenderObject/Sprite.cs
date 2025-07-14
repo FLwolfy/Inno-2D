@@ -1,6 +1,8 @@
 using InnoEngine.Internal.Base;
+using InnoEngine.Resource;
+using InnoEngine.Resource.AssetType;
 
-namespace InnoEngine.Resource.Primitive;
+namespace InnoEngine.Graphics.RenderObject;
 
 /// <summary>
 /// Stores texture and sprite-specific render data.
@@ -36,9 +38,9 @@ public sealed class Sprite
     /// <summary>
     /// Initializes a new sprite with optional source region and origin.
     /// </summary>
-    public Sprite(Texture2D texture, Rect? sourceRect = null, Vector2? origin = null)
+    public Sprite(Texture2D? texture = null, Rect? sourceRect = null, Vector2? origin = null)
     {
-        this.texture = texture;
+        this.texture = texture ?? AssetManager.Create<Texture2D>();
         this.sourceRect = sourceRect;
         this.origin = origin ?? new Vector2(width / 2f, height / 2f);
     }

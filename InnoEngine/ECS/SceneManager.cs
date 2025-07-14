@@ -7,6 +7,7 @@ public static class SceneManager
 {
     private static readonly Dictionary<Guid, GameScene> SCENES = new();
     private static GameScene? m_activeScene;
+    private static bool m_runtimeStarted = false;
 
     // TODO: Add scene asset loading and unloading
     // public static void loadScene(SceneAsset sceneAsset) {}
@@ -27,11 +28,16 @@ public static class SceneManager
     /// </summary>
     public static GameScene CreateScene(string name)
     {
+        if (m_runtimeStarted)
+        {
+            throw new InvalidOperationException("Cannot create a game scene while running.");
+        }
+        
         var scene = new GameScene(name);
         SCENES[scene.id] = scene;
         return scene;
     }
-
+    
     /// <summary>
     /// Sets the active scene.
     /// </summary>
@@ -68,4 +74,13 @@ public static class SceneManager
     /// Gets all the scenes loaded.
     /// </summary>
     public static IReadOnlyCollection<GameScene> GetAllScenes() => SCENES.Values;
+
+    /// <summary>
+    /// Starts the runtime, initializing all scenes.
+    /// </summary>
+    internal static void BeginRuntime()
+    {
+        m_runtimeStarted = true;
+        foreach (var scene in SceneManager.GetAllScenes()) { scene.Start(); }
+    }
 }

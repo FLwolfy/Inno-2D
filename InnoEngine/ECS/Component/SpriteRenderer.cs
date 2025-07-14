@@ -1,7 +1,5 @@
-using InnoEngine.Graphics.RenderCommand;
+using InnoEngine.Graphics.RenderObject;
 using InnoEngine.Internal.Base;
-using InnoEngine.Resource.Manager;
-using InnoEngine.Resource.Primitive;
 
 namespace InnoEngine.ECS.Component;
 
@@ -14,7 +12,7 @@ public class SpriteRenderer : GameBehavior
     
     public override ComponentTag orderTag => ComponentTag.Render;
 
-    public Sprite sprite { get; set; } = ResourceManager.spriteManager.CreateColorSprite(Color.WHITE, 50, 50);
+    public Sprite sprite { get; set; } = new Sprite();
     public Color color { get; set; } = Color.WHITE;
     
     private float m_opacity = 1f;
@@ -40,9 +38,20 @@ public class SpriteRenderer : GameBehavior
         }
     }
     
-    internal {} GenerateRenderCommand()
+    internal struct SpriteRenderCommand
     {
-        return new 
+        public Sprite sprite;
+        public Vector2 position;
+        public Vector2 scale;
+        public float rotation;
+        public float depth;
+        public Color color;
+        public Vector2 origin;
+    }
+    
+    internal SpriteRenderCommand GenerateRenderCommand()
+    {
+        return new SpriteRenderCommand
         {
             sprite = sprite,
             position = new Vector2(transform.worldPosition.x, transform.worldPosition.y),

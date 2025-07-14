@@ -24,6 +24,7 @@ internal class RenderSystem
     
     public void Initialize(IRenderAPI api)
     {
+        m_renderAPI = api;
         m_renderPipeline = new RenderPipeline();
     }
 

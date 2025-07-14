@@ -13,12 +13,12 @@ public static class Program
     /// </summary>
     public static void Main()
     {
-        using var game = new TestGame();
+        var game = new TestGame();
         game.Run();
     }
 }
 
-public class TestGame : SandboxShell
+public class TestGame : SandboxCore
 {
     public override void SetUp()
     {
@@ -30,11 +30,13 @@ public class TestGame : SandboxShell
         
         testObject.AddComponent<SpriteRenderer>();
         TestComponent tc = testObject.AddComponent<TestComponent>();
-        testObject.transform.worldScale = new Vector3(0.5f, 2f, 1.0f);
+        testObject.transform.worldScale = new Vector3(100f, 200f, 1f);
         // tc.SetActive(false);
         
         GameObject testObject2 = new GameObject("Test Object2");
-        testObject2.transform.worldPosition = new Vector3(300, 300, 2);
+        testObject2.transform.worldPosition = new Vector3(300, 300, 5);
+        testObject2.transform.worldScale = new Vector3(100f, 100f, 1f);
+        testObject2.transform.SetParent(testObject.transform);
         
         SpriteRenderer sr2 = testObject2.AddComponent<SpriteRenderer>();
         sr2.color = Color.BLACK;
