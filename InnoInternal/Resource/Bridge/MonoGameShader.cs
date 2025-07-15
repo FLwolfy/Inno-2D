@@ -1,3 +1,4 @@
+using InnoInternal.Render.Bridge;
 using InnoInternal.Resource.Impl;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,6 +8,8 @@ internal class MonoGameShader : IShader
 {
     private readonly Effect m_effect;
     private static Effect? m_defaultEffect;
+    
+    private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
     public MonoGameShader(Effect effect)
     {
@@ -27,7 +30,7 @@ internal class MonoGameShader : IShader
             pass.Apply();
     }
     
-    public static MonoGameShader LoadFromFile(GraphicsDevice device, string? path)
+    public static MonoGameShader LoadFromFile(string? path)
     {
         // Lazy load default effect (e.g., solid color shader)
         if (string.IsNullOrEmpty(path))

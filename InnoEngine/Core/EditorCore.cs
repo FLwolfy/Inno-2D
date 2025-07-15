@@ -44,7 +44,6 @@ public abstract class EditorCore
         // Asset Load
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        m_assetLoader.Initialize(m_gameShell.GetShellData());
         AssetManager.RegisterLoader(m_assetLoader);
 
         // Render Init

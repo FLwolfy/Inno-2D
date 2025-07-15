@@ -40,7 +40,6 @@ public abstract class EngineCore
         // Resource Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        m_assetLoader.Initialize(m_gameShell.GetShellData());
         AssetManager.RegisterLoader(m_assetLoader);
         
         // Render Initialization

@@ -7,18 +7,12 @@ namespace InnoInternal.Render.Bridge;
 internal class MonoGameRenderContext : IRenderContext
 {
     private static readonly Color DEFAULT_SCREEN_COLOR = Color.LIGHTGRAY;
-
-    private readonly GraphicsDevice m_device;
-
-    public MonoGameRenderContext(GraphicsDevice device)
-    {
-        m_device = device;
-    }
+    private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
     public void BeginFrame()
     {
-        m_device.SetRenderTarget(null);
-        m_device.Clear(ToXnaColor(DEFAULT_SCREEN_COLOR));
+        device.SetRenderTarget(null);
+        device.Clear(ToXnaColor(DEFAULT_SCREEN_COLOR));
     }
 
     public void EndFrame() { }

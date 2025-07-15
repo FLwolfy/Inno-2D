@@ -6,5 +6,5 @@ internal interface IRenderAPI
     IRenderCommand command { get; }
     ISpriteBatch spriteBatch { get; }
     
-    void Initialize(object data);
+    void Initialize(object device);
 }

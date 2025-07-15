@@ -9,8 +9,10 @@ namespace InnoInternal.Render.Bridge;
 internal class MonoGameSpriteBatch : ISpriteBatch
 {
     private readonly SpriteBatch m_spriteBatch;
+    
+    private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
-    public MonoGameSpriteBatch(GraphicsDevice device)
+    public MonoGameSpriteBatch()
     {
         m_spriteBatch = new SpriteBatch(device);
     }

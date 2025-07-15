@@ -1,3 +1,5 @@
+using System.Reflection;
+using InnoInternal.Render.Bridge;
 using InnoInternal.Resource.Impl;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,6 +9,8 @@ internal class MonoGameTexture2D : ITexture2D
 {
     private static Texture2D? m_defaultWhiteTex;
     private readonly Texture2D m_texture;
+    
+    private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
     public MonoGameTexture2D(Texture2D texture)
     {
@@ -18,7 +22,7 @@ internal class MonoGameTexture2D : ITexture2D
 
     public Texture2D rawTexture => m_texture;
 
-    public static MonoGameTexture2D LoadFromFile(GraphicsDevice device, string? path)
+    public static MonoGameTexture2D LoadFromFile(string? path)
     {
         // Lazy load default texture (e.g., white pixel texture)
         if (string.IsNullOrEmpty(path))

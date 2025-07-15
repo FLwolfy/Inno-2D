@@ -1,3 +1,4 @@
+using InnoInternal.Render.Bridge;
 using InnoInternal.Resource.Impl;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,17 +7,12 @@ namespace InnoInternal.Resource.Bridge;
 internal class MonoGameAssetLoader : IAssetLoader
 {
     private readonly Dictionary<Type, Func<string?, object>> m_loaderMap = new();
-    
-    public void Initialize(object data)
+
+    public MonoGameAssetLoader()
     {
-        if (data is not GraphicsDevice device)
-        {
-            throw new ArgumentException("Invalid data type. Expected GraphicsDevice.", nameof(data));
-        }
-        
         // Add more loaders as needed
-        m_loaderMap[typeof(ITexture2D)] = path => MonoGameTexture2D.LoadFromFile(device, path);
-        m_loaderMap[typeof(IShader)] = path => MonoGameShader.LoadFromFile(device, path);
+        m_loaderMap[typeof(ITexture2D)] = MonoGameTexture2D.LoadFromFile;
+        m_loaderMap[typeof(IShader)] = MonoGameShader.LoadFromFile;
     }
 
     public bool TryLoad<TInterface>(string? path, out TInterface? result)

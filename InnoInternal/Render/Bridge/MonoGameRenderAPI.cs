@@ -5,19 +5,23 @@ namespace InnoInternal.Render.Bridge;
 
 internal class MonoGameRenderAPI : IRenderAPI
 {
+    internal static GraphicsDevice graphicsDevice { get; private set; } = null!;
+    
     public IRenderContext context { get; private set; } = null!;
     public IRenderCommand command { get; private set; } = null!;
     public ISpriteBatch spriteBatch { get; private set; } = null!;
 
-    public void Initialize(object data)
+    public void Initialize(object device)
     {
-        if (data is not GraphicsDevice device)
+        if (device is not GraphicsDevice)
         {
-            throw new ArgumentException("Invalid data type. Expected GraphicsDevice.", nameof(data));
+            throw new ArgumentException("Invalid data type. Expected GraphicsDevice.", nameof(device));
         }
         
-        context = new MonoGameRenderContext(device);
-        command = new MonoGameRenderCommand(device);
-        spriteBatch = new MonoGameSpriteBatch(device);
+        graphicsDevice = (GraphicsDevice)device;
+        
+        context = new MonoGameRenderContext();
+        command = new MonoGameRenderCommand();
+        spriteBatch = new MonoGameSpriteBatch();
     }
 }

@@ -9,28 +9,28 @@ namespace InnoInternal.Render.Bridge;
 internal class MonoGameRenderTarget : IRenderTarget, IDisposable
 {
     private readonly RenderTarget2D m_target;
-    private readonly GraphicsDevice m_device;
+    
+    private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
-    public MonoGameRenderTarget(GraphicsDevice device, int width, int height)
+    public MonoGameRenderTarget(int width, int height)
     {
-        m_device = device;
         m_target = new RenderTarget2D(device, width, height, false,
             device.PresentationParameters.BackBufferFormat, DepthFormat.None);
     }
 
     public void Bind()
     {
-        m_device.SetRenderTarget(m_target);
+        device.SetRenderTarget(m_target);
     }
     
     public void Unbind()
     {
-        m_device.SetRenderTarget(null);
+        device.SetRenderTarget(null);
     }
 
     public void Clear(Color color)
     {
-        m_device.Clear(ToXnaColor(color));
+        device.Clear(ToXnaColor(color));
     }
 
     public ITexture2D GetColorTexture()
