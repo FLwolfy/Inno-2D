@@ -1,4 +1,4 @@
-using InnoEngine.Internal.Resource.Impl;
+using InnoInternal.Resource.Impl;
 
 namespace InnoEngine.Resource.AssetType;
 

@@ -1,5 +1,5 @@
+using InnoBase;
 using InnoEngine.ECS;
-using InnoEngine.Internal.Base;
 
 namespace Sandbox;
 

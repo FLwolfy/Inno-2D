@@ -1,7 +1,7 @@
-﻿using InnoEngine.Core;
+﻿using InnoBase;
+using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
-using InnoEngine.Internal.Base;
 
 
 namespace Sandbox;
@@ -20,7 +20,7 @@ public static class Program
 
 public class TestGame : EngineCore
 {
-    public override void SetUp()
+    protected override void SetUp()
     {
         GameScene testScene = SceneManager.CreateScene("Test Scene");
         SceneManager.SetActiveScene(testScene);

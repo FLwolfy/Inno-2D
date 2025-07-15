@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnoEditor", "InnoEditor\In
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{AF599774-F7F9-4C76-89D6-3380DBF72E33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnoInternal", "InnoInternal\InnoInternal.csproj", "{53BFE28B-8552-4A65-9BD3-58696891A079}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InnoBase", "InnoBase\InnoBase.csproj", "{701A1A5A-B691-4E71-841D-95603D713BBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{AF599774-F7F9-4C76-89D6-3380DBF72E33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF599774-F7F9-4C76-89D6-3380DBF72E33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF599774-F7F9-4C76-89D6-3380DBF72E33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53BFE28B-8552-4A65-9BD3-58696891A079}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53BFE28B-8552-4A65-9BD3-58696891A079}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53BFE28B-8552-4A65-9BD3-58696891A079}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53BFE28B-8552-4A65-9BD3-58696891A079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{701A1A5A-B691-4E71-841D-95603D713BBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{701A1A5A-B691-4E71-841D-95603D713BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{701A1A5A-B691-4E71-841D-95603D713BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{701A1A5A-B691-4E71-841D-95603D713BBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

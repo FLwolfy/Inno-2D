@@ -1,7 +1,7 @@
+using InnoBase;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
-using InnoEngine.Internal.Base;
-using InnoEngine.Internal.Render.Impl;
+using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 

@@ -1,4 +1,4 @@
-using InnoEngine.Internal.Base;
+using InnoBase;
 using InnoEngine.Resource;
 using InnoEngine.Resource.AssetType;
 

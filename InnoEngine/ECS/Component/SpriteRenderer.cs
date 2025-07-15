@@ -1,5 +1,5 @@
+using InnoBase;
 using InnoEngine.Graphics.RenderObject;
-using InnoEngine.Internal.Base;
 
 namespace InnoEngine.ECS.Component;
 

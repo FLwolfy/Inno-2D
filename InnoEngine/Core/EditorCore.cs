@@ -1,11 +1,12 @@
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
-using InnoEngine.Internal.Render.Bridge;
-using InnoEngine.Internal.Render.Impl;
-using InnoEngine.Internal.Resource.Bridge;
-using InnoEngine.Internal.Resource.Impl;
-using InnoEngine.Internal.Shell;
 using InnoEngine.Resource;
+using InnoInternal.Render.Bridge;
+using InnoInternal.Render.Impl;
+using InnoInternal.Resource.Bridge;
+using InnoInternal.Resource.Impl;
+using InnoInternal.Shell.Bridge;
+using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
 
@@ -43,11 +44,11 @@ public abstract class EditorCore
         // Asset Load
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        m_assetLoader.Initialize(((MonoGameShell)m_gameShell).GraphicsDevice);
+        m_assetLoader.Initialize(m_gameShell.GetShellData());
         AssetManager.RegisterLoader(m_assetLoader);
 
         // Render Init
-        m_renderAPI.Initialize(((MonoGameShell)m_gameShell).GraphicsDevice);
+        m_renderAPI.Initialize(m_gameShell.GetShellData());
         m_renderSystem.Initialize(m_renderAPI);
         m_renderSystem.LoadPasses();
     }

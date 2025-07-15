@@ -1,5 +1,5 @@
 using InnoEngine.Graphics.RenderPass;
-using InnoEngine.Internal.Render.Impl;
+using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 

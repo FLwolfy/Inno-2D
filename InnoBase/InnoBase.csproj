@@ -6,9 +6,4 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\InnoBase\InnoBase.csproj" />
-        <ProjectReference Include="..\InnoInternal\InnoInternal.csproj" />
-    </ItemGroup>
-    
 </Project>

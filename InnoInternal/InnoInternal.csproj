@@ -1,16 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+      <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5-develop.2" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\InnoBase\InnoBase.csproj" />
-      <ProjectReference Include="..\InnoEngine\InnoEngine.csproj" />
-      <ProjectReference Include="..\InnoInternal\InnoInternal.csproj" />
     </ItemGroup>
 
 </Project>

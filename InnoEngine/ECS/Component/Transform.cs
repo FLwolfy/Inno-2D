@@ -1,4 +1,4 @@
-using InnoEngine.Internal.Base;
+using InnoBase;
 
 namespace InnoEngine.ECS.Component;
 
@@ -11,17 +11,17 @@ public class Transform : GameComponent
     public override ComponentTag orderTag => ComponentTag.Transform;
     
     // Local transform relative to parent
-    private Vector3 m_localPosition = Vector3.zero;
+    private Vector3 m_localPosition = Vector3.ZERO;
     private Quaternion m_localRotation = Quaternion.identity;
-    private Vector3 m_localScale = Vector3.one;
+    private Vector3 m_localScale = Vector3.ONE;
 
     // Children transforms
     private readonly List<Transform> m_children = [];
 
     // Cached world transform, updated lazily
-    private Vector3 m_worldPosition = Vector3.zero;
+    private Vector3 m_worldPosition = Vector3.ZERO;
     private Quaternion m_worldRotation = Quaternion.identity;
-    private Vector3 m_worldScale = Vector3.one;
+    private Vector3 m_worldScale = Vector3.ONE;
 
     // Dirty flag to mark transform changes needing update
     private bool m_isDirty = true;
