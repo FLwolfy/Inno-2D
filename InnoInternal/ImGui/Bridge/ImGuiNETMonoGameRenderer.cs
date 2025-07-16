@@ -66,7 +66,6 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
 
         SetupInput();
         SetupFlags();
-        SetupStyles();
         RebuildFontAtlas();
     }
 
@@ -208,42 +207,6 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         ///////////////////////////////////////////
     }
     
-    private void SetupStyles()
-    {
-        var style = ImGuiNET.ImGui.GetStyle();
-
-        style.WindowRounding = 6.0f;
-        style.FrameRounding = 6.0f;
-        style.GrabRounding = 6.0f;
-
-        style.WindowBorderSize = 1.0f;
-        style.FrameBorderSize = 1.0f;
-
-        style.WindowPadding = new System.Numerics.Vector2(10, 10);
-        style.FramePadding = new System.Numerics.Vector2(8, 6);
-
-        var colors = style.Colors;
-
-        colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.11f, 0.15f, 0.17f, 1.00f);
-        colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.20f, 0.25f, 0.29f, 1.00f);
-        colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.12f, 0.20f, 0.28f, 1.00f);
-        colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(0.09f, 0.12f, 0.14f, 1.00f);
-
-        colors[(int)ImGuiCol.Button] = new System.Numerics.Vector4(0.20f, 0.25f, 0.29f, 1.00f);
-        colors[(int)ImGuiCol.ButtonHovered] = new System.Numerics.Vector4(0.30f, 0.35f, 0.39f, 1.00f);
-        colors[(int)ImGuiCol.ButtonActive] = new System.Numerics.Vector4(0.15f, 0.20f, 0.25f, 1.00f);
-
-        colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.20f, 0.25f, 0.29f, 1.00f);
-        colors[(int)ImGuiCol.FrameBgHovered] = new System.Numerics.Vector4(0.30f, 0.35f, 0.39f, 1.00f);
-        colors[(int)ImGuiCol.FrameBgActive] = new System.Numerics.Vector4(0.15f, 0.20f, 0.25f, 1.00f);
-
-        colors[(int)ImGuiCol.Tab] = new System.Numerics.Vector4(0.15f, 0.20f, 0.25f, 1.00f);
-        colors[(int)ImGuiCol.TabHovered] = new System.Numerics.Vector4(0.38f, 0.60f, 0.85f, 0.80f);
-
-        colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.08f, 0.10f, 0.12f, 1.00f);
-        colors[(int)ImGuiCol.TitleBgActive] = new System.Numerics.Vector4(0.12f, 0.14f, 0.16f, 1.00f);
-        colors[(int)ImGuiCol.TitleBgCollapsed] = new System.Numerics.Vector4(0.00f, 0.00f, 0.00f, 0.51f);
-    }
 
     /// <summary>
     /// Updates the <see cref="Effect" /> to the current matrices and texture
