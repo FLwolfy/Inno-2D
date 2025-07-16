@@ -20,6 +20,7 @@ public abstract class EngineCore
     protected EngineCore()
     {
         // Initialization Callbacks
+        m_gameShell.SetWindowResizable(true); // TODO: This may need to be set for fixed aspect-ratio
         m_gameShell.SetOnLoad(Load);
         m_gameShell.SetOnSetup(() =>
         {

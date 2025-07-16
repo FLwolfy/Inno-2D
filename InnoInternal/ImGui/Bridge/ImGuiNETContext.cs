@@ -1,4 +1,4 @@
-using System.Numerics;
+using InnoBase;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Resource.Impl;
 
@@ -12,15 +12,41 @@ internal class ImGuiNETContext : IImGuiContext
     {
         m_renderer = renderer;
     }
-    
-    public void BeginWindow(string title, bool open = true)
+
+    public bool BeginMainMenuBar()
     {
-        ImGuiNET.ImGui.Begin(title, ref open);
+        return ImGuiNET.ImGui.BeginMainMenuBar();
+    }
+
+    public void EndMainMenuBar()
+    {
+        ImGuiNET.ImGui.EndMainMenuBar();
+    }
+
+    public bool BeginWindow(string title, bool open = true)
+    {
+        return ImGuiNET.ImGui.Begin(title, ref open);
     }
 
     public void EndWindow()
     {
         ImGuiNET.ImGui.End();
+    }
+
+    public bool BeginMenu(string title, bool open = true)
+    {
+        return ImGuiNET.ImGui.BeginMenu(title, open);
+    }
+
+    public void EndMenu()
+    {
+        ImGuiNET.ImGui.EndMenu();
+    }
+
+    public Vector2 GetContentRegionAvail()
+    {
+        var avail = ImGuiNET.ImGui.GetContentRegionAvail();
+        return new Vector2(avail.X, avail.Y);
     }
 
     public void Text(string text)
@@ -35,7 +61,7 @@ internal class ImGuiNETContext : IImGuiContext
 
     public void Image(ITexture2D texture, float width, float height)
     {
-        ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new Vector2(width, height));
+        ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
     }
 
     public void Checkbox(string label, ref bool value)

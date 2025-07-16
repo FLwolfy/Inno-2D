@@ -107,7 +107,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         if (texture == null || texture is not MonoGameTexture2D mgTexture)
             throw new ArgumentException("texture is null or not MonoGameTexture2D", nameof(texture));
         
-        return BindTexture(mgTexture);
+        return BindTexture(mgTexture.rawTexture);
     }
     
     private IntPtr BindTexture(Texture2D mgTexture)
@@ -138,6 +138,9 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         UpdateInput();
 
         ImGuiNET.ImGui.NewFrame();
+        
+        // Start Docking Space
+        ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
     }
 
     /// <summary>

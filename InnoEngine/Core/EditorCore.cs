@@ -64,16 +64,7 @@ public abstract class EditorCore
     private void Draw(float deltaTime)
     {
         Time.RenderUpdate(deltaTime);
-
-        // Optional: Scene rendering
-        var scene = SceneManager.GetActiveScene();
-        if (scene != null)
-        {
-            m_renderSystem.Begin();
-            m_renderSystem.RenderPasses();
-            m_renderSystem.End();
-        }
-
+        
         // ImGui GUI Draw
         OnEditorGUI(deltaTime);
     }
@@ -85,11 +76,30 @@ public abstract class EditorCore
     {
         m_gameShell.Run();
     }
+
+    /// <summary>
+    /// Try to render the scene. This automatically checks whether there is an active scene.
+    /// </summary>
+    protected void TryRenderScene()
+    {
+        var scene = SceneManager.GetActiveScene();
+        if (scene != null)  
+        {
+            m_renderSystem.Begin();
+            m_renderSystem.RenderPasses();
+            m_renderSystem.End();
+        }
+    }
     
     /// <summary>
     /// Gets the window holder of the game shell.
     /// </summary>
     protected object GetWindowHolder() => m_gameShell.GetWindowHolder();
+    
+    /// <summary>
+    /// Gets the render API of the editor core.
+    /// </summary>
+    protected object GetRenderAPI() => m_renderAPI;
 
     /// <summary>
     /// Called during setup (after load), use to construct panels or layout.

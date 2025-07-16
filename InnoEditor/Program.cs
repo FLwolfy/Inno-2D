@@ -4,7 +4,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        MyEditorApp editor = new MyEditorApp();
+        EditorApp editor = new EditorApp();
         editor.Run();
     }
 }

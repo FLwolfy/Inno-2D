@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.ImGui.Impl;
@@ -7,8 +8,16 @@ namespace InnoInternal.ImGui.Impl;
 /// </summary>
 internal interface IImGuiContext
 {
-    void BeginWindow(string title, bool open = true);
+    bool BeginMainMenuBar();
+    void EndMainMenuBar();
+    
+    bool BeginWindow(string title, bool open = true);
     void EndWindow();
+    
+    bool BeginMenu(string title, bool open = true);
+    void EndMenu();
+
+    Vector2 GetContentRegionAvail();
 
     // RenderTarget
     void Image(ITexture2D texture, float width, float height);
@@ -18,9 +27,4 @@ internal interface IImGuiContext
     bool Button(string label);
     void Checkbox(string label, ref bool value);
     void SliderFloat(string label, ref float value, float min, float max);
-
-    // Docking
-    void DockSpace();
-    bool IsWindowHovered();
-    float GetMouseWheel();
 }
