@@ -24,10 +24,11 @@ public abstract class EditorCore
     protected EditorCore()
     {
         // Initialization Callbacks
+        m_gameShell.SetWindowResizable(true);
         m_gameShell.SetOnLoad(Load);
-        m_gameShell.SetOnSetUp(() =>
+        m_gameShell.SetOnSetup(() =>
         {
-            SetUp();
+            Setup();
             OnEditorStart();
         });
 
@@ -47,7 +48,7 @@ public abstract class EditorCore
         AssetManager.RegisterLoader(m_assetLoader);
 
         // Render Init
-        m_renderAPI.Initialize(m_gameShell.GetShellData());
+        m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
         m_renderSystem.Initialize(m_renderAPI);
         m_renderSystem.LoadPasses();
     }
@@ -84,24 +85,29 @@ public abstract class EditorCore
     {
         m_gameShell.Run();
     }
+    
+    /// <summary>
+    /// Gets the window holder of the game shell.
+    /// </summary>
+    protected object GetWindowHolder() => m_gameShell.GetWindowHolder();
 
     /// <summary>
     /// Called during setup (after load), use to construct panels or layout.
     /// </summary>
-    public abstract void SetUp();
+    protected abstract void Setup();
 
     /// <summary>
     /// Called every frame during editor mode.
     /// </summary>
-    public abstract void OnEditorUpdate(float totalTime, float deltaTime);
+    protected abstract void OnEditorUpdate(float totalTime, float deltaTime);
 
     /// <summary>
     /// Called every frame to draw ImGui panels.
     /// </summary>
-    public abstract void OnEditorGUI(float deltaTime);
+    protected abstract void OnEditorGUI(float deltaTime);
 
     /// <summary>
     /// Called once after setup, editor is now fully ready.
     /// </summary>
-    public virtual void OnEditorStart() { }
+    protected virtual void OnEditorStart() { }
 }

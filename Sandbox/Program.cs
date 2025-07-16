@@ -20,7 +20,7 @@ public static class Program
 
 public class TestGame : EngineCore
 {
-    protected override void SetUp()
+    protected override void Setup()
     {
         GameScene testScene = SceneManager.CreateScene("Test Scene");
         SceneManager.SetActiveScene(testScene);

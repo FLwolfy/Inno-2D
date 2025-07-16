@@ -21,9 +21,9 @@ public abstract class EngineCore
     {
         // Initialization Callbacks
         m_gameShell.SetOnLoad(Load);
-        m_gameShell.SetOnSetUp(() =>
+        m_gameShell.SetOnSetup(() =>
         {
-            SetUp();
+            Setup();
             SceneManager.BeginRuntime();
         });
         
@@ -43,7 +43,7 @@ public abstract class EngineCore
         AssetManager.RegisterLoader(m_assetLoader);
         
         // Render Initialization
-        m_renderAPI.Initialize(m_gameShell.GetShellData());
+        m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
         m_renderSystem.Initialize(m_renderAPI);
         m_renderSystem.LoadPasses();
     }
@@ -82,5 +82,5 @@ public abstract class EngineCore
     /// <summary>
     /// Sets up the engine core.
     /// </summary>
-    protected abstract void SetUp();
+    protected abstract void Setup();
 }

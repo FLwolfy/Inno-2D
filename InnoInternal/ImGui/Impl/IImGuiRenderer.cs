@@ -1,3 +1,4 @@
+using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.ImGui.Impl;
@@ -7,26 +8,19 @@ namespace InnoInternal.ImGui.Impl;
 /// Responsible for handling frame lifecycle, rendering ImGui draw data,
 /// and binding textures for use in ImGui.
 /// </summary>
-internal interface IImGuiRenderer : IDisposable
+internal interface IImGuiRenderer
 {
-    void Initialize();
+    void Initialize(object windowHolder);
     
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
     /// </summary>
-    void BeginFrame();
+    void BeginLayout(float deltaTime);
 
     /// <summary>
     /// Ends the ImGui frame and finalizes draw data.
     /// </summary>
-    void EndFrame();
-
-    /// <summary>
-    /// Renders the ImGui draw data.
-    /// The parameter is loosely typed as object to allow abstraction.
-    /// </summary>
-    /// <param name="drawData">The draw data object, typically ImDrawDataPtr or a wrapper.</param>
-    void RenderDrawData(object drawData);
+    void EndLayout();
 
     /// <summary>
     /// Binds a texture for use by ImGui and returns a texture ID handle.

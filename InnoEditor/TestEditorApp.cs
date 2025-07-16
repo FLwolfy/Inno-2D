@@ -8,63 +8,57 @@ namespace InnoEditor;
 
 public class MyEditorApp : EditorCore
 {
-    private IImGuiRenderer _imguiRenderer;
-    private IImGuiContext _imguiContext;
+    private readonly IImGuiRenderer m_imGuiRenderer = new ImGuiNETMonoGameRenderer();
+    private IImGuiContext imGuiContext => m_imGuiRenderer.context;
 
-    private bool _showDemoWindow = true;
-    private bool _showAnotherWindow = false;
-    private bool _checkboxValue = false;
+    private bool m_showDemoWindow = true;
+    private bool m_showAnotherWindow = false;
+    private bool m_checkboxValue = false;
 
-    public override void SetUp()
+    protected override void Setup()
     {
-        _imguiRenderer = new ImGuiNETMonoGameRenderer();
-        _imguiContext = _imguiRenderer.context;
-        
-        _imguiRenderer.Initialize();
+        m_imGuiRenderer.Initialize(GetWindowHolder());
     }
 
-    public override void OnEditorUpdate(float totalTime, float deltaTime)
+    protected override void OnEditorUpdate(float totalTime, float deltaTime)
     {
         // 这里写编辑器每帧逻辑，比如输入处理等
     }
 
-    public override void OnEditorGUI(float deltaTime)
+    protected override void OnEditorGUI(float deltaTime)
     {
-        _imguiRenderer.BeginFrame();
+        m_imGuiRenderer.BeginLayout(deltaTime);
 
         // 1. DockSpace，支持拖拽停靠
         ImGui.DockSpaceOverViewport(ImGui.GetMainViewport().ID);
 
         // 2. 显示官方Demo窗口，方便调试和测试
-        if (_showDemoWindow)
+        if (m_showDemoWindow)
         {
-            ImGui.ShowDemoWindow(ref _showDemoWindow);
+            ImGui.ShowDemoWindow(ref m_showDemoWindow);
         }
 
         // 3. 自定义窗口
-        _imguiContext.BeginWindow("My Editor Window");
-        _imguiContext.Text("Welcome to your editor!");
-        if (_imguiContext.Button("Click me"))
+        imGuiContext.BeginWindow("My Editor Window");
+        imGuiContext.Text("Welcome to your editor!");
+        if (imGuiContext.Button("Click me"))
         {
             Console.WriteLine("Button clicked!");
-            _showAnotherWindow = !_showAnotherWindow;
+            m_showAnotherWindow = !m_showAnotherWindow;
         }
-        _imguiContext.Checkbox("Toggle Demo Window", ref _showDemoWindow);
-        _imguiContext.Checkbox("Toggle Another Window", ref _showAnotherWindow);
-        _imguiContext.EndWindow();
+        imGuiContext.Checkbox("Toggle Demo Window", ref m_showDemoWindow);
+        imGuiContext.Checkbox("Toggle Another Window", ref m_showAnotherWindow);
+        imGuiContext.EndWindow();
 
         // 4. 另一个窗口，根据按钮切换显示
-        if (_showAnotherWindow)
+        if (m_showAnotherWindow)
         {
-            _imguiContext.BeginWindow("Another Window");
-            _imguiContext.Text("Hello from another window!");
-            _imguiContext.Checkbox("Check me", ref _checkboxValue);
-            _imguiContext.EndWindow();
+            imGuiContext.BeginWindow("Another Window");
+            imGuiContext.Text("Hello from another window!");
+            imGuiContext.Checkbox("Check me", ref m_checkboxValue);
+            imGuiContext.EndWindow();
         }
 
-        _imguiRenderer.EndFrame();
-
-        // 渲染 ImGui 绘制数据
-        _imguiRenderer.RenderDrawData(ImGui.GetDrawData());
+        m_imGuiRenderer.EndLayout();
     }
 }
