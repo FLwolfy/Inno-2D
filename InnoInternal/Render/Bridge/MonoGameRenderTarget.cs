@@ -18,16 +18,6 @@ internal class MonoGameRenderTarget : IRenderTarget, IDisposable
             device.PresentationParameters.BackBufferFormat, DepthFormat.None);
     }
 
-    public void Bind()
-    {
-        device.SetRenderTarget(m_target);
-    }
-    
-    public void Unbind()
-    {
-        device.SetRenderTarget(null);
-    }
-
     public void Clear(Color color)
     {
         device.Clear(ToXnaColor(color));

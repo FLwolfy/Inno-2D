@@ -11,7 +11,6 @@ internal class MonoGameRenderContext : IRenderContext
 
     public void BeginFrame()
     {
-        device.SetRenderTarget(null);
         device.Clear(ToXnaColor(DEFAULT_SCREEN_COLOR));
     }
 

@@ -113,7 +113,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     private IntPtr BindTexture(Texture2D mgTexture)
     {
         var id = new IntPtr(m_textureId++);
-
+        
         m_loadedTextures.Add(id, mgTexture);
 
         return id;

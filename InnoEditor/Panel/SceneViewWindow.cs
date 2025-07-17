@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoEditor.Core;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
@@ -24,12 +25,12 @@ public class SceneViewWindow : EditorWindow
     
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
     {
-        // 获取可用区域大小
+        // Get Available region
         var available = context.GetContentRegionAvail();
         int newWidth = (int)Math.Max(available.x, 1);
         int newHeight = (int)Math.Max(available.y, 1);
-
-        // 分辨率变了就重建
+        
+        // if region change, reset
         if (newWidth != m_width || newHeight != m_height || m_renderTarget == null)
         {
             m_width = newWidth;
@@ -41,15 +42,16 @@ public class SceneViewWindow : EditorWindow
         }
         
 
-        // 把场景渲染到这个 render target
+        // render scece on new render target
         if (m_renderTarget != null)
         {
             renderAPI.command.SetRenderTarget(m_renderTarget);
+            renderAPI.command.SetViewport(new Rect(0, 0, m_width, m_height));
             m_onSceneRender.Invoke();
             renderAPI.command.SetRenderTarget(null);
         }
 
-        // 显示在窗口中
+        // display on scene view
         if (m_renderTexture != null)
         {
             context.Image(m_renderTexture, m_width, m_height);
