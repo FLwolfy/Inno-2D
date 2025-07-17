@@ -9,5 +9,6 @@ public enum ComponentTag
     Physics,
     Collision,
     Behavior,
+    Camera,
     Render
 }

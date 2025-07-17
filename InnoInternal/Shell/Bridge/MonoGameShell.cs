@@ -72,14 +72,25 @@ internal sealed class MonoGameShell : Game, IGameShell
         base.OnExiting(sender, args);
     }
 
+    // Callbacks
     public void SetOnLoad(Action callback) => m_onLoad = callback;
     public void SetOnSetup(Action callback) => m_onSetup = callback;
     public void SetOnStep(Action<float, float> callback) => m_onStep = callback;
     public void SetOnDraw(Action<float> callback) => m_onDraw = callback;
     public void SetOnClose(Action callback) => m_onClose = callback;
+    
+    // Window Events
+    public void SetWindowSize(int width, int height)
+    {
+        m_graphics.PreferredBackBufferWidth = width;
+        m_graphics.PreferredBackBufferHeight = height;
+        m_graphics.ApplyChanges();
+    }
+
     public void SetWindowResizable(bool enable) => Window.AllowUserResizing = enable;
     public void SetOnWindowSizeChanged(Action<int, int> callback) => m_onWindowSizeChanged = callback;
 
+    // Render Objects
     public object GetGraphicsDevice()
     {
         return GraphicsDevice;

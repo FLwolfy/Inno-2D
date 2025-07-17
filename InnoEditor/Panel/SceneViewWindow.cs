@@ -42,7 +42,7 @@ public class SceneViewWindow : EditorWindow
         }
         
 
-        // render scece on new render target
+        // render scene on new render target
         if (m_renderTarget != null)
         {
             renderAPI.command.SetRenderTarget(m_renderTarget);

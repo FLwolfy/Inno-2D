@@ -10,6 +10,10 @@ public class Transform : GameComponent
 {
     public override ComponentTag orderTag => ComponentTag.Transform;
     
+    // Dirty listener
+    public delegate void TransformChangedHandler();
+    public event TransformChangedHandler? OnChanged;
+    
     // Local transform relative to parent
     private Vector3 m_localPosition = Vector3.ZERO;
     private Quaternion m_localRotation = Quaternion.identity;
@@ -252,6 +256,7 @@ public class Transform : GameComponent
             m_worldPosition = parent.worldPosition + rotated;
         }
 
+        OnChanged?.Invoke();
         m_isDirty = false;
     }
 

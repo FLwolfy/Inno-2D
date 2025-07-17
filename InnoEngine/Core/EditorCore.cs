@@ -16,6 +16,9 @@ namespace InnoEngine.Core;
 /// </summary>
 public abstract class EditorCore
 {
+    private const int C_WINDOW_WIDTH = 1280;
+    private const int C_WINDOW_HEIGHT = 700;
+    
     private readonly IGameShell m_gameShell = new MonoGameShell();
     private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
     private readonly IAssetLoader m_assetLoader = new MonoGameAssetLoader();
@@ -24,6 +27,7 @@ public abstract class EditorCore
     protected EditorCore()
     {
         // Initialization Callbacks
+        m_gameShell.SetWindowSize(C_WINDOW_WIDTH,  C_WINDOW_HEIGHT);
         m_gameShell.SetWindowResizable(true);
         m_gameShell.SetOnLoad(Load);
         m_gameShell.SetOnSetup(() =>

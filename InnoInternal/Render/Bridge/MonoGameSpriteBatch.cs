@@ -17,11 +17,11 @@ internal class MonoGameSpriteBatch : ISpriteBatch
         m_spriteBatch = new SpriteBatch(device);
     }
 
-    public void Begin()
+    public void Begin(Matrix transformMatrix)
     {
         // TODO: Handle parameters like sort mode, blend state, etc.
         //       Get rid of hardcoded values.
-        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,  transformMatrix: ToXnaMatrix(transformMatrix));
     }
 
     public void DrawQuad(Rect destinationRect, Rect? sourceRect, ITexture2D texture, Color color, float rotation = 0,
@@ -58,5 +58,15 @@ internal class MonoGameSpriteBatch : ISpriteBatch
     public void End()
     {
         m_spriteBatch.End();
+    }
+
+    private Microsoft.Xna.Framework.Matrix ToXnaMatrix(Matrix matrix)
+    {
+        return new Microsoft.Xna.Framework.Matrix(
+            matrix.m11, matrix.m12, matrix.m13, matrix.m14,
+            matrix.m21, matrix.m22, matrix.m23, matrix.m24,
+            matrix.m31, matrix.m32, matrix.m33, matrix.m34,
+            matrix.m41, matrix.m42, matrix.m43, matrix.m44
+        );
     }
 }

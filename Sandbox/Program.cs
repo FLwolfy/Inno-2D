@@ -25,6 +25,13 @@ public class TestGame : EngineCore
         GameScene testScene = SceneManager.CreateScene("Test Scene");
         SceneManager.SetActiveScene(testScene);
         
+        // Camera
+        GameObject camera = new GameObject("Camera");
+        OrthographicCamera cameraComponent = camera.AddComponent<OrthographicCamera>();
+        cameraComponent.isMainCamera = true;
+        cameraComponent.size = 300;
+        
+        // Object 1
         GameObject testObject = new GameObject("Test Object");
         testObject.transform.worldPosition = new Vector3(300, 300, 3);
         
@@ -33,6 +40,7 @@ public class TestGame : EngineCore
         testObject.transform.worldScale = new Vector3(100f, 200f, 1f);
         // tc.SetActive(false);
         
+        // Object 2
         GameObject testObject2 = new GameObject("Test Object2");
         testObject2.transform.worldPosition = new Vector3(300, 300, 5);
         testObject2.transform.worldScale = new Vector3(100f, 100f, 1f);

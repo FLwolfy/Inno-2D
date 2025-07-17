@@ -11,6 +11,7 @@ public class GameScene
     private readonly List<GameObject> m_gameObjects = [];
     private readonly List<GameObject> m_pendingGameObjectRemoves = [];
     private readonly ComponentManager m_componentManager = new();
+    private readonly CameraManager m_cameraManager = new();
 
     internal GameScene(){}
     
@@ -22,7 +23,12 @@ public class GameScene
     /// <summary>
     /// Gets the component manager of the current game scene.
     /// </summary>
-    public ComponentManager GetComponentManager() => m_componentManager;
+    internal ComponentManager GetComponentManager() => m_componentManager;
+        
+    /// <summary>
+    /// Gets the camera manager of the current game scene.
+    /// </summary>
+    internal CameraManager GetCameraManager() => m_cameraManager;
 
     /// <summary>
     /// Registers a GameObject to this scene.

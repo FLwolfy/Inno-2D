@@ -5,7 +5,7 @@ namespace InnoInternal.Render.Impl;
 
 internal interface ISpriteBatch
 {
-    void Begin();
+    void Begin(Matrix transformMatrix);
     void DrawQuad(
         Rect destinationRect,
         Rect? sourceRect,

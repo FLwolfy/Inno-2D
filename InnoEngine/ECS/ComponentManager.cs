@@ -3,7 +3,7 @@ namespace InnoEngine.ECS;
 /// <summary>
 /// Manages components by entity and updates components ordered by tag.
 /// </summary>
-public class ComponentManager
+internal class ComponentManager
 {
     private bool m_isRunning;
     private bool m_isUpdating;

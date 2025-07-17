@@ -1,3 +1,8 @@
+// NOTE: This file is referenced from ImGuiNET.MonoGame package and with slight modification.
+//       To see more details from the original package, visit here:
+//       https://github.com/tsMezotic/MonoGame.ImGuiNet
+
+
 using System.Net.Mime;
 using System.Runtime.InteropServices;
 using ImGuiNET;
