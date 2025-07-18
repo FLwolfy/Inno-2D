@@ -33,7 +33,7 @@ public class SpriteRenderer : GameBehavior
         set
         {
             if (m_layerDepth == value) return;
-            Mathematics.Clamp(value, 0, 1000);
+            Mathematics.Clamp(value, 0, MAX_LAYER_DEPTH);
             m_layerDepth = value;
         }
     }
@@ -57,7 +57,7 @@ public class SpriteRenderer : GameBehavior
             position = new Vector2(transform.worldPosition.x, transform.worldPosition.y),
             scale = new Vector2(transform.worldScale.x, transform.worldScale.y),
             rotation = transform.worldRotation.ToEulerAnglesZYX().z,
-            depth = m_layerDepth + (float)((Math.Tanh(transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0) / 1000.0f,
+            depth = m_layerDepth + (float)((Math.Tanh(transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0) / MAX_LAYER_DEPTH, // TODO: This should be clamped within [0, 1]
             color = color * opacity,
             origin = sprite.origin
         };

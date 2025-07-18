@@ -10,7 +10,7 @@ public class SceneViewWindow : EditorWindow
 {
     public override string Title => "Scene View";
     
-    private readonly Action m_onSceneRender;
+    private readonly Action<Matrix> m_onSceneRender;
     
     private IRenderTarget? m_renderTarget;
     private ITexture2D? m_renderTexture;
@@ -18,7 +18,7 @@ public class SceneViewWindow : EditorWindow
     private int m_width = 0;
     private int m_height = 0;
 
-    internal SceneViewWindow(Action onSceneRender)
+    internal SceneViewWindow(Action<Matrix> onSceneRender)
     {
         m_onSceneRender = onSceneRender;
     }
@@ -47,8 +47,11 @@ public class SceneViewWindow : EditorWindow
         {
             renderAPI.command.SetRenderTarget(m_renderTarget);
             renderAPI.command.SetViewport(new Rect(0, 0, m_width, m_height));
+            
             m_onSceneRender.Invoke();
+            
             renderAPI.command.SetRenderTarget(null);
+            renderAPI.command.SetViewport(null);
         }
 
         // display on scene view

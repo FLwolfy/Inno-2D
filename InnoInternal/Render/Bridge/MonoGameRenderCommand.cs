@@ -13,10 +13,19 @@ internal class MonoGameRenderCommand : IRenderCommand
         device.Clear(ToXnaColor(color));
     }
 
-    public void SetViewport(Rect viewport)
+    public void SetViewport(Rect? viewport)
     {
-        device.Viewport = new Viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+        if (viewport == null)
+        {
+            device.Viewport = new Viewport(0, 0, device.PresentationParameters.BackBufferWidth, device.PresentationParameters.BackBufferHeight);
+        }
+        else
+        {
+            var v = viewport.Value;
+            device.Viewport = new Viewport(v.x, v.y, v.width, v.height);
+        }
     }
+
 
     public void SetRenderTarget(IRenderTarget? target)
     {

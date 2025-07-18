@@ -10,6 +10,6 @@ public class TestComponent : GameBehavior
     public override void Update()
     {
         float oldRotationZ = transform.worldRotation.ToEulerAnglesZYX().z;
-        transform.worldRotation = Quaternion.FromEulerAnglesZYX(new Vector3(0, 0, oldRotationZ + 0.05f));
+        transform.worldRotation = Quaternion.FromEulerAnglesZYX(new Vector3(0, 0, oldRotationZ + 0.005f));
     }
 }

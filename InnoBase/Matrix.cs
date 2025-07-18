@@ -5,7 +5,6 @@ namespace InnoBase;
 [DataContract]
 public struct Matrix : IEquatable<Matrix>
 {
-    // 4x4 行主序矩阵元素
     [DataMember] public float m11, m12, m13, m14;
     [DataMember] public float m21, m22, m23, m24;
     [DataMember] public float m31, m32, m33, m34;
@@ -164,6 +163,27 @@ public struct Matrix : IEquatable<Matrix>
             a.m41 * b.m14 + a.m42 * b.m24 + a.m43 * b.m34 + a.m44 * b.m44
         );
     }
+    
+    public static Matrix Extract2DTransform(Matrix m)
+    {
+        return new Matrix(
+            m.m11, m.m12, 0, 0,
+            m.m21, m.m22, 0, 0,
+            0,     0,     1, 0,
+            m.m41, m.m42, 0, 1
+        );
+    }
+    
+    public static Matrix Transpose(Matrix a)
+    {
+        return new Matrix(
+            a.m11, a.m21, a.m31, a.m41,
+            a.m12, a.m22, a.m32, a.m42,
+            a.m13, a.m23, a.m33, a.m43,
+            a.m14, a.m24, a.m34, a.m44
+        );
+    }
+
 
     public static Matrix operator *(Matrix a, Matrix b) => Multiply(a, b);
 
