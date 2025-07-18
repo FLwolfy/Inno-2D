@@ -14,7 +14,7 @@ namespace InnoEngine.Core;
 public abstract class EngineCore
 {
     private const int C_WINDOW_WIDTH = 1280;
-    private const int C_WINDOW_HEIGHT = 700;
+    private const int C_WINDOW_HEIGHT = 720;
     
     private readonly IGameShell m_gameShell = new MonoGameShell();
     private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
@@ -68,11 +68,15 @@ public abstract class EngineCore
         // Render Time Update
         Time.RenderUpdate(deltaTime);
         
+        // Get Scene and Camera
         var scene = SceneManager.GetActiveScene();
         if (scene == null) { return; }
+        var camera = scene.GetCameraManager().mainCamera;
+        if (camera == null) { return; }
         
         // Render Pipeline
-        m_renderAPI.context.cameraMatrix = scene.GetCameraManager().mainCamera?.projectionMatrix * scene.GetCameraManager().mainCamera?.viewMatrix;
+        m_renderAPI.context.viewMatrix = camera.viewMatrix;
+        m_renderAPI.context.projectionMatrix = camera.projectionMatrix;
         m_renderSystem.Begin();
         m_renderSystem.RenderPasses();
         m_renderSystem.End();

@@ -13,79 +13,29 @@ internal class ImGuiNETContext : IImGuiContext
         m_renderer = renderer;
     }
 
-    public bool BeginMainMenuBar()
-    {
-        return ImGuiNET.ImGui.BeginMainMenuBar();
-    }
+    public bool BeginMainMenuBar() => ImGuiNET.ImGui.BeginMainMenuBar();
+    public void EndMainMenuBar() => ImGuiNET.ImGui.EndMainMenuBar();
 
-    public void EndMainMenuBar()
-    {
-        ImGuiNET.ImGui.EndMainMenuBar();
-    }
+    public bool BeginWindow(string title, bool open = true) => ImGuiNET.ImGui.Begin(title, ref open);
+    public void EndWindow() => ImGuiNET.ImGui.End();
 
-    public bool BeginWindow(string title, bool open = true)
-    {
-        return ImGuiNET.ImGui.Begin(title, ref open);
-    }
+    public bool BeginMenu(string title, bool open = true) => ImGuiNET.ImGui.BeginMenu(title, open);
+    public void EndMenu() => ImGuiNET.ImGui.EndMenu();
 
-    public void EndWindow()
-    {
-        ImGuiNET.ImGui.End();
-    }
+    public Vector2 GetContentRegionAvail() => new Vector2(ImGuiNET.ImGui.GetContentRegionAvail().X, ImGuiNET.ImGui.GetContentRegionAvail().Y);
 
-    public bool BeginMenu(string title, bool open = true)
-    {
-        return ImGuiNET.ImGui.BeginMenu(title, open);
-    }
+    public void Text(string text) => ImGuiNET.ImGui.Text(text);
+    public bool Button(string label) => ImGuiNET.ImGui.Button(label);
+    public void Image(ITexture2D texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
+    public void Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
+    public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
 
-    public void EndMenu()
-    {
-        ImGuiNET.ImGui.EndMenu();
-    }
+    public bool IsWindowHovered() => ImGuiNET.ImGui.IsWindowHovered();
+    public Vector2 GetWindowPosition() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
+    public Vector2 GetCursorScreenPos() => new Vector2(ImGuiNET.ImGui.GetCursorScreenPos().X, ImGuiNET.ImGui.GetCursorScreenPos().Y);
 
-    public Vector2 GetContentRegionAvail()
-    {
-        var avail = ImGuiNET.ImGui.GetContentRegionAvail();
-        return new Vector2(avail.X, avail.Y);
-    }
-
-    public void Text(string text)
-    {
-        ImGuiNET.ImGui.Text(text);
-    }
-
-    public bool Button(string label)
-    {
-        return ImGuiNET.ImGui.Button(label);
-    }
-
-    public void Image(ITexture2D texture, float width, float height)
-    {
-        ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
-    }
-
-    public void Checkbox(string label, ref bool value)
-    {
-        ImGuiNET.ImGui.Checkbox(label, ref value);
-    }
-
-    public void SliderFloat(string label, ref float value, float min, float max)
-    {
-        ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
-    }
-
-    public void DockSpace()
-    {
-        ImGuiNET.ImGui.DockSpace(ImGuiNET.ImGui.GetID("MyDockspace"));
-    }
-
-    public bool IsWindowHovered()
-    {
-        return ImGuiNET.ImGui.IsWindowHovered();
-    }
-
-    public float GetMouseWheel()
-    {
-        return ImGuiNET.ImGui.GetIO().MouseWheel;
-    }
+    public bool IsMouseDown(int button) => ImGuiNET.ImGui.GetIO().MouseDown[button];
+    public Vector2 GetMouseDelta() => new Vector2(ImGuiNET.ImGui.GetIO().MouseDelta.X, ImGuiNET.ImGui.GetIO().MouseDelta.Y);
+    public Vector2 GetMousePosition() => new Vector2(ImGuiNET.ImGui.GetIO().MousePos.X, ImGuiNET.ImGui.GetIO().MousePos.Y);
+    public float GetMouseWheel() => ImGuiNET.ImGui.GetIO().MouseWheel;
 }

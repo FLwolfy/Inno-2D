@@ -60,6 +60,10 @@ public struct Vector3 : IEquatable<Vector3>
     public static Vector3 Reflect(Vector3 dir, Vector3 normal) =>
         dir - 2f * Dot(dir, normal) * normal;
     
+    /// <summary>
+    /// The row vector times a matrix. It performs as below v * m (not m * v).
+    /// </summary>
+    /// <returns></returns>
     public static Vector3 Transform(Vector3 position, Matrix matrix)
     {
         float x = position.x * matrix.m11 + position.y * matrix.m21 + position.z * matrix.m31 + matrix.m41;

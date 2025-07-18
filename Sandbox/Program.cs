@@ -28,13 +28,13 @@ public class TestGame : EngineCore
         // Camera
         GameObject camera = new GameObject("Camera");
         OrthographicCamera cameraComponent = camera.AddComponent<OrthographicCamera>();
-        camera.AddComponent<TestComponent>();
+        // camera.AddComponent<TestComponent>();
         cameraComponent.isMainCamera = true;
         cameraComponent.size = 720;
         
         // Object 1
         GameObject testObject = new GameObject("Test Object");
-        testObject.transform.worldPosition = new Vector3(320, 180, 0);
+        testObject.transform.worldPosition = new Vector3(640, 360, 0);
         
         testObject.AddComponent<SpriteRenderer>();
         testObject.transform.worldScale = new Vector3(100f, 200f, 1f);

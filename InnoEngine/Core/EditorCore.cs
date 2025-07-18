@@ -85,16 +85,17 @@ public abstract class EditorCore
     /// <summary>
     /// Try to render the scene. This automatically checks whether there is an active scene.
     /// </summary>
-    protected void TryRenderScene(Matrix? cameraMatrix)
+    protected void TryRenderScene(Matrix viewMatrix, Matrix projectionMatrix)
     {
         var scene = SceneManager.GetActiveScene();
-        if (scene != null)  
-        {
-            m_renderAPI.context.cameraMatrix = cameraMatrix;
-            m_renderSystem.Begin();
-            m_renderSystem.RenderPasses();
-            m_renderSystem.End();
-        }
+        if (scene == null)  { return; }
+    
+        m_renderAPI.context.viewMatrix = viewMatrix;
+        m_renderAPI.context.projectionMatrix = projectionMatrix;
+        
+        m_renderSystem.Begin();
+        m_renderSystem.RenderPasses();
+        m_renderSystem.End();
     }
     
     /// <summary>

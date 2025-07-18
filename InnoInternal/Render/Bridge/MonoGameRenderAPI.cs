@@ -22,6 +22,6 @@ internal class MonoGameRenderAPI : IRenderAPI
         
         context = new MonoGameRenderContext();
         command = new MonoGameRenderCommand();
-        spriteBatch = new MonoGameSpriteBatch();
+        spriteBatch = new MonoGameSpriteBatch(context);
     }
 }

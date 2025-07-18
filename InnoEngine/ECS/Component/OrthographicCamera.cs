@@ -7,8 +7,8 @@ namespace InnoEngine.ECS.Component;
 /// </summary>
 public class OrthographicCamera : GameCamera
 {
-    private const float C_NEAR = -1f;
-    private const float C_FAR = 1f;
+    private const float c_near = -1f;
+    private const float c_far = 1f;
 
     private float m_size = 10f;
     private float m_aspectRatio = 1.7777f;
@@ -57,8 +57,8 @@ public class OrthographicCamera : GameCamera
         return Matrix.CreateOrthographic(
             width: halfWidth * 2,
             height: halfHeight * 2,
-            C_NEAR,
-            C_FAR
+            c_near,
+            c_far
         );
     }
 

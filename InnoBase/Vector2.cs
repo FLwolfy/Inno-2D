@@ -44,6 +44,29 @@ public struct Vector2 : IEquatable<Vector2>
 
     public static Vector2 Reflect(Vector2 v, Vector2 n)
         => v - 2f * Dot(v, n) * n;
+    
+    public static Vector2 Transform(Vector2 v, Matrix m)
+    {
+        float x = v.x * m.m11 + v.y * m.m21 + m.m41;
+        float y = v.x * m.m12 + v.y * m.m22 + m.m42;
+        return new Vector2(x, y);
+    }
+
+    public static Vector2 Transform(Vector2 value, Quaternion rotation)
+    {
+        float x = rotation.x;
+        float y = rotation.y;
+        float z = rotation.z;
+        float w = rotation.w;
+
+        float cos = 1f - 2f * (x * x + y * y);
+        float sin = 2f * (z * w);
+
+        return new Vector2(
+            value.x * cos - value.y * sin,
+            value.x * sin + value.y * cos
+        );
+    }
 
     // Operators
     public static Vector2 operator +(Vector2 a, Vector2 b) => new Vector2(a.x + b.x, a.y + b.y);

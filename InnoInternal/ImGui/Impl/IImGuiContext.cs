@@ -27,4 +27,13 @@ internal interface IImGuiContext
     bool Button(string label);
     void Checkbox(string label, ref bool value);
     void SliderFloat(string label, ref float value, float min, float max);
+    
+    // IO
+    bool IsWindowHovered();
+    Vector2 GetWindowPosition();
+    Vector2 GetCursorScreenPos();
+    bool IsMouseDown(int button);
+    Vector2 GetMouseDelta();
+    Vector2 GetMousePosition();
+    float GetMouseWheel();
 }

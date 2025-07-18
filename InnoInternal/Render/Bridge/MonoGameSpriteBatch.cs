@@ -9,19 +9,20 @@ namespace InnoInternal.Render.Bridge;
 internal class MonoGameSpriteBatch : ISpriteBatch
 {
     private readonly SpriteBatch m_spriteBatch;
+    private readonly IRenderContext m_renderContext;
     
     private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
-    public MonoGameSpriteBatch()
+    public MonoGameSpriteBatch(IRenderContext renderContext)
     {
         m_spriteBatch = new SpriteBatch(device);
+        m_renderContext = renderContext;
     }
 
-    public void Begin(Matrix transformMatrix)
+    public void Begin()
     {
-        // TODO: Handle parameters like sort mode, blend state, etc.
-        //       Get rid of hardcoded values.
-        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,  transformMatrix: ToXnaMatrix(transformMatrix));
+        // TODO: Handle parameters like sort mode, blend state, etc. to get rid of hardcoded values.
+        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,  transformMatrix: ToXnaMatrix(Matrix.Extract2DTransform(m_renderContext.worldToScreenMatrix)));
     }
 
     public void DrawQuad(Rect destinationRect, Rect? sourceRect, ITexture2D texture, Color color, float rotation = 0,

@@ -14,14 +14,7 @@ internal class SpriteRenderPass : IRenderPass
 
     public void Render(IRenderAPI api)
     {
-        Matrix? cameraMatrix = api.context.cameraMatrix;
-        if (cameraMatrix == null) return;
-        
-        Vector2 renderTargetSize = api.context.GetRenderTargetSize();
-        Matrix targetScale = Matrix.CreateScale(renderTargetSize.x, renderTargetSize.y, 1);
-        Matrix transformMatrix = targetScale * cameraMatrix.Value;
-
-        api.spriteBatch.Begin(Matrix.Extract2DTransform(transformMatrix));
+        api.spriteBatch.Begin();
 
         var renderers = SceneManager.GetActiveScene()!.GetComponentManager().GetAll<SpriteRenderer>();
         if (renderers != null)
