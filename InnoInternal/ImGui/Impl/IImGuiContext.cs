@@ -28,10 +28,14 @@ internal interface IImGuiContext
     void Checkbox(string label, ref bool value);
     void SliderFloat(string label, ref float value, float min, float max);
     
+    // Gizmos Overlay
+    void DrawLine(Vector2 p1, Vector2 p2, Color color, float thickness = 1f);
+    void DrawText(Vector2 pos, string text, Color color);
+    
     // IO
     bool IsWindowHovered();
     Vector2 GetWindowPosition();
-    Vector2 GetCursorScreenPos();
+    Vector2 GetCursorStartPos();
     bool IsMouseDown(int button);
     Vector2 GetMouseDelta();
     Vector2 GetMousePosition();

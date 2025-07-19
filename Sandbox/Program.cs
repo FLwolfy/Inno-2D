@@ -29,6 +29,7 @@ public class TestGame : EngineCore
         GameObject camera = new GameObject("Camera");
         OrthographicCamera cameraComponent = camera.AddComponent<OrthographicCamera>();
         // camera.AddComponent<TestComponent>();
+        camera.transform.worldPosition = new Vector3(0, 180, 0);
         cameraComponent.isMainCamera = true;
         cameraComponent.size = 720;
         

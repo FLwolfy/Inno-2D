@@ -22,7 +22,7 @@ public readonly struct Color
     {
         return new Color(r / 255f, g / 255f, b / 255f, a / 255f);
     }
-
+    
     public (byte R, byte G, byte B, byte A) ToBytes()
     {
         return (
@@ -32,6 +32,17 @@ public readonly struct Color
             (byte)(a * 255)
         );
     }
+    
+    public uint ToUInt32ARGB()
+    {
+        byte red = (byte)(r * 255);
+        byte green = (byte)(g * 255);
+        byte blue = (byte)(b * 255);
+        byte alpha = (byte)(a * 255);
+
+        return (uint)((alpha << 24) | (blue << 16) | (green << 8) | red);
+    }
+
     
     public override string ToString() => $"Color({r:F2}, {g:F2}, {b:F2}, {a:F2})";
     

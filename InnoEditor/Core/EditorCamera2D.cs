@@ -15,7 +15,21 @@ public class EditorCamera2D
     private const float c_minSize = 0.1f;
     private const float c_maxSize = 10f;
     private const float c_zoomSpeed = 0.01f;
+    
+    // TODO: Possibly Use Cache for performance
+    public Matrix viewMatrix => Matrix.CreateTranslation(-m_position.x, -m_position.y, 0);
+    public Matrix projectionMatrix
+    {
+        get
+        {
+            float halfHeight = m_height * m_zoomRate * 0.5f;
+            float halfWidth = halfHeight * m_aspectRatio;
 
+            return Matrix.CreateOrthographic(halfWidth * 2, halfHeight * 2, c_near, c_far);
+        }
+    }
+    
+    
     public float zoomRate => m_zoomRate;
     public float aspectRatio => m_aspectRatio;
     public Vector2 position => m_position;
@@ -41,8 +55,13 @@ public class EditorCamera2D
         m_position -= panDelta * m_zoomRate;
         m_position += worldPosBefore - worldPosAfter;
     }
+    
+    public Matrix GetScreenToWorldMatrix()
+    {
+        return Matrix.Invert(GetWorldToScreenMatrix());
+    }
 
-    private Matrix GetScreenToWorldMatrix()
+    public Matrix GetWorldToScreenMatrix()
     {
         float halfWidth = m_height * aspectRatio / 2f;
         float halfHeight = m_height / 2f;
@@ -50,23 +69,6 @@ public class EditorCamera2D
         Matrix screenToClip = Matrix.CreateScale(halfWidth, halfHeight, 1f) *
                               Matrix.CreateTranslation(halfWidth, halfHeight, 0f);
 
-        Matrix projView = GetViewMatrix() * GetProjectionMatrix();
-
-        return Matrix.Invert(projView * screenToClip);
-    }
-
-
-    public Matrix GetViewMatrix()
-    {
-        return Matrix.CreateTranslation(-m_position.x, -m_position.y, 0);
-    }
-
-    public Matrix GetProjectionMatrix()
-    {
-        float halfHeight = m_height * m_zoomRate * 0.5f;
-        float halfWidth = halfHeight * m_aspectRatio;
-
-        // near= -1, far=1 与 MonoGame 兼容的正交投影
-        return Matrix.CreateOrthographic(halfWidth * 2, halfHeight * 2, c_near, c_far);
+        return viewMatrix * projectionMatrix * screenToClip;
     }
 }

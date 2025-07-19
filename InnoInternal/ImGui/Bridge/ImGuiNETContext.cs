@@ -30,9 +30,23 @@ internal class ImGuiNETContext : IImGuiContext
     public void Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
     public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
 
+    
+    public void DrawLine(Vector2 p1, Vector2 p2, Color color, float thickness = 1f)
+    {
+        var drawList = ImGuiNET.ImGui.GetWindowDrawList();
+        drawList.AddLine(new System.Numerics.Vector2(p1.x, p1.y), new System.Numerics.Vector2(p2.x, p2.y), color.ToUInt32ARGB(), thickness);
+    }
+
+    public void DrawText(Vector2 pos, string text, Color color)
+    {
+        var drawList = ImGuiNET.ImGui.GetWindowDrawList();
+        drawList.AddText(new System.Numerics.Vector2(pos.x, pos.y), color.ToUInt32ARGB(), text);
+    }
+    
+    
     public bool IsWindowHovered() => ImGuiNET.ImGui.IsWindowHovered();
     public Vector2 GetWindowPosition() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
-    public Vector2 GetCursorScreenPos() => new Vector2(ImGuiNET.ImGui.GetCursorScreenPos().X, ImGuiNET.ImGui.GetCursorScreenPos().Y);
+    public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);
 
     public bool IsMouseDown(int button) => ImGuiNET.ImGui.GetIO().MouseDown[button];
     public Vector2 GetMouseDelta() => new Vector2(ImGuiNET.ImGui.GetIO().MouseDelta.X, ImGuiNET.ImGui.GetIO().MouseDelta.Y);

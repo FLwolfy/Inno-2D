@@ -32,7 +32,12 @@ internal class SpriteRenderPass : IRenderPass
                 float width = sprite.width * scale.x;
                 float height = sprite.height * scale.y;
 
-                var destinationRect = new Rect((int)position.x, (int)position.y, (int)width, (int)height);
+                var destinationRect = new Rect(
+                    (int)position.x, 
+                    (int)-position.y, // Flip Y for correct rendering
+
+                    (int)width, 
+                    (int)height);
 
                 api.spriteBatch.DrawQuad(
                     destinationRect,

@@ -41,7 +41,10 @@ public class OrthographicCamera : GameCamera
 
     protected override void RebuildMatrix(out Matrix view, out Matrix projection, out Rect viewRect)
     {
-        Vector2 cameraPos = new Vector2(transform.worldPosition.x, transform.worldPosition.y);
+        Vector2 cameraPos = new Vector2(
+            transform.worldPosition.x, 
+            -transform.worldPosition.y // Flip Y for correct rendering
+        );
         float rotationZ = transform.worldRotation.ToEulerAnglesZYX().z;
 
         projection = CalculateProjectionMatrix();
@@ -62,14 +65,14 @@ public class OrthographicCamera : GameCamera
         );
     }
 
-    private Matrix CalculateViewMatrix(Vector2 position, float rotationZ)
+    private Matrix CalculateViewMatrix(Vector2 cameraPos, float rotationZ)
     {
         Matrix rotation = Matrix.CreateRotationZ(-rotationZ);
-        Matrix translation = Matrix.CreateTranslation(-position.x, -position.y, 0f);
+        Matrix translation = Matrix.CreateTranslation(-cameraPos.x, -cameraPos.y, 0f);
         return rotation * translation;
     }
 
-    private Rect CalculateViewRect(Vector2 position, float rotationZ)
+    private Rect CalculateViewRect(Vector2 cameraPos, float rotationZ)
     {
         float halfHeight = m_size * 0.5f;
         float halfWidth = halfHeight * m_aspectRatio;
@@ -93,7 +96,7 @@ public class OrthographicCamera : GameCamera
             corners[i] = new Vector2(
                 x * cos - y * sin,
                 x * sin + y * cos
-            ) + position;
+            ) + cameraPos;
         }
 
         float minX = corners.Min(c => c.x);
