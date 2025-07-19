@@ -3,6 +3,7 @@
 ## 🎯 项目目标
 
 构建一个功能完整、体验接近 Unity 的 2D 场景编辑器，服务于 Inno-2D 游戏引擎，支持实体场景构建、实时预览、组件编辑、资源管理等功能。
+（此文档由AI归总，不是最终README）
 
 ---
 
@@ -76,53 +77,53 @@
 
 ---
 
-## 🏗️ 开发阶段流程
+## 🏗️ 开发阶段流程（✅：已完成；⚠️进行中；❓：未开始）
 
 ### ✅ 阶段一：核心架构搭建
 - 构建主窗口与 Dock 面板（ImGui）
 - Editor Shell 初始化流程
 - 加入空白 SceneView、Inspector、Hierarchy 等 Panel
 
-### ✅ 阶段二：场景渲染系统
+### ⚠️ 阶段二：场景渲染系统
 - Editor Camera（支持缩放、平移）
 - 渲染 GameObject + SpriteRenderer
 - Editor Gizmo 基础功能（坐标轴绘制）
 - 鼠标选中逻辑实现（HitTest / Picking）
 
-### ✅ 阶段三：组件系统编辑支持
+### ❓ 阶段三：组件系统编辑支持
 - ECS 中组件可序列化
 - Inspector 动态显示所有组件
 - 支持基础类型字段的 ImGui 编辑（float、int、bool、Vector2 等）
 
-### ✅ 阶段四：层级管理器（Hierarchy）
+### ❓ 阶段四：层级管理器（Hierarchy）
 - 展示场景中所有 GameObject
 - 选中同步、拖动父子关系
 - 增删物体支持（+按钮 / Delete）
 
-### ✅ 阶段五：资源系统 & Project 面板
+### ❓ 阶段五：资源系统 & Project 面板
 - 构建资源加载系统（统一入口）
 - 支持纹理、Prefab、音效等的浏览和加载
 - Project 面板展示资源 + 拖拽功能
 
-### ✅ 阶段六：Gizmo 与 Handles
+### ❓ 阶段六：Gizmo 与 Handles
 - 实现拖动、旋转、缩放 Gizmo
 - 鼠标吸附、局部/全局坐标系统切换
 - 多选支持
 - 支持组件独立控制 Gizmo 显示（如 Camera Gizmo、Collider Gizmo）
 
-### ✅ 阶段七：Prefab 系统
+### ❓ 阶段七：Prefab 系统
 - GameObject 可保存为 Prefab
 - 场景中实例为引用对象
 - 修改时支持 Apply / Revert 操作
 - 嵌套 Prefab 编辑器预览支持
 
-### ✅ 阶段八：序列化系统
+### ❓ 阶段八：序列化系统
 - 自定义序列化器（用于组件、GameObject）
 - 保存场景到 .scene / .json 文件
 - 加载还原完整场景结构
 - 支持拖拽 prefab 放入 scene 自动实例化
 
-### ✅ 阶段九：编辑器工具完善
+### ❓ 阶段九：编辑器工具完善
 - Undo / Redo 实现
 - 快捷键支持（Ctrl+Z / D / Delete）
 - Inspector 属性变化动画与高亮反馈
