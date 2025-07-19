@@ -188,6 +188,6 @@ Editor/
 │ ├── EditorSelection.cs
 │ └── DragAndDrop.cs
 └── Serialization/
-├── SceneSerializer.cs
-└── ComponentSerializer.cs
+  ├── SceneSerializer.cs
+  └── ComponentSerializer.cs
 ```
