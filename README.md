@@ -166,7 +166,7 @@
 ---
 
 ## 📁 示例结构（Editor 项目结构建议）
-
+```
 Editor/
 ├── Core/
 │ ├── EditorApp.cs
@@ -190,3 +190,4 @@ Editor/
 └── Serialization/
 ├── SceneSerializer.cs
 └── ComponentSerializer.cs
+```
