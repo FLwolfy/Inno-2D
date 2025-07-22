@@ -117,6 +117,9 @@ public class SceneViewPanel : EditorPanel
         m_gridGizmo.spacing = spacing;
         m_gridGizmo.color = AXIS_COLOR;
         m_gridGizmo.lineThickness = AXIS_THICKNESS;
+        m_gridGizmo.showCoords = true;
+        m_gridGizmo.startCoords = offsetWorld;
+        m_gridGizmo.coordsIncrement = new Vector2(newAxisInterval, newAxisInterval);
         
         m_gridGizmo.Draw(context);
     }
