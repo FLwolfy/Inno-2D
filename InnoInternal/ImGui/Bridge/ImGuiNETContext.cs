@@ -23,6 +23,9 @@ internal class ImGuiNETContext : IImGuiContext
     public bool BeginWindow(string title, bool open = true) => ImGuiNET.ImGui.Begin(title, ref open);
     public void EndWindow() => ImGuiNET.ImGui.End();
     public bool IsWindowHovered() => ImGuiNET.ImGui.IsWindowHovered();
+    public bool IsWindowFocused() =>  ImGuiNET.ImGui.IsWindowFocused();
+    public void SetWindowFocus() => ImGuiNET.ImGui.SetWindowFocus();
+
     public Vector2 GetContentRegionAvail() => new Vector2(ImGuiNET.ImGui.GetContentRegionAvail().X, ImGuiNET.ImGui.GetContentRegionAvail().Y);
     public Vector2 GetWindowPosition() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
     public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);

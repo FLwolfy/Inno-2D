@@ -30,6 +30,10 @@ public class SceneViewPanel : EditorPanel
     internal SceneViewPanel(Action<Matrix, Matrix> onSceneRender)
     {
         m_onSceneRender = onSceneRender;
+        
+        m_gridGizmo.showCoords = true;
+        m_gridGizmo.color = AXIS_COLOR;
+        m_gridGizmo.lineThickness = AXIS_THICKNESS;
     }
     
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
@@ -50,7 +54,7 @@ public class SceneViewPanel : EditorPanel
             m_renderTarget = renderAPI.command.CreateRenderTarget(m_width, m_height);
             m_renderTexture = m_renderTarget.GetColorTexture();
         }
-        
+
         HandlePanZoom(context);
 
         // render scene on new render target
@@ -82,7 +86,8 @@ public class SceneViewPanel : EditorPanel
 
         if (context.IsMouseDown((int)Input.MouseButton.Middle))
         {
-            panDelta = context.GetMouseDelta();
+            if (context.IsWindowFocused()) { panDelta = context.GetMouseDelta(); }
+            else { context.SetWindowFocus(); }
         }
 
         Vector2 windowPos = context.GetWindowPosition();
@@ -115,9 +120,6 @@ public class SceneViewPanel : EditorPanel
         m_gridGizmo.size = new Vector2(m_width, m_height);
         m_gridGizmo.offset = offset;
         m_gridGizmo.spacing = spacing;
-        m_gridGizmo.color = AXIS_COLOR;
-        m_gridGizmo.lineThickness = AXIS_THICKNESS;
-        m_gridGizmo.showCoords = true;
         m_gridGizmo.startCoords = offsetWorld;
         m_gridGizmo.coordsIncrement = new Vector2(newAxisInterval, newAxisInterval);
         

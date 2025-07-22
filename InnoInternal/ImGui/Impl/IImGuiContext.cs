@@ -18,6 +18,8 @@ internal interface IImGuiContext
     bool BeginWindow(string title, bool open = true);
     void EndWindow();
     bool IsWindowHovered();
+    bool IsWindowFocused();
+    void SetWindowFocus();
     Vector2 GetContentRegionAvail();
     Vector2 GetWindowPosition();
     Vector2 GetCursorStartPos();
