@@ -15,6 +15,7 @@ public class SceneViewPanel : EditorPanel
     private static readonly Color AXIS_COLOR = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     private static readonly float AXIS_THICKNESS = 1.0f;
     private static readonly int AXIS_INTERVAL = 100;
+    private static readonly int AXIS_INTERVAL_MIN_THRESHOLD = 50;
     
     private readonly Action<Matrix, Matrix> m_onSceneRender;
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
@@ -96,15 +97,24 @@ public class SceneViewPanel : EditorPanel
     private void DrawAxisGizmo(IImGuiContext context)
     {
         Vector2 axisOriginWorld = Vector2.Transform(Vector2.ZERO, m_editorCamera2D.GetScreenToWorldMatrix());
-        float offsetXWorld = MathF.Floor(axisOriginWorld.x / AXIS_INTERVAL) * AXIS_INTERVAL;
-        float offsetYWorld = MathF.Floor(axisOriginWorld.y / AXIS_INTERVAL) * AXIS_INTERVAL;
+        float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;;
+        int newAxisInterval = AXIS_INTERVAL;
+        
+        while (spacing < AXIS_INTERVAL_MIN_THRESHOLD)
+        {
+            newAxisInterval += AXIS_INTERVAL;
+            spacing = Vector2.Transform(axisOriginWorld + new Vector2(newAxisInterval, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
+        }
+        
+        float offsetXWorld = (MathF.Floor(axisOriginWorld.x / newAxisInterval) + 1) * newAxisInterval;
+        float offsetYWorld = (MathF.Floor(axisOriginWorld.y / newAxisInterval) + 1) * newAxisInterval;
         Vector2 offsetWorld = new Vector2(offsetXWorld, offsetYWorld);
         Vector2 offset = Vector2.Transform(offsetWorld, m_editorCamera2D.GetWorldToScreenMatrix());
         
+        m_gridGizmo.startPos = context.GetWindowPosition() + context.GetCursorStartPos();
+        m_gridGizmo.size = new Vector2(m_width, m_height);
         m_gridGizmo.offset = offset;
-        m_gridGizmo.width = m_width;
-        m_gridGizmo.height = m_height;
-        // m_gridGizmo.spacing = 100.0f;
+        m_gridGizmo.spacing = spacing;
         m_gridGizmo.color = AXIS_COLOR;
         m_gridGizmo.lineThickness = AXIS_THICKNESS;
         
