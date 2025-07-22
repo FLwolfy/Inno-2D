@@ -78,6 +78,14 @@ public class GameScene
     }
 
     /// <summary>
+    /// Gets all GameObjects that have no parent in this scene.
+    /// </summary>
+    public IReadOnlyList<GameObject> GetAllRootGameObjects()
+    {
+        return m_gameObjects.Where(go => go.transform.parent == null).ToList();
+    }
+
+    /// <summary>
     /// Called when the game started.
     /// </summary>
     internal void Start()

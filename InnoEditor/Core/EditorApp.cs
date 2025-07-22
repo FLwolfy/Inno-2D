@@ -20,6 +20,7 @@ public class EditorApp : EditorCore
         
         // Panel Setup
         EditorManager.RegisterWindow(new SceneViewPanel(TryRenderScene));
+        EditorManager.RegisterWindow(new HierarchyPanel());
         EditorManager.RegisterWindow(new InspectorPanel());
         
         // TODO: Setup Menu Bar
@@ -40,6 +41,7 @@ public class EditorApp : EditorCore
         m_imGuiRenderer.EndLayout();
     }
 
+    // TODO: Remove this
     private void TestSceneSetup()
     {
         GameScene testScene = SceneManager.CreateScene("Test Scene");
@@ -52,14 +54,16 @@ public class EditorApp : EditorCore
         testObject.AddComponent<SpriteRenderer>();
         testObject.transform.worldScale = new Vector3(100f, 200f, 1f);
         
-        // Object 2
-        GameObject testObject2 = new GameObject("Test Object2");
-        testObject2.transform.worldPosition = new Vector3(0, 0, 5);
-        testObject2.transform.worldScale = new Vector3(100f, 100f, 1f);
-        testObject2.transform.SetParent(testObject.transform);
-        
-        SpriteRenderer sr2 = testObject2.AddComponent<SpriteRenderer>();
-        sr2.color = Color.BLACK;
-        // sr2.SetActive(false);
+        // Object 2 - 5
+        for (int i = 2; i <= 5; i++)
+        {
+            GameObject to = new GameObject("Test Object" + i);
+            to.transform.worldPosition = new Vector3(150 * i, 0, 5);
+            to.transform.worldScale = new Vector3(100f, 100f, 1f);
+            SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
+            sr.color = Color.BLACK;
+            
+            to.transform.SetParent(testObject.transform);
+        }
     }
 }

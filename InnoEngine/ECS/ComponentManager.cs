@@ -14,9 +14,9 @@ internal class ComponentManager
     private readonly Dictionary<Type, List<GameComponent>> m_componentsByType = new();
     private readonly Dictionary<Guid, Dictionary<Type, GameComponent>> m_componentsByEntity = new();
     
-    private readonly List<Action> m_pendingAddRemoves = [];
-    private readonly List<GameComponent> m_pendingStart = [];
-    private readonly List<List<GameComponent>> m_pendingSorts = [];
+    private readonly List<Action> m_pendingAddRemoveAction = [];
+    private readonly List<GameComponent> m_pendingStartComponents = [];
+    private readonly List<List<GameComponent>> m_pendingToSortLists = [];
     
     public ComponentManager()
     {
@@ -62,7 +62,7 @@ internal class ComponentManager
         AddToTypeMap(component);
         
         // Add or delay add to tag map (for safe iterations)
-        if (m_isUpdating) { m_pendingAddRemoves.Add(() => InsertSorted(m_componentsByTag[component.orderTag], component)); }
+        if (m_isUpdating) { m_pendingAddRemoveAction.Add(() => InsertSorted(m_componentsByTag[component.orderTag], component)); }
         else { InsertSorted(m_componentsByTag[component.orderTag], component); }
         
         // Game already started, execute Awake()
@@ -75,7 +75,7 @@ internal class ComponentManager
         // Delay Start()
         if (component.isActive && !component.hasStarted)
         {
-            m_pendingStart.Add(component);
+            m_pendingStartComponents.Add(component);
         }
         
         return component;
@@ -88,7 +88,7 @@ internal class ComponentManager
     {
         if (m_isUpdating)
         {
-            m_pendingAddRemoves.Add(() => Remove<T>(entityId));
+            m_pendingAddRemoveAction.Add(() => Remove<T>(entityId));
             return;
         }
         
@@ -123,7 +123,7 @@ internal class ComponentManager
     {
         if (m_isUpdating)
         {
-            m_pendingAddRemoves.Add(() => Remove(entityId, component));
+            m_pendingAddRemoveAction.Add(() => Remove(entityId, component));
             return;
         }
     
@@ -260,20 +260,20 @@ internal class ComponentManager
     {
         if (m_componentsByTag.TryGetValue(comp.orderTag, out var tagList))
         {
-            m_pendingSorts.Add(tagList);
+            m_pendingToSortLists.Add(tagList);
         }
 
         var type = comp.GetType();
         if (m_componentsByType.TryGetValue(type, out var typeList))
         {
-            m_pendingSorts.Add(typeList);
+            m_pendingToSortLists.Add(typeList);
         }
     }
 
     
     private void ProcessPendingStarts()
     {
-        foreach (var component in m_pendingStart)
+        foreach (var component in m_pendingStartComponents)
         {
             if (component.isActive && !component.hasStarted)
             {
@@ -281,7 +281,7 @@ internal class ComponentManager
                 component.hasStarted = true;
             }
         }
-        m_pendingStart.Clear();
+        m_pendingStartComponents.Clear();
     }
     
     private void UpdateComponents()
@@ -293,21 +293,21 @@ internal class ComponentManager
                 if (!component.isActive) {continue;}
 
                 if (component.hasStarted) { component.Update(); }
-                else { m_pendingStart.Add(component); }
+                else { m_pendingStartComponents.Add(component); }
             }
         }
     }
     
     private void ApplyPendingAddRemoves()
     {
-        foreach (var action in m_pendingAddRemoves) { action(); }
-        m_pendingAddRemoves.Clear();
+        foreach (var action in m_pendingAddRemoveAction) { action(); }
+        m_pendingAddRemoveAction.Clear();
     }
 
     private void ApplyPendingSorts()
     {
-        foreach (var objectList in m_pendingSorts) { objectList.Sort(); }
-        m_pendingSorts.Clear();
+        foreach (var objectList in m_pendingToSortLists) { objectList.Sort(); }
+        m_pendingToSortLists.Clear();
     }
     
     private void AddToTypeMap(GameComponent component)
