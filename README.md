@@ -157,7 +157,8 @@
 
 ## 🧠 技术建议
 
-- 使用 `IEditorPanel` 接口统一管理面板生命周期
+- 使用 `EditorManager` 静态类进行管理
+- 使用 `EditorPanel` 抽象类管理面板生命周期
 - 使用 `IEditorCommand` 实现可撤销操作（Undo/Redo）
 - 所有渲染行为通过 `EditorRenderPass` 区分运行时渲染
 - 所有组件字段通过 `IComponentDrawer` 显示，支持拓展
@@ -170,7 +171,10 @@
 Editor/
 ├── Core/
 │ ├── EditorApp.cs
-│ ├── IEditorPanel.cs
+│ ├── EditorPanel.cs
+│ ├── EditorContext.cs
+│ ├── EditorManager.cs
+│ ├── EditorMode.cs
 │ └── IEditorCommand.cs
 ├── Panels/
 │ ├── SceneViewPanel.cs
@@ -184,7 +188,7 @@ Editor/
 ├── Resources/
 │ └── EditorAssets.meta
 ├── Utility/
-│ ├── EditorCamera.cs
+│ ├── EditorCamera2D.cs
 │ ├── EditorSelection.cs
 │ └── DragAndDrop.cs
 └── Serialization/
