@@ -3,13 +3,13 @@ using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Core;
 
-public abstract class EditorWindow
+public abstract class EditorPanel
 {
-    public bool IsOpen { get; set; } = true;
+    public bool isOpen { get; set; } = true;
 
     public virtual void OnOpen() { }
     public virtual void OnClose() { }
     
-    public abstract string Title { get; }
+    public abstract string title { get; }
     internal abstract void OnGUI(IImGuiContext context, IRenderAPI renderAPI);
 }

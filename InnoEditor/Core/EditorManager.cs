@@ -5,48 +5,23 @@ namespace InnoEditor.Core;
 
 public static class EditorManager
 {
-    public delegate void MenuItemAction();
+    private static readonly Dictionary<string, EditorPanel> WINDOWS = new();
 
-    private static readonly Dictionary<string, EditorWindow> WINDOWS = new();
-    private static readonly Dictionary<string, MenuItemAction> MENU_ITEMS = new();
-
-    public static void RegisterWindow(EditorWindow window)
+    public static void RegisterWindow(EditorPanel panel)
     {
-        if (!WINDOWS.ContainsKey(window.Title))
-            WINDOWS.Add(window.Title, window);
+        if (!WINDOWS.ContainsKey(panel.title))
+            WINDOWS.Add(panel.title, panel);
     }
     
-    public static void RegisterMenuItem(string key, EditorMenuItem menuItem)
-    {
-        if (!MENU_ITEMS.ContainsKey(key))
-            MENU_ITEMS.Add(key, menuItem.Action);
-    }
-    
-    internal static void DrawWindow(IImGuiContext context, IRenderAPI renderAPI)
+    internal static void DrawPanels(IImGuiContext context, IRenderAPI renderAPI)
     {
         foreach (var window in WINDOWS.Values)
         {
-            if (!window.IsOpen) continue;
+            if (!window.isOpen) continue;
 
-            context.BeginWindow(window.Title);
+            context.BeginWindow(window.title);
             window.OnGUI(context, renderAPI);
             context.EndWindow();
-        }
-    }
-
-    internal static void DrawMenuBar(IImGuiContext context)
-    {
-        if (context.BeginMainMenuBar())
-        {
-            foreach (var kvp in MENU_ITEMS)
-            {
-                if (context.BeginMenu(kvp.Key))
-                {
-                    kvp.Value?.Invoke();
-                    context.EndMenu();
-                }
-            }
-            context.EndMainMenuBar();
         }
     }
 }

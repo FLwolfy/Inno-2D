@@ -1,14 +1,13 @@
 using InnoBase;
-using InnoInternal.ImGui.Impl;
-using InnoInternal.ImGui.Bridge;
-using InnoEngine.Core;
-using InnoEditor.Core;
 using InnoEditor.Panel;
+using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
+using InnoInternal.ImGui.Bridge;
+using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
-namespace InnoEditor;
+namespace InnoEditor.Core;
 
 public class EditorApp : EditorCore
 {
@@ -20,8 +19,8 @@ public class EditorApp : EditorCore
         m_imGuiRenderer.Initialize(GetWindowHolder());
         
         // Panel Setup
-        EditorManager.RegisterWindow(new SceneViewWindow(TryRenderScene));
-        EditorManager.RegisterWindow(new InspectorWindow());
+        EditorManager.RegisterWindow(new SceneViewPanel(TryRenderScene));
+        EditorManager.RegisterWindow(new InspectorPanel());
         
         // TODO: Setup Menu Bar
         
@@ -37,8 +36,7 @@ public class EditorApp : EditorCore
     protected override void OnEditorGUI(float deltaTime)
     {
         m_imGuiRenderer.BeginLayout(deltaTime);
-        EditorManager.DrawMenuBar(m_imGuiRenderer.context);
-        EditorManager.DrawWindow(m_imGuiRenderer.context, (IRenderAPI) GetRenderAPI());
+        EditorManager.DrawPanels(m_imGuiRenderer.context, (IRenderAPI) GetRenderAPI());
         m_imGuiRenderer.EndLayout();
     }
 

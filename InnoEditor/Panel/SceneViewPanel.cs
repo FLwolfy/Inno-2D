@@ -1,20 +1,24 @@
 using InnoBase;
 using InnoEditor.Core;
+using InnoEditor.Gizmo;
+using InnoEditor.Utility;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
 namespace InnoEditor.Panel;
 
-public class SceneViewWindow : EditorWindow
+public class SceneViewPanel : EditorPanel
 {
-    public override string Title => "Scene View";
+    public override string title => "Scene View";
 
     private static readonly Color AXIS_COLOR = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     private static readonly float AXIS_THICKNESS = 1.0f;
     private static readonly int AXIS_INTERVAL = 100;
     
     private readonly Action<Matrix, Matrix> m_onSceneRender;
+    private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
+    private readonly GridGizmo m_gridGizmo = new GridGizmo();
     
     private IRenderTarget? m_renderTarget;
     private ITexture2D? m_renderTexture;
@@ -22,9 +26,7 @@ public class SceneViewWindow : EditorWindow
     private int m_width = 0;
     private int m_height = 0;
     
-    private EditorCamera2D m_editorCamera2D = new EditorCamera2D();
-
-    internal SceneViewWindow(Action<Matrix, Matrix> onSceneRender)
+    internal SceneViewPanel(Action<Matrix, Matrix> onSceneRender)
     {
         m_onSceneRender = onSceneRender;
     }
@@ -93,41 +95,20 @@ public class SceneViewWindow : EditorWindow
     
     private void DrawAxisGizmo(IImGuiContext context)
     {
-        const float axisInterval = 100f;
+        Vector2 axisOriginWorld = Vector2.Transform(Vector2.ZERO, m_editorCamera2D.GetScreenToWorldMatrix());
+        float offsetXWorld = MathF.Floor(axisOriginWorld.x / AXIS_INTERVAL) * AXIS_INTERVAL;
+        float offsetYWorld = MathF.Floor(axisOriginWorld.y / AXIS_INTERVAL) * AXIS_INTERVAL;
+        Vector2 offsetWorld = new Vector2(offsetXWorld, offsetYWorld);
+        Vector2 offset = Vector2.Transform(offsetWorld, m_editorCamera2D.GetWorldToScreenMatrix());
         
-        Vector2 windowPos = context.GetWindowPosition();
-        Vector2 screenPos = context.GetCursorStartPos();
-
-        Vector2 axisOrigin = windowPos + screenPos; // 图像左上角
-        Vector2 axisOriginWorld = Vector2.Transform(axisOrigin, m_editorCamera2D.GetScreenToWorldMatrix());
-
-        float boundBottom = axisOrigin.y + m_height;
-        float boundBottomWorld = Vector2.Transform(axisOrigin + new Vector2(0, m_height), m_editorCamera2D.GetScreenToWorldMatrix()).y;
-
-        float boundRight = axisOrigin.x + m_width;
-        float boundRightWorld = Vector2.Transform(axisOrigin + new Vector2(m_width, 0), m_editorCamera2D.GetScreenToWorldMatrix()).x;
-
-        for (float i = axisOriginWorld.x; i < boundRightWorld; i += axisInterval)
-        {
-            float currentX = Vector2.Transform(new Vector2(i, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
-
-            context.DrawLine(
-                new Vector2(currentX, axisOrigin.y),  // 从底部
-                new Vector2(currentX, boundBottom),      // 到顶部
-                AXIS_COLOR,
-                AXIS_THICKNESS);
-        }
+        m_gridGizmo.offset = offset;
+        m_gridGizmo.width = m_width;
+        m_gridGizmo.height = m_height;
+        // m_gridGizmo.spacing = 100.0f;
+        m_gridGizmo.color = AXIS_COLOR;
+        m_gridGizmo.lineThickness = AXIS_THICKNESS;
         
-        for (float j = axisOriginWorld.y; j < boundBottomWorld; j += axisInterval)
-        {
-            float currentY = Vector2.Transform(new Vector2(0, j), m_editorCamera2D.GetWorldToScreenMatrix()).y;
-
-            context.DrawLine(
-                new Vector2(axisOrigin.x, currentY),  // 从左侧
-                new Vector2(boundRight, currentY),      // 到右侧
-                AXIS_COLOR,
-                AXIS_THICKNESS);
-        }
+        m_gridGizmo.Draw(context);
     }
 
 }

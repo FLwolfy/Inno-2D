@@ -1,4 +1,6 @@
-﻿namespace InnoEditor;
+﻿using InnoEditor.Core;
+
+namespace InnoEditor;
 
 class Program
 {

@@ -1,6 +1,6 @@
 using InnoBase;
 
-namespace InnoEditor.Core;
+namespace InnoEditor.Utility;
 
 public class EditorCamera2D
 {
