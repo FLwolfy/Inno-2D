@@ -1,3 +1,4 @@
+using ImGuiNET;
 using InnoBase;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Resource.Impl;
@@ -40,6 +41,9 @@ internal class ImGuiNETContext : IImGuiContext
     public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
     public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);
     public void PopStyleVar() => ImGuiNET.ImGui.PopStyleVar();
+    
+    // Event
+    public bool IsItemClicked(int button) => ImGuiNET.ImGui.IsItemClicked((ImGuiMouseButton)button);
 
     // Tree
     public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)(int)flags);

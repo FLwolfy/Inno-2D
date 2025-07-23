@@ -1,9 +1,11 @@
+using InnoEngine.Serialization;
+
 namespace InnoEngine.ECS;
 
 /// <summary>
 /// Represents a scene that contains and manages GameObjects.
 /// </summary>
-public class GameScene
+public class GameScene : Serializable
 {
     public readonly Guid id = Guid.NewGuid();
     public string name = "GameScene";

@@ -1,11 +1,12 @@
 using InnoEngine.ECS.Component;
+using InnoEngine.Serialization;
 
 namespace InnoEngine.ECS;
 
 /// <summary>
 /// Abstract class for game components.
 /// </summary>
-public abstract class GameComponent : IComparable<GameComponent>
+public abstract class GameComponent : Serializable, IComparable<GameComponent>
 {
     public GameObject gameObject { get; private set; } = null!;
     public Transform transform => gameObject.transform;

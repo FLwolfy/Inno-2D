@@ -63,7 +63,7 @@ public abstract class GameCamera : GameComponent
 
     public override void Awake()
     {
-        transform.OnChanged += MarkDirty;
+        transform.OnTransformChanged += MarkDirty;
     }
 
     public override void OnDetach()
@@ -74,6 +74,6 @@ public abstract class GameCamera : GameComponent
             cameraManager.SetMainCamera(null);
         }
 
-        transform.OnChanged -= MarkDirty;
+        transform.OnTransformChanged -= MarkDirty;
     }
 }

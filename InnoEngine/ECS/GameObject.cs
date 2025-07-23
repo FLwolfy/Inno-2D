@@ -1,11 +1,12 @@
 using InnoEngine.ECS.Component;
+using InnoEngine.Serialization;
 
 namespace InnoEngine.ECS;
 
 /// <summary>
 /// Represents an entity in the scene. It holds an ID and allows component operations.
 /// </summary>
-public class GameObject
+public class GameObject : Serializable
 {
     public readonly Guid id = Guid.NewGuid();
     public readonly Transform transform;

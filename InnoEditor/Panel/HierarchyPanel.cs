@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoEditor.Core;
 using InnoEngine.ECS;
 using InnoInternal.ImGui.Impl;
@@ -10,13 +11,13 @@ public class HierarchyPanel : EditorPanel
     public override string title => "Hierarchy";
 
     private const string C_GAMEOBJECT_GUID_TYPE = "GameObjectGUID";
-    
-    private readonly Queue<Action> m_pendingGUIUpdateAction = new Queue<Action>();
+    private readonly Queue<Action> m_pendingGUIUpdateAction = new();
 
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
     {
-        // Drag Root Target
-        context.Selectable("[ Scene Root ]");
+        // Draw "Scene Root" as non-selectable, non-draggable
+        context.Text("[ Scene Root ]");
+
         if (context.BeginDragDropTarget())
         {
             var payload = context.AcceptDragDropPayload<Guid>(C_GAMEOBJECT_GUID_TYPE);
@@ -27,14 +28,14 @@ public class HierarchyPanel : EditorPanel
             }
             context.EndDragDropTarget();
         }
-        
-        // Recursion
+
+        // Draw root GameObjects
         foreach (var obj in SceneManager.GetActiveScene()!.GetAllRootGameObjects())
         {
             DrawGameObjectTree(context, obj);
         }
-        
-        // Delay Update
+
+        // Apply delayed actions
         while (m_pendingGUIUpdateAction.Count > 0)
         {
             m_pendingGUIUpdateAction.Dequeue().Invoke();
@@ -43,14 +44,22 @@ public class HierarchyPanel : EditorPanel
 
     private void DrawGameObjectTree(IImGuiContext context, GameObject obj)
     {
+        var selection = EditorManager.selection;
+        bool isSelected = selection.IsSelected(obj);
         bool hasChildren = obj.transform.children.Count > 0;
-        bool isOpenTree;
 
-        // Draw Tree Nodes
-        if (hasChildren)
-            isOpenTree = context.TreeNode(obj.name, IImGuiContext.TreeNodeFlags.DefaultOpen);
-        else
-            isOpenTree = context.TreeNode(obj.name, IImGuiContext.TreeNodeFlags.Leaf);
+        // TreeNodeFlags with Selected flag
+        var flags = hasChildren ? IImGuiContext.TreeNodeFlags.DefaultOpen | IImGuiContext.TreeNodeFlags.OpenOnArrow | IImGuiContext.TreeNodeFlags.OpenOnDoubleClick : IImGuiContext.TreeNodeFlags.Leaf;
+        if (isSelected) { flags |= IImGuiContext.TreeNodeFlags.Selected; }
+
+        ////////////// Begin Tree Node //////////////
+        bool isOpenTree = context.TreeNode(obj.name, flags);
+        
+        // Handle click selection
+        if (context.IsItemClicked((int)Input.MouseButton.Left))
+        {
+            selection.Select(obj);
+        }
 
         // Drag Source
         if (context.BeginDragDropSource())
@@ -59,7 +68,7 @@ public class HierarchyPanel : EditorPanel
             context.Text($"Dragging {obj.name}");
             context.EndDragDropSource();
         }
-        
+
         // Drag Target
         if (context.BeginDragDropTarget())
         {
@@ -78,11 +87,8 @@ public class HierarchyPanel : EditorPanel
             foreach (var child in obj.transform.children)
                 DrawGameObjectTree(context, child.gameObject);
         }
-
-        // Collapse Tree
-        if (isOpenTree)
-        {
-            context.TreePop();
-        }
+        
+        ////////////// End Tree Node //////////////
+        if (isOpenTree) { context.TreePop(); }
     }
 }

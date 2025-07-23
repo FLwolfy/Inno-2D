@@ -33,6 +33,9 @@ internal interface IImGuiContext
     void Checkbox(string label, ref bool value);
     void SliderFloat(string label, ref float value, float min, float max);
     
+    // Event
+    bool IsItemClicked(int button);
+    
     // Style
     enum StyleVar
     {
@@ -120,7 +123,6 @@ internal interface IImGuiContext
     bool IsMouseDown(int button);
     bool IsMouseClicked(int button);
     float GetMouseWheel();
-    
     Vector2 GetMouseDelta();
     Vector2 GetMousePosition();
     

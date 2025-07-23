@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoEngine.Serialization;
 
 namespace InnoEngine.ECS.Component;
 
@@ -12,7 +13,7 @@ public class Transform : GameComponent
     
     // Dirty listener
     public delegate void TransformChangedHandler();
-    public event TransformChangedHandler? OnChanged;
+    public event TransformChangedHandler? OnTransformChanged;
     
     // Local transform relative to parent
     private Vector3 m_localPosition = Vector3.ZERO;
@@ -30,11 +31,12 @@ public class Transform : GameComponent
     // Dirty flag to mark transform changes needing update
     private bool m_isDirty = true;
     
-    #region Local Properties
+    #region Local Serializable Properties
 
     /// <summary>
     /// Local position relative to parent transform.
     /// </summary>
+    [SerializableProperty]
     public Vector3 localPosition
     {
         get => m_localPosition;
@@ -44,6 +46,7 @@ public class Transform : GameComponent
     /// <summary>
     /// Local rotation relative to parent transform.
     /// </summary>
+    [SerializableProperty]
     public Quaternion localRotation
     {
         get => m_localRotation;
@@ -53,6 +56,7 @@ public class Transform : GameComponent
     /// <summary>
     /// Local scale relative to parent transform.
     /// </summary>
+    [SerializableProperty]
     public Vector3 localScale
     {
         get => m_localScale;
@@ -259,7 +263,7 @@ public class Transform : GameComponent
             m_worldPosition = parent.worldPosition + rotated;
         }
 
-        OnChanged?.Invoke();
+        OnTransformChanged?.Invoke();
         m_isDirty = false;
     }
 
