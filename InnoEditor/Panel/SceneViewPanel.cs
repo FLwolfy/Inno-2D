@@ -15,7 +15,7 @@ public class SceneViewPanel : EditorPanel
     private static readonly Color AXIS_COLOR = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     private static readonly float AXIS_THICKNESS = 1.0f;
     private static readonly int AXIS_INTERVAL = 100;
-    private static readonly int AXIS_INTERVAL_MIN_THRESHOLD = 50;
+    private static readonly float AXIS_INTERVAL_SCALE_RATE = 0.5f;
     
     private readonly Action<Matrix, Matrix> m_onSceneRender;
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
@@ -55,6 +55,7 @@ public class SceneViewPanel : EditorPanel
             m_renderTexture = m_renderTarget.GetColorTexture();
         }
 
+        // Handle editorCamera action
         HandlePanZoom(context);
 
         // render scene on new render target
@@ -82,7 +83,7 @@ public class SceneViewPanel : EditorPanel
     private void HandlePanZoom(IImGuiContext context)
     {
         Vector2 panDelta = Vector2.ZERO;
-        float zoomDelta = context.GetMouseWheel();;
+        float zoomDelta = context.GetMouseWheel();
 
         if (context.IsMouseDown((int)Input.MouseButton.Middle))
         {
@@ -105,9 +106,15 @@ public class SceneViewPanel : EditorPanel
         float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;;
         int newAxisInterval = AXIS_INTERVAL;
         
-        while (spacing < AXIS_INTERVAL_MIN_THRESHOLD)
+        while (spacing < AXIS_INTERVAL * AXIS_INTERVAL_SCALE_RATE)
         {
-            newAxisInterval += AXIS_INTERVAL;
+            newAxisInterval = (int)(newAxisInterval / AXIS_INTERVAL_SCALE_RATE);
+            spacing = Vector2.Transform(axisOriginWorld + new Vector2(newAxisInterval, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
+        }
+        
+        while (spacing > AXIS_INTERVAL / AXIS_INTERVAL_SCALE_RATE)
+        {
+            newAxisInterval = (int)(newAxisInterval * AXIS_INTERVAL_SCALE_RATE);
             spacing = Vector2.Transform(axisOriginWorld + new Vector2(newAxisInterval, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
         }
         

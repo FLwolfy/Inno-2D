@@ -15,12 +15,13 @@ public abstract class EditorApp : EditorCore
         // Renderer Setup
         m_imGuiRenderer.Initialize(GetWindowHolder());
         
+        // MenuBar Setup
+        // TODO: Setup MenuBar
+        
         // Panel Setup
         EditorManager.RegisterWindow(new SceneViewPanel(TryRenderScene));
         EditorManager.RegisterWindow(new HierarchyPanel());
         EditorManager.RegisterWindow(new InspectorPanel());
-        
-        // TODO: Setup Menu Bar
         
         // Scene Setup
         SceneSetup();

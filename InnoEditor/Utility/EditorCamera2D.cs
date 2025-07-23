@@ -4,17 +4,16 @@ namespace InnoEditor.Utility;
 
 public class EditorCamera2D
 {
-    private Vector2 m_position = Vector2.ZERO;
     private float m_height;
-    
     private float m_zoomRate = 1f;
     private float m_aspectRatio = 1.7777f;
+    private Vector2 m_position = Vector2.ZERO;
 
-    private const float c_near = -1f;
-    private const float c_far = 1f;
-    private const float c_minSize = 0.1f;
-    private const float c_maxSize = 10f;
-    private const float c_zoomSpeed = 0.01f;
+    private const float C_NEAR = -1f;
+    private const float C_FAR = 1f;
+    private const float C_MIN_SIZE = 0.1f;
+    private const float C_MAX_SIZE = 10f;
+    private const float C_ZOOM_SPEED = 0.05f;
     
     // TODO: Possibly Use Cache for performance
     public Matrix viewMatrix => Matrix.CreateTranslation(-m_position.x, -m_position.y, 0);
@@ -25,10 +24,9 @@ public class EditorCamera2D
             float halfHeight = m_height * m_zoomRate * 0.5f;
             float halfWidth = halfHeight * m_aspectRatio;
 
-            return Matrix.CreateOrthographic(halfWidth * 2, halfHeight * 2, c_near, c_far);
+            return Matrix.CreateOrthographic(halfWidth * 2, halfHeight * 2, C_NEAR, C_FAR);
         }
     }
-    
     
     public float zoomRate => m_zoomRate;
     public float aspectRatio => m_aspectRatio;
@@ -46,8 +44,8 @@ public class EditorCamera2D
         Matrix screenToWorldMatrix = GetScreenToWorldMatrix();
         Vector2 worldPosBefore = Vector2.Transform(localMousePosition, screenToWorldMatrix);
 
-        float zoomFactor = 1f + zoomDelta * c_zoomSpeed;
-        m_zoomRate = Math.Clamp(m_zoomRate / zoomFactor, c_minSize, c_maxSize);
+        float zoomFactor = 1f + zoomDelta * C_ZOOM_SPEED;
+        m_zoomRate = Math.Clamp(m_zoomRate / zoomFactor, C_MIN_SIZE, C_MAX_SIZE);
 
         screenToWorldMatrix = GetScreenToWorldMatrix();
         Vector2 worldPosAfter = Vector2.Transform(localMousePosition, screenToWorldMatrix);
