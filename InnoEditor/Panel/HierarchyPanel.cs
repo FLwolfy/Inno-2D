@@ -8,15 +8,28 @@ namespace InnoEditor.Panel;
 public class HierarchyPanel : EditorPanel
 {
     public override string title => "Hierarchy";
+
+    private const string C_GAMEOBJECT_GUID_TYPE = "GameObjectGUID";
     
     private readonly Queue<Action> m_pendingGUIUpdateAction = new Queue<Action>();
-    
-    private bool m_openContextMenu = false;
 
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
     {
-        var rootObjects = SceneManager.GetActiveScene()!.GetAllRootGameObjects();
-        foreach (var obj in rootObjects)
+        // Drag Root Target
+        context.Selectable("[ Scene Root ]");
+        if (context.BeginDragDropTarget())
+        {
+            var payload = context.AcceptDragDropPayload<Guid>(C_GAMEOBJECT_GUID_TYPE);
+            if (payload != null)
+            {
+                var obj = SceneManager.GetActiveScene()!.FindGameObject(payload.Value);
+                m_pendingGUIUpdateAction.Enqueue(() => obj?.transform.SetParent(null));
+            }
+            context.EndDragDropTarget();
+        }
+        
+        // Recursion
+        foreach (var obj in SceneManager.GetActiveScene()!.GetAllRootGameObjects())
         {
             DrawGameObjectTree(context, obj);
         }
@@ -31,18 +44,18 @@ public class HierarchyPanel : EditorPanel
     private void DrawGameObjectTree(IImGuiContext context, GameObject obj)
     {
         bool hasChildren = obj.transform.children.Count > 0;
-        bool isOpenTree = false;
+        bool isOpenTree;
 
         // Draw Tree Nodes
         if (hasChildren)
-            isOpenTree = context.TreeNode(obj.name);
+            isOpenTree = context.TreeNode(obj.name, IImGuiContext.TreeNodeFlags.DefaultOpen);
         else
-            context.Selectable(obj.name);
+            isOpenTree = context.TreeNode(obj.name, IImGuiContext.TreeNodeFlags.Leaf);
 
         // Drag Source
         if (context.BeginDragDropSource())
         {
-            context.SetDragDropPayload<Guid>("GameObjectGUID", obj.id);
+            context.SetDragDropPayload<Guid>(C_GAMEOBJECT_GUID_TYPE, obj.id);
             context.Text($"Dragging {obj.name}");
             context.EndDragDropSource();
         }
@@ -50,7 +63,7 @@ public class HierarchyPanel : EditorPanel
         // Drag Target
         if (context.BeginDragDropTarget())
         {
-            var payload = context.AcceptDragDropPayload<Guid>("GameObjectGUID");
+            var payload = context.AcceptDragDropPayload<Guid>(C_GAMEOBJECT_GUID_TYPE);
             if (payload != null && payload != obj.id)
             {
                 var payloadObj = SceneManager.GetActiveScene()!.FindGameObject(payload.Value);
@@ -64,7 +77,11 @@ public class HierarchyPanel : EditorPanel
         {
             foreach (var child in obj.transform.children)
                 DrawGameObjectTree(context, child.gameObject);
+        }
 
+        // Collapse Tree
+        if (isOpenTree)
+        {
             context.TreePop();
         }
     }

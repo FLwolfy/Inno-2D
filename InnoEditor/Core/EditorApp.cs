@@ -1,15 +1,12 @@
-using InnoBase;
 using InnoEditor.Panel;
 using InnoEngine.Core;
-using InnoEngine.ECS;
-using InnoEngine.ECS.Component;
 using InnoInternal.ImGui.Bridge;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Core;
 
-public class EditorApp : EditorCore
+public abstract class EditorApp : EditorCore
 {
     private readonly IImGuiRenderer m_imGuiRenderer = new ImGuiNETMonoGameRenderer();
 
@@ -25,8 +22,8 @@ public class EditorApp : EditorCore
         
         // TODO: Setup Menu Bar
         
-        // TODO: Remove Test Setup
-        TestSceneSetup();
+        // Scene Setup
+        SceneSetup();
     }
 
     protected override void OnEditorUpdate(float totalTime, float deltaTime)
@@ -41,29 +38,8 @@ public class EditorApp : EditorCore
         m_imGuiRenderer.EndLayout();
     }
 
-    // TODO: Remove this
-    private void TestSceneSetup()
-    {
-        GameScene testScene = SceneManager.CreateScene("Test Scene");
-        SceneManager.SetActiveScene(testScene);
-        
-        // Object 1
-        GameObject testObject = new GameObject("Test Object");
-        testObject.transform.worldPosition = new Vector3(320, 180, 0);
-        
-        testObject.AddComponent<SpriteRenderer>();
-        testObject.transform.worldScale = new Vector3(100f, 200f, 1f);
-        
-        // Object 2 - 5
-        for (int i = 2; i <= 5; i++)
-        {
-            GameObject to = new GameObject("Test Object" + i);
-            to.transform.worldPosition = new Vector3(150 * i, 0, 5);
-            to.transform.worldScale = new Vector3(100f, 100f, 1f);
-            SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
-            sr.color = Color.BLACK;
-            
-            to.transform.SetParent(testObject.transform);
-        }
-    }
+    /// <summary>
+    /// Sets up the initial scene.
+    /// </summary>
+    protected abstract void SceneSetup();
 }

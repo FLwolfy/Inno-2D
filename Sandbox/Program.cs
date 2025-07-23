@@ -3,10 +3,9 @@ using InnoEngine.Core;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 
-
 namespace Sandbox;
 
-public static class Program
+internal static class Program
 {
     /// <summary>
     /// Entry point of the test sandbox application.
@@ -18,7 +17,7 @@ public static class Program
     }
 }
 
-public class TestGame : EngineCore
+internal class TestGame : EngineCore
 {
     protected override void Setup()
     {

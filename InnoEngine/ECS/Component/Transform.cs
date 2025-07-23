@@ -172,7 +172,7 @@ public class Transform : GameComponent
             return;
 
         if (newParent != null && m_children.Contains(newParent))
-            newParent.SetParent(null);
+            newParent.SetParent(parent);
 
         UpdateIfDirty(); // Ensure current world transform is up to date
 

@@ -38,9 +38,12 @@ internal class ImGuiNETContext : IImGuiContext
     public void Image(ITexture2D texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
     public void Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
     public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
-    
+    public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);
+    public void PopStyleVar() => ImGuiNET.ImGui.PopStyleVar();
+
     // Tree
-    public bool TreeNode(string text) =>  ImGuiNET.ImGui.TreeNode(text);
+    public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)(int)flags);
+    
     public void TreePop() => ImGuiNET.ImGui.TreePop();
     
     // Drag & Drop
