@@ -16,7 +16,7 @@ public abstract class Serializable
             result.Add(new SerializedProperty
             (
                 property.Name, 
-                TypeDescriptor.Create(property.PropertyType), 
+                property.PropertyType, 
                 () => property.GetValue(this),
                 (val) => property.SetValue(this, val)
             ));

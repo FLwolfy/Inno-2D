@@ -18,12 +18,6 @@ public class EditorSelection
             m_selectedObject = obj;
             OnSelectionChanged?.Invoke(old, obj);
         }
-        
-        // TODO: REMOVE DEBUG
-        foreach (var prop in obj.transform.GetSerializedProperties())
-        {
-            Console.WriteLine(prop.typeDescriptor);
-        }
     }
 
     public void Deselect()
