@@ -91,7 +91,7 @@ public class SceneViewPanel : EditorPanel
             else { context.SetWindowFocus(); }
         }
 
-        Vector2 windowPos = context.GetWindowPosition();
+        Vector2 windowPos = context.GetWindowPos();
         Vector2 screenPos = context.GetCursorStartPos();
         Vector2 mousePos = context.GetMousePosition();
 
@@ -123,7 +123,7 @@ public class SceneViewPanel : EditorPanel
         Vector2 offsetWorld = new Vector2(offsetXWorld, offsetYWorld);
         Vector2 offset = Vector2.Transform(offsetWorld, m_editorCamera2D.GetWorldToScreenMatrix());
         
-        m_gridGizmo.startPos = context.GetWindowPosition() + context.GetCursorStartPos();
+        m_gridGizmo.startPos = context.GetWindowPos() + context.GetCursorStartPos();
         m_gridGizmo.size = new Vector2(m_width, m_height);
         m_gridGizmo.offset = offset;
         m_gridGizmo.spacing = spacing;

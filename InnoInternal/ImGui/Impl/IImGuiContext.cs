@@ -21,8 +21,20 @@ internal interface IImGuiContext
     bool IsWindowFocused();
     void SetWindowFocus();
     Vector2 GetContentRegionAvail();
-    Vector2 GetWindowPosition();
+    Vector2 GetWindowSize();
+    Vector2 GetWindowPos();
+    
+    // Cursor
     Vector2 GetCursorStartPos();
+    void SetCursorPosX(float x);
+    void SetCursorPosY(float y);
+    
+    // Layout
+    void BeginGroup();
+    void EndGroup();
+    void SameLine();
+    float CalcItemWidth();
+    float CalcItemHeight();
     
     // Widget
     void Image(ITexture2D texture, float width, float height);
@@ -32,6 +44,13 @@ internal interface IImGuiContext
     bool Button(string label);
     void Checkbox(string label, ref bool value);
     void SliderFloat(string label, ref float value, float min, float max);
+    
+    // Input
+    bool InputInt(string label, ref int value);
+    bool InputFloat(string label, ref float value);
+    bool InputFloat2(string label, ref Vector2 value);
+    bool InputFloat3(string label, ref Vector3 value);
+    bool InputText(string label, ref string value, uint maxLength);
     
     // Event
     bool IsItemClicked(int button);

@@ -28,8 +28,18 @@ internal class ImGuiNETContext : IImGuiContext
     public void SetWindowFocus() => ImGuiNET.ImGui.SetWindowFocus();
 
     public Vector2 GetContentRegionAvail() => new Vector2(ImGuiNET.ImGui.GetContentRegionAvail().X, ImGuiNET.ImGui.GetContentRegionAvail().Y);
-    public Vector2 GetWindowPosition() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
+    public Vector2 GetWindowSize() => new Vector2(ImGuiNET.ImGui.GetWindowSize().X, ImGuiNET.ImGui.GetWindowSize().Y);
+
+    public Vector2 GetWindowPos() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
     public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);
+    public void SetCursorPosX(float x) => ImGuiNET.ImGui.SetCursorPosX(x);
+    public void SetCursorPosY(float y) => ImGuiNET.ImGui.SetCursorPosY(y);
+    public void BeginGroup() => ImGuiNET.ImGui.BeginGroup();
+    public void EndGroup() => ImGuiNET.ImGui.EndGroup();
+    public void SameLine() => ImGuiNET.ImGui.SameLine();
+    public float CalcItemWidth() => ImGuiNET.ImGui.CalcItemWidth();
+    public float CalcItemHeight() => ImGuiNET.ImGui.CalcItemWidth();
+
 
     // Widget
     public void Text(string text) => ImGuiNET.ImGui.Text(text);
@@ -39,6 +49,31 @@ internal class ImGuiNETContext : IImGuiContext
     public void Image(ITexture2D texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
     public void Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
     public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
+    public bool InputInt(string label, ref int value) => ImGuiNET.ImGui.InputInt(label, ref value);
+    public bool InputFloat(string label, ref float value) => ImGuiNET.ImGui.InputFloat(label, ref value);
+
+    public bool InputFloat2(string label, ref Vector2 value)
+    {
+        System.Numerics.Vector2 value2 = new(value.x, value.y);
+        bool result = ImGuiNET.ImGui.InputFloat2(label, ref value2);
+        value.x = value2.X;
+        value.y = value2.Y;
+        return result;
+    }
+
+    public bool InputFloat3(string label, ref Vector3 value)
+    {
+        System.Numerics.Vector3 value2 = new(value.x, value.y, value.z);
+        bool result = ImGuiNET.ImGui.InputFloat3(label, ref value2);
+        value.x = value2.X;
+        value.y = value2.Y;
+        value.z = value2.Z;
+        return result;
+    }
+
+    public bool InputText(string label, ref string value, uint maxLength) => ImGuiNET.ImGui.InputText(label, ref value, maxLength);
+
+    // Style
     public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);
     public void PopStyleVar() => ImGuiNET.ImGui.PopStyleVar();
     
