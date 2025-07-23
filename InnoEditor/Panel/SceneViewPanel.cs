@@ -16,6 +16,7 @@ public class SceneViewPanel : EditorPanel
     private static readonly float AXIS_THICKNESS = 1.0f;
     private static readonly int AXIS_INTERVAL = 100;
     private static readonly float AXIS_INTERVAL_SCALE_RATE = 0.5f;
+    private static readonly Input.MouseButton MOUSE_BUTTON_PAN = Input.MouseButton.Left;
     
     private readonly Action<Matrix, Matrix> m_onSceneRender;
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
@@ -85,7 +86,7 @@ public class SceneViewPanel : EditorPanel
         Vector2 panDelta = Vector2.ZERO;
         float zoomDelta = context.GetMouseWheel();
 
-        if (context.IsMouseDown((int)Input.MouseButton.Middle))
+        if (context.IsWindowHovered() && context.IsMouseDown((int)MOUSE_BUTTON_PAN))
         {
             if (context.IsWindowFocused()) { panDelta = context.GetMouseDelta(); }
             else { context.SetWindowFocus(); }
@@ -94,7 +95,6 @@ public class SceneViewPanel : EditorPanel
         Vector2 windowPos = context.GetWindowPos();
         Vector2 screenPos = context.GetCursorStartPos();
         Vector2 mousePos = context.GetMousePosition();
-
         Vector2 localMousePos = mousePos - screenPos - windowPos;
 
         m_editorCamera2D.Update(panDelta, zoomDelta, localMousePos);
