@@ -1,5 +1,7 @@
 # Inno-2D 编辑器开发流程文档（Unity 风格 2D Scene Editor）
 
+Inno —— Inspired Notions, No Obedience.
+
 ## 🎯 项目目标
 
 构建一个功能完整、体验接近 Unity 的 2D 场景编辑器，服务于 Inno-2D 游戏引擎，支持实体场景构建、实时预览、组件编辑、资源管理等功能。
