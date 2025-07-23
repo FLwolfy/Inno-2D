@@ -1,6 +1,4 @@
-using InnoEditor.GUI;
-
-namespace InnoEditor.PropertyRenderer.Renderer;
+namespace InnoEditor.GUI.PropertyGUI.PropertyRenderer;
 
 public class IntPropertyRenderer : PropertyRenderer<int>
 {

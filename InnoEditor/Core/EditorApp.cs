@@ -1,4 +1,5 @@
 using InnoEditor.GUI;
+using InnoEditor.GUI.PropertyGUI;
 using InnoEditor.Panel;
 using InnoEngine.Core;
 using InnoInternal.ImGui.Bridge;

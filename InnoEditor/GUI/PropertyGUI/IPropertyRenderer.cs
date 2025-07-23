@@ -1,4 +1,4 @@
-namespace InnoEditor.PropertyRenderer;
+namespace InnoEditor.GUI.PropertyGUI;
 
 public interface IPropertyRenderer
 {

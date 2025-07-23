@@ -1,4 +1,4 @@
-namespace InnoEditor.PropertyRenderer.Renderer;
+namespace InnoEditor.GUI.PropertyGUI.PropertyRenderer;
 
 public class ListPropertyRenderer<T> : PropertyRenderer<List<T>>
 {

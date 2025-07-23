@@ -1,4 +1,4 @@
-using InnoEditor.PropertyRenderer;
+namespace InnoEditor.GUI.PropertyGUI;
 
 public static class PropertyRendererRegistry
 {
@@ -56,11 +56,10 @@ public static class PropertyRendererRegistry
             if (OPEN_GENERIC_RENDERERS.TryGetValue(genericDef, out var openGenericRendererType))
             {
                 var genericArgs = type.GetGenericArguments();
-                
                 var closedRendererType = openGenericRendererType.MakeGenericType(genericArgs);
-                var instance = (IPropertyRenderer)Activator.CreateInstance(closedRendererType);
-                if (instance == null)
-                    return null;
+                
+                var instance = (IPropertyRenderer?)Activator.CreateInstance(closedRendererType);
+                if (instance == null) { return null; }
 
                 RENDERERS[type] = instance;
                 return instance;
