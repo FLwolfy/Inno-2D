@@ -13,9 +13,4 @@
       <ProjectReference Include="..\InnoInternal\InnoInternal.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Resource\" />
-      <Folder Include="Serialization\" />
-    </ItemGroup>
-
 </Project>
