@@ -6,12 +6,12 @@ public class SerializedProperty
     private readonly Action<object?> m_setter;
     
     public string name { get; }
-    public Type type { get; }
+    public Type propertyType { get; }
 
     internal SerializedProperty(string name, Type typedObject, Func<object?> getter, Action<object?> setter)
     {
         this.name = name;
-        type = typedObject;
+        propertyType = typedObject;
         m_getter = getter;
         m_setter = setter;
     }

@@ -4,12 +4,11 @@ public class ListPropertyRenderer<T> : PropertyRenderer<List<T>>
 {
     private IPropertyRenderer? m_renderer;
     
-    protected override void Render(List<T> value)
+    protected override void Bind(string name, Func<List<T>?> getter, Action<List<T>> setter)
     {
         if (m_renderer == null) { m_renderer = PropertyRendererRegistry.GetRenderer(typeof(T)); }
-        foreach (var item in value)
-        {
-            m_renderer?.Render(item);
-        }
+        
+        // TODO
+        
     }
 }

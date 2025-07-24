@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using InnoEngine.ECS.Component;
 using InnoEngine.Serialization;
 
@@ -60,6 +61,14 @@ public class GameObject : Serializable
     public T? GetComponent<T>() where T : GameComponent
     {
         return scene.GetComponentManager().Get<T>(id);
+    }
+    
+    /// <summary>
+    /// Gets all Game Components of this gameObject.
+    /// </summary>
+    public IReadOnlyList<GameComponent> GetAllComponents()
+    {
+        return scene.GetComponentManager().GetAll(id).ToList();
     }
 
     /// <summary>

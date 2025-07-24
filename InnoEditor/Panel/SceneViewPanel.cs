@@ -10,7 +10,7 @@ namespace InnoEditor.Panel;
 
 public class SceneViewPanel : EditorPanel
 {
-    public override string title => "Scene View";
+    public override string title => "Scene";
 
     private static readonly Color AXIS_COLOR = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     private static readonly float AXIS_THICKNESS = 1.0f;

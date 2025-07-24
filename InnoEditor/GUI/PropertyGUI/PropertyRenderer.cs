@@ -2,11 +2,10 @@ namespace InnoEditor.GUI.PropertyGUI;
 
 public abstract class PropertyRenderer<T> : IPropertyRenderer
 {
-    protected abstract void Render(T value);
+    protected abstract void Bind(string name, Func<T?> getter, Action<T?> setter);
 
-    void IPropertyRenderer.Render(object? value)
+    void IPropertyRenderer.Bind(string name, Func<object?> getter, Action<object?> setter)
     {
-        if (value is T tValue) {Render(tValue);}
-        else {throw new ArgumentException($"Invalid type: expected {typeof(T)}, got {value?.GetType()}");}
+        Bind(name, () => (T?)getter.Invoke(), val => setter.Invoke(val));
     }
 }
