@@ -148,6 +148,7 @@ internal class ComponentManager
         component.OnDetach();
         entityComponents.Remove(type);
         m_componentsByTag[component.orderTag].Remove(component);
+        RemoveFromTypeMap(component);
 
         if (entityComponents.Count == 0)
         {

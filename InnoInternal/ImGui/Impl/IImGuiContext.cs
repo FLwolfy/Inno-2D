@@ -37,13 +37,14 @@ internal interface IImGuiContext
     float CalcItemHeight();
     
     // Widget
-    void Image(ITexture2D texture, float width, float height);
     void Text(string text);
-    bool Selectable(string text);
     void BulletText(string text);
+    void Image(ITexture2D texture, float width, float height);
+    bool Selectable(string text);
     bool Button(string label);
-    void Checkbox(string label, ref bool value);
-    void SliderFloat(string label, ref float value, float min, float max);
+    bool Checkbox(string label, ref bool value);
+    bool SliderFloat(string label, ref float value, float min, float max);
+    bool CollapsingHeader(string compName, ref bool visible, TreeNodeFlags flags = TreeNodeFlags.None);
     
     // Input
     bool InputInt(string label, ref int value);
@@ -97,6 +98,25 @@ internal interface IImGuiContext
     }
     void PushStyleVar(StyleVar var, float indent);
     void PopStyleVar();
+
+    // Item Flags
+    [Flags]
+    public enum ItemFlags
+    {
+        None = 0,
+        NoTabStop = 1,
+        NoNav = 2,
+        NoNavDefaultFocus = 4,
+        ButtonRepeat = 8,
+        AutoClosePopups = 16, // 0x00000010
+        AllowDuplicateId = 32, // 0x00000020
+    }
+    void PushItemFlag(ItemFlags flags, bool enabled);
+    void PopItemFlag();
+    
+    // Disable
+    void BeginDisabled();
+    void EndDisabled();
     
     // Tree
     [Flags]

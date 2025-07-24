@@ -1,4 +1,3 @@
-using ImGuiNET;
 using InnoBase;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Resource.Impl;
@@ -43,12 +42,15 @@ internal class ImGuiNETContext : IImGuiContext
 
     // Widget
     public void Text(string text) => ImGuiNET.ImGui.Text(text);
-    public bool Selectable(string text) => ImGuiNET.ImGui.Selectable(text);
     public void BulletText(string text) => ImGuiNET.ImGui.BulletText(text);
-    public bool Button(string label) => ImGuiNET.ImGui.Button(label);
     public void Image(ITexture2D texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
-    public void Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
-    public void SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
+    public bool Selectable(string text) => ImGuiNET.ImGui.Selectable(text);
+    public bool Button(string label) => ImGuiNET.ImGui.Button(label);
+    public bool Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
+    public bool SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
+    public bool CollapsingHeader(string compName, ref bool visible, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.CollapsingHeader(compName, ref visible, (ImGuiNET.ImGuiTreeNodeFlags)flags);
+   
+    // Input
     public bool InputInt(string label, ref int value) => ImGuiNET.ImGui.InputInt(label, ref value);
     public bool InputFloat(string label, ref float value) => ImGuiNET.ImGui.InputFloat(label, ref value);
 
@@ -88,11 +90,19 @@ internal class ImGuiNETContext : IImGuiContext
     public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);
     public void PopStyleVar() => ImGuiNET.ImGui.PopStyleVar();
     
+    // Item Flags
+    public void PushItemFlag(IImGuiContext.ItemFlags flags, bool enabled) => ImGuiNET.ImGui.PushItemFlag((ImGuiNET.ImGuiItemFlags)flags, enabled);
+    public void PopItemFlag() => ImGuiNET.ImGui.PopItemFlag();
+    
+    // Disable
+    public void BeginDisabled() => ImGuiNET.ImGui.BeginDisabled();
+    public void EndDisabled() => ImGuiNET.ImGui.EndDisabled();
+
     // Event
-    public bool IsItemClicked(int button) => ImGuiNET.ImGui.IsItemClicked((ImGuiMouseButton)button);
+    public bool IsItemClicked(int button) => ImGuiNET.ImGui.IsItemClicked((ImGuiNET.ImGuiMouseButton)button);
 
     // Tree
-    public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)(int)flags);
+    public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)flags);
     
     public void TreePop() => ImGuiNET.ImGui.TreePop();
     

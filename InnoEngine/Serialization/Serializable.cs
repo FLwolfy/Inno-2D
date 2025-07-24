@@ -18,7 +18,8 @@ public abstract class Serializable
                 property.Name, 
                 property.PropertyType, 
                 () => property.GetValue(this),
-                (val) => property.SetValue(this, val)
+                (val) => property.SetValue(this, val),
+                property.GetCustomAttribute<SerializablePropertyAttribute>(true)!.propertyVisibility
             ));
         }
 

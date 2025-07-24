@@ -7,11 +7,14 @@ public class SerializedProperty
     
     public string name { get; }
     public Type propertyType { get; }
+    public PropertyVisibility visibility { get; }
 
-    internal SerializedProperty(string name, Type typedObject, Func<object?> getter, Action<object?> setter)
+    internal SerializedProperty(string name, Type propertyType, Func<object?> getter, Action<object?> setter,  PropertyVisibility visibility)
     {
         this.name = name;
-        propertyType = typedObject;
+        this.propertyType = propertyType;
+        this.visibility = visibility;
+        
         m_getter = getter;
         m_setter = setter;
     }

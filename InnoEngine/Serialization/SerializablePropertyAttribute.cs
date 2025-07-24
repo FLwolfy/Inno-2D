@@ -1,4 +1,13 @@
-namespace InnoEngine.Serialization;
+namespace InnoEngine.Serialization
+{
+    [AttributeUsage(AttributeTargets.Property)]
+    public class SerializablePropertyAttribute : Attribute
+    {
+        public PropertyVisibility propertyVisibility { get; }
 
-[AttributeUsage(AttributeTargets.Property)]
-public class SerializablePropertyAttribute : Attribute {}
+        public SerializablePropertyAttribute(PropertyVisibility visibility = PropertyVisibility.Show)
+        {
+            propertyVisibility = visibility;
+        }
+    }
+}

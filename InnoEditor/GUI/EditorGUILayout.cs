@@ -19,6 +19,8 @@ public static class EditorGUILayout
         m_context = context;
     }
 
+    #region APIs
+    
     /// <summary>
     /// Begin a layout group, with optional vertical/horizontal layout and alignment
     /// </summary>
@@ -46,6 +48,92 @@ public static class EditorGUILayout
         m_context.EndGroup();
     }
 
+    /// <summary>
+    /// Render a text label
+    /// </summary>
+    public static void Label(string text, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            m_context.Text(text);
+    }
+
+        /// <summary>
+    /// Render a button; returns true if clicked
+    /// </summary>
+    public static bool Button(string label, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.Button(label);
+    }
+
+    /// <summary>
+    /// Render and edit an integer field
+    /// </summary>
+    public static bool IntField(string label, ref int value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputInt(label, ref value);
+    }
+
+    /// <summary>
+    /// Render and edit a float field
+    /// </summary>
+    public static bool FloatField(string label, ref float value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputFloat(label, ref value);
+    }
+
+    /// <summary>
+    /// Render and edit a Vector2 field
+    /// </summary>
+    public static bool Vector2Field(string label, ref Vector2 value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputFloat2(label, ref value);
+    }
+
+    /// <summary>
+    /// Render and edit a Vector3 field
+    /// </summary>
+    public static bool Vector3Field(string label, ref Vector3 value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputFloat3(label, ref value);
+    }
+
+    /// <summary>
+    /// Render and edit a Quaternion field
+    /// </summary>
+    public static bool QuaternionField(string label, ref Quaternion value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputQuaternion(label, ref value);
+    }
+
+    /// <summary>
+    /// Render and edit a text (string) field
+    /// </summary>
+    public static bool TextField(string label, ref string value, uint maxLength = 256, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.InputText(label, ref value, maxLength);
+    }
+
+    /// <summary>
+    /// Render and edit a boolean checkbox
+    /// </summary>
+    public static bool Checkbox(string label, ref bool value, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.Checkbox(label, ref value);
+    }
+    
+    #endregion
+    
+
+    #region Private Helpers
+    
     /// <summary>
     /// Returns whether the current layout is horizontal
     /// </summary>
@@ -78,94 +166,32 @@ public static class EditorGUILayout
     }
 
     /// <summary>
-    /// Render a text label
+    /// All Widgets calls should be within this scope.
     /// </summary>
-    public static void Label(string text)
+    private readonly struct DrawScope : IDisposable
     {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        m_context.Text(text);
-    }
-
-    /// <summary>
-    /// Render a button; returns true if clicked
-    /// </summary>
-    public static bool Button(string label)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.Button(label);
-    }
-
-    /// <summary>
-    /// Render and edit an integer field
-    /// </summary>
-    public static bool IntField(string label, ref int value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputInt(label, ref value);
-    }
-
-    /// <summary>
-    /// Render and edit a float field
-    /// </summary>
-    public static bool FloatField(string label, ref float value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputFloat(label, ref value);
-    }
-
-    /// <summary>
-    /// Render and edit a Vector2 field
-    /// </summary>
-    public static bool Vector2Field(string label, ref Vector2 value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputFloat2(label, ref value);
-    }
-
-    /// <summary>
-    /// Render and edit a Vector3 field
-    /// </summary>
-    public static bool Vector3Field(string label, ref Vector3 value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputFloat3(label, ref value);
+        private readonly bool m_enabled;
+        public DrawScope(bool enabled = true)
+        {
+            // Align
+            AlignNextItem();
+            
+            // Layout
+            if (IsHorizontalLayout()) m_context.SameLine();
+            
+            // Check Disable
+            m_enabled = enabled;
+            if (!enabled)
+            {
+                m_context.BeginDisabled();
+            }
+        }
+        
+        public void Dispose()
+        {
+            if (!m_enabled) m_context.EndDisabled();
+        }
     }
     
-    /// <summary>
-    /// Render and edit a Quaternion field
-    /// </summary>
-    public static bool QuaternionField(string label, ref Quaternion value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputQuaternion(label, ref value);
-    }
-
-    /// <summary>
-    /// Render and edit a text (string) field
-    /// </summary>
-    public static bool TextField(string label, ref string value, uint maxLength = 256)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        return m_context.InputText(label, ref value, maxLength);
-    }
-
-    /// <summary>
-    /// Render and edit a boolean checkbox
-    /// </summary>
-    public static bool Checkbox(string label, ref bool value)
-    {
-        AlignNextItem();
-        if (IsHorizontalLayout()) m_context.SameLine();
-        m_context.Checkbox(label, ref value);
-        // Checkbox may not return bool, use click detection instead
-        return m_context.IsItemClicked(0);
-    }
+    #endregion
 }

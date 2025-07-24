@@ -86,4 +86,12 @@ public class GameObject : Serializable
     {
         scene.GetComponentManager().Remove<T>(id);
     }
+
+    /// <summary>
+    /// Remove the component from this gameObject.
+    /// </summary>
+    public void RemoveComponent(GameComponent component)
+    {
+        scene.GetComponentManager().Remove(id, component);
+    }
 }

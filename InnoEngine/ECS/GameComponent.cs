@@ -89,4 +89,12 @@ public abstract class GameComponent : Serializable, IComparable<GameComponent>
     {
         gameObject.RemoveComponent<T>();
     }
+    
+    /// <summary>
+    /// Remove the component from its gameObject.
+    /// </summary>
+    protected void RemoveComponent(GameComponent component)
+    {
+        gameObject.RemoveComponent(component);
+    }
 }

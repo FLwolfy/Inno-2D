@@ -12,6 +12,8 @@ public class HierarchyPanel : EditorPanel
 
     private const string C_GAMEOBJECT_GUID_TYPE = "GameObjectGUID";
     private readonly Queue<Action> m_pendingGUIUpdateAction = new();
+    
+    internal HierarchyPanel() {}
 
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
     {
