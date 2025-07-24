@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using InnoEditor.Core;
+using InnoEditor.GUI;
 using InnoEditor.GUI.PropertyGUI;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
@@ -13,41 +13,23 @@ namespace InnoEditor.Panel
     {
         public override string title => "Inspector";
 
-        private readonly Dictionary<GameComponent, bool> m_componentFoldouts = new();
-
         internal InspectorPanel() {}
 
         internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
         {
             GameObject? selectedObject = EditorManager.selection.selectedObject;
-            if (selectedObject == null)
-                return;
+            if (selectedObject == null) { return; }
 
             var components = selectedObject.GetAllComponents();
             foreach (var comp in components)
             {
+                // Render Components
                 string compName = comp.GetType().Name;
-                bool openState = m_componentFoldouts.GetValueOrDefault(comp, true);
-                
-                // Check Delete
-                if (!openState)
-                {
-                    if (comp is Transform) continue;
-                    selectedObject.RemoveComponent(comp);
-                    continue;
-                }
-
+                bool openState = true;
                 if (context.CollapsingHeader(compName, ref openState, IImGuiContext.TreeNodeFlags.DefaultOpen))
                 {
-                    m_componentFoldouts[comp] = openState;
-
                     var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();;
-                    if (serializedProps.Count == 0)
-                    {
-                        context.Text("No editable properties.");
-                        continue;
-                    }
-
+                    if (serializedProps.Count == 0) { context.Text("No editable properties."); }
                     foreach (var prop in serializedProps)
                     {
                         var renderer = PropertyRendererRegistry.GetRenderer(prop.propertyType);
@@ -60,9 +42,12 @@ namespace InnoEditor.Panel
                         renderer.Bind(prop.name, () => prop.GetValue(), val => prop.SetValue(val), prop.visibility == PropertyVisibility.Show);
                     }
                 }
-                else
+                
+                // Check Delete
+                if (!openState)
                 {
-                    m_componentFoldouts[comp] = openState;
+                    if (comp is Transform) continue;
+                    selectedObject.RemoveComponent(comp);
                 }
             }
         }

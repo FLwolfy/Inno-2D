@@ -22,7 +22,15 @@ internal class MonoGameSpriteBatch : ISpriteBatch
     public void Begin()
     {
         // TODO: Handle parameters like sort mode, blend state, etc. to get rid of hardcoded values.
-        m_spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,  transformMatrix: ToXnaMatrix(Matrix.Extract2DTransform(m_renderContext.worldToScreenMatrix)));
+        m_spriteBatch.Begin(
+            sortMode: SpriteSortMode.FrontToBack, 
+            blendState: BlendState.AlphaBlend,
+            samplerState: SamplerState.LinearClamp,
+            depthStencilState: DepthStencilState.None,
+            rasterizerState: new RasterizerState() { ScissorTestEnable = true },
+            effect: null,
+            transformMatrix: ToXnaMatrix(Matrix.Extract2DTransform(m_renderContext.worldToScreenMatrix))
+        );
     }
 
     public void DrawQuad(Rect destinationRect, Rect? sourceRect, ITexture2D texture, Color color, float rotation = 0,
@@ -42,7 +50,7 @@ internal class MonoGameSpriteBatch : ISpriteBatch
             var src = sourceRect.Value;
             xnaSrcRect = new Microsoft.Xna.Framework.Rectangle(src.x, src.y, src.width, src.height);
         }
-
+        
         m_spriteBatch.Draw(
             mgTexture.rawTexture,
             xnaDestRect,

@@ -1,6 +1,9 @@
 using InnoBase;
 using InnoInternal.Render.Impl;
+
 using Microsoft.Xna.Framework.Graphics;
+
+using Color = InnoBase.Color;
 
 namespace InnoInternal.Render.Bridge;
 
@@ -29,8 +32,20 @@ internal class MonoGameRenderCommand : IRenderCommand
 
     public void SetRenderTarget(IRenderTarget? target)
     {
-        device.SetRenderTarget((target as MonoGameRenderTarget)?.rawTarget);
+        RenderTarget2D? rawTarget = (target as MonoGameRenderTarget)?.rawTarget;
+        device.SetRenderTarget(rawTarget);
+
+        if (rawTarget != null)
+        {
+            device.ScissorRectangle = new Microsoft.Xna.Framework.Rectangle(0, 0, rawTarget.Width, rawTarget.Height);
+        }
+        else
+        {
+            var viewport = device.Viewport;
+            device.ScissorRectangle = new Microsoft.Xna.Framework.Rectangle(0, 0, viewport.Width, viewport.Height);
+        }
     }
+
     
     public IRenderTarget CreateRenderTarget(int width, int height)
     {

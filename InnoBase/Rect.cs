@@ -25,4 +25,6 @@ public struct Rect
         if (top >= other.bottom) return false;
         return true;
     }
+    
+    public override string ToString() => $"({x}, {y}, {width}, {height})";
 }

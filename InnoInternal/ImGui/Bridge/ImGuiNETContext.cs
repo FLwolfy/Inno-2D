@@ -53,7 +53,6 @@ internal class ImGuiNETContext : IImGuiContext
     // Input
     public bool InputInt(string label, ref int value) => ImGuiNET.ImGui.InputInt(label, ref value);
     public bool InputFloat(string label, ref float value) => ImGuiNET.ImGui.InputFloat(label, ref value);
-
     public bool InputFloat2(string label, ref Vector2 value)
     {
         System.Numerics.Vector2 value2 = new(value.x, value.y);
@@ -62,7 +61,6 @@ internal class ImGuiNETContext : IImGuiContext
         value.y = value2.Y;
         return result;
     }
-
     public bool InputFloat3(string label, ref Vector3 value)
     {
         System.Numerics.Vector3 value2 = new(value.x, value.y, value.z);
@@ -72,7 +70,6 @@ internal class ImGuiNETContext : IImGuiContext
         value.z = value2.Z;
         return result;
     }
-
     public bool InputQuaternion(string label, ref Quaternion value)   
     {
         System.Numerics.Vector4 value2 = new(value.x, value.y, value.z,  value.w);
@@ -83,7 +80,6 @@ internal class ImGuiNETContext : IImGuiContext
         value.w = value2.W;
         return result;
     }
-
     public bool InputText(string label, ref string value, uint maxLength) => ImGuiNET.ImGui.InputText(label, ref value, maxLength);
 
     // Style
