@@ -53,6 +53,7 @@ internal interface IImGuiContext
     bool InputFloat3(string label, ref Vector3 value);
     bool InputQuaternion(string label, ref Quaternion value);
     bool InputText(string label, ref string value, uint maxLength);
+    bool ColorEdit4(string label, in Color input, out Color output);
     
     // Event
     bool IsItemClicked(int button);

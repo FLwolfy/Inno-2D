@@ -72,7 +72,7 @@ internal class ImGuiNETContext : IImGuiContext
     }
     public bool InputQuaternion(string label, ref Quaternion value)   
     {
-        System.Numerics.Vector4 value2 = new(value.x, value.y, value.z,  value.w);
+        System.Numerics.Vector4 value2 = new(value.x, value.y, value.z, value.w);
         bool result = ImGuiNET.ImGui.InputFloat4(label, ref value2);
         value.x = value2.X;
         value.y = value2.Y;
@@ -81,6 +81,13 @@ internal class ImGuiNETContext : IImGuiContext
         return result;
     }
     public bool InputText(string label, ref string value, uint maxLength) => ImGuiNET.ImGui.InputText(label, ref value, maxLength);
+    public bool ColorEdit4(string label, in Color input, out Color output)
+    {
+        System.Numerics.Vector4 value2 = new(input.r, input.g, input.b, input.a);
+        bool result = ImGuiNET.ImGui.ColorEdit4(label, ref value2);
+        output = new Color(value2.X, value2.Y, value2.Z, value2.W);
+        return result;
+    }
 
     // Style
     public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);

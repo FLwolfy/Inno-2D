@@ -129,6 +129,15 @@ public static class EditorGUILayout
             return m_context.Checkbox(label, ref value);
     }
     
+    /// <summary>
+    /// Render and edit a Color field
+    /// </summary>
+    public static bool ColorField(string label, in Color input, out Color output, bool enabled = true)
+    {
+        using (new DrawScope(enabled))
+            return m_context.ColorEdit4(label, in input, out output);
+    }
+    
     #endregion
     
 
