@@ -19,6 +19,7 @@ namespace InnoEditor.Panel
         {
             GameObject? selectedObject = EditorManager.selection.selectedObject;
             if (selectedObject == null) { return; }
+            context.PushID(selectedObject.id.GetHashCode());
 
             var components = selectedObject.GetAllComponents();
             foreach (var comp in components)
@@ -50,6 +51,8 @@ namespace InnoEditor.Panel
                     selectedObject.RemoveComponent(comp);
                 }
             }
+            
+            context.PopID();
         }
 
 

@@ -56,6 +56,8 @@ internal interface IImGuiContext
     bool ColorEdit4(string label, in Color input, out Color output);
     
     // Event
+    void PushID(int id);
+    void PopID();
     bool IsItemClicked(int button);
     
     // Style

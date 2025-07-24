@@ -88,7 +88,7 @@ internal class ImGuiNETContext : IImGuiContext
         output = new Color(value2.X, value2.Y, value2.Z, value2.W);
         return result;
     }
-
+    
     // Style
     public void PushStyleVar(IImGuiContext.StyleVar var, float indent) => ImGuiNET.ImGui.PushStyleVar((ImGuiNET.ImGuiStyleVar)(int)var, indent);
     public void PopStyleVar() => ImGuiNET.ImGui.PopStyleVar();
@@ -102,6 +102,8 @@ internal class ImGuiNETContext : IImGuiContext
     public void EndDisabled() => ImGuiNET.ImGui.EndDisabled();
 
     // Event
+    public void PushID(int id) => ImGuiNET.ImGui.PushID(id);
+    public void PopID() => ImGuiNET.ImGui.PopID();
     public bool IsItemClicked(int button) => ImGuiNET.ImGui.IsItemClicked((ImGuiNET.ImGuiMouseButton)button);
 
     // Tree
