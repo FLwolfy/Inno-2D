@@ -9,6 +9,5 @@ public class ListPropertyRenderer<T> : PropertyRenderer<List<T>>
         if (m_renderer == null) { m_renderer = PropertyRendererRegistry.GetRenderer(typeof(T)); }
         
         // TODO
-        
     }
 }

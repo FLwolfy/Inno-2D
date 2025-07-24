@@ -18,7 +18,7 @@ public class Transform : GameComponent
     // Local transform relative to parent
     private Vector3 m_localPosition = Vector3.ZERO;
     private Quaternion m_localRotation = Quaternion.identity;
-    private Vector3 m_localEulerAngles = Vector3.ZERO;
+    private float m_localRotationZ = 0f;
     private Vector3 m_localScale = Vector3.ONE;
 
     // Children transforms
@@ -43,6 +43,16 @@ public class Transform : GameComponent
         get => m_localPosition;
         set { m_localPosition = value; MarkDirty(); }
     }
+    
+    /// <summary>
+    /// Local scale relative to parent transform.
+    /// </summary>
+    [SerializableProperty]
+    public Vector3 localScale
+    {
+        get => m_localScale;
+        set { m_localScale = value; MarkDirty(); }
+    }
 
     /// <summary>
     /// Local rotation relative to parent transform.
@@ -54,38 +64,28 @@ public class Transform : GameComponent
         set 
         { 
             m_localRotation = value;
-            m_localEulerAngles = m_localRotation.ToEulerAnglesXYZDegrees();
+            m_localRotationZ = m_localRotation.ToEulerAnglesXYZDegrees().z;
             MarkDirty(); 
         }
     }
     
     /// <summary>
-    /// Cached local rotation Euler angles (degrees), XYZ order.
+    /// Cached local rotation Euler Z angle (degrees).
     /// Changing this will update localRotation quaternion.
     /// </summary>
     [SerializableProperty]
-    public Vector3 localEulerAngles
+    public float localRotationZ
     {
-        get => m_localEulerAngles;
+        get => m_localRotationZ;
         set
         {
-            if (m_localEulerAngles != value)
+            if (m_localRotationZ != value)
             {
-                m_localEulerAngles = value;
-                m_localRotation = Quaternion.FromEulerAnglesXYZDegrees(m_localEulerAngles);
+                m_localRotationZ = value;
+                m_localRotation = Quaternion.FromEulerAnglesXYZDegrees(new Vector3(0, 0, m_localRotationZ));
                 MarkDirty();
             }
         }
-    }
-
-    /// <summary>
-    /// Local scale relative to parent transform.
-    /// </summary>
-    [SerializableProperty]
-    public Vector3 localScale
-    {
-        get => m_localScale;
-        set { m_localScale = value; MarkDirty(); }
     }
 
     #endregion
