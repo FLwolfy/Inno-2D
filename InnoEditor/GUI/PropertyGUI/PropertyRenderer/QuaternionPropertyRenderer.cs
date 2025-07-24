@@ -6,11 +6,10 @@ public class QuaternionPropertyRenderer : PropertyRenderer<Quaternion>
 {
     protected override void Bind(string name, Func<Quaternion> getter, Action<Quaternion> setter)
     {
-        // Use Vector3 for inspector showing
-        Vector3 value = getter.Invoke().ToEulerAnglesXYZ();
-        if (EditorGUILayout.Vector3Field(name, ref value))
+        Quaternion value = getter.Invoke();
+        if (EditorGUILayout.QuaternionField(name, ref value))
         {
-            setter.Invoke(Quaternion.FromEulerAnglesXYZ(value));
+            setter.Invoke(value);
         }
     }
 }

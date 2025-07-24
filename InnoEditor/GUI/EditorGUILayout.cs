@@ -136,6 +136,16 @@ public static class EditorGUILayout
         if (IsHorizontalLayout()) m_context.SameLine();
         return m_context.InputFloat3(label, ref value);
     }
+    
+    /// <summary>
+    /// Render and edit a Quaternion field
+    /// </summary>
+    public static bool QuaternionField(string label, ref Quaternion value)
+    {
+        AlignNextItem();
+        if (IsHorizontalLayout()) m_context.SameLine();
+        return m_context.InputQuaternion(label, ref value);
+    }
 
     /// <summary>
     /// Render and edit a text (string) field

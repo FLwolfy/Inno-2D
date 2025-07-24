@@ -18,6 +18,7 @@ public class Transform : GameComponent
     // Local transform relative to parent
     private Vector3 m_localPosition = Vector3.ZERO;
     private Quaternion m_localRotation = Quaternion.identity;
+    private Vector3 m_localEulerAngles = Vector3.ZERO;
     private Vector3 m_localScale = Vector3.ONE;
 
     // Children transforms
@@ -50,7 +51,31 @@ public class Transform : GameComponent
     public Quaternion localRotation
     {
         get => m_localRotation;
-        set { m_localRotation = value; MarkDirty(); }
+        set 
+        { 
+            m_localRotation = value;
+            m_localEulerAngles = m_localRotation.ToEulerAnglesXYZDegrees();
+            MarkDirty(); 
+        }
+    }
+    
+    /// <summary>
+    /// Cached local rotation Euler angles (degrees), XYZ order.
+    /// Changing this will update localRotation quaternion.
+    /// </summary>
+    [SerializableProperty]
+    public Vector3 localEulerAngles
+    {
+        get => m_localEulerAngles;
+        set
+        {
+            if (m_localEulerAngles != value)
+            {
+                m_localEulerAngles = value;
+                m_localRotation = Quaternion.FromEulerAnglesXYZDegrees(m_localEulerAngles);
+                MarkDirty();
+            }
+        }
     }
 
     /// <summary>

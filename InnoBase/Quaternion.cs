@@ -115,6 +115,28 @@ public struct Quaternion : IEquatable<Quaternion>
 
         return new Vector3(roll, pitch, yaw);
     }
+    
+    public Vector3 ToEulerAnglesXYZDegrees()
+    {
+        float sinrCosp = 2 * (w * x + y * z);
+        float cosrCosp = 1 - 2 * (x * x + y * y);
+        float roll = MathF.Atan2(sinrCosp, cosrCosp);
+
+        float sinp = 2 * (w * y - z * x);
+        float pitch = MathF.Abs(sinp) >= 1
+            ? MathF.CopySign(MathF.PI / 2, sinp)
+            : MathF.Asin(sinp);
+
+        float sinyCosp = 2 * (w * z + x * y);
+        float cosyCosp = 1 - 2 * (y * y + z * z);
+        float yaw = MathF.Atan2(sinyCosp, cosyCosp);
+
+        return new Vector3(
+            roll * 180f / MathF.PI,
+            pitch * 180f / MathF.PI,
+            yaw * 180f / MathF.PI
+        );
+    }
 
     public Vector3 ToEulerAnglesZYX()
     {
@@ -133,6 +155,28 @@ public struct Quaternion : IEquatable<Quaternion>
 
         return new Vector3(angleX, angleY, angleZ);
     }
+    
+    public Vector3 ToEulerAnglesZYXDegrees()
+    {
+        float sinrCosp = 2 * (w * z + x * y);
+        float cosrCosp = 1 - 2 * (y * y + z * z);
+        float angleZ = MathF.Atan2(sinrCosp, cosrCosp);
+
+        float sinp = 2 * (w * y - z * x);
+        float angleY = MathF.Abs(sinp) >= 1
+            ? MathF.CopySign(MathF.PI / 2, sinp)
+            : MathF.Asin(sinp);
+
+        float sinyCosp = 2 * (w * x + y * z);
+        float cosyCosp = 1 - 2 * (x * x + y * y);
+        float angleX = MathF.Atan2(sinyCosp, cosyCosp);
+
+        return new Vector3(
+            angleX * 180f / MathF.PI,
+            angleY * 180f / MathF.PI,
+            angleZ * 180f / MathF.PI
+        );
+    }
 
     public static Quaternion FromEulerAnglesXYZ(Vector3 euler)
     {
@@ -150,9 +194,47 @@ public struct Quaternion : IEquatable<Quaternion>
             cx * cy * cz - sx * sy * sz
         );
     }
+    
+    public static Quaternion FromEulerAnglesXYZDegrees(Vector3 eulerDegrees)
+    {
+        var euler = eulerDegrees * (MathF.PI / 180f);
+
+        float cx = MathF.Cos(euler.x * 0.5f);
+        float sx = MathF.Sin(euler.x * 0.5f);
+        float cy = MathF.Cos(euler.y * 0.5f);
+        float sy = MathF.Sin(euler.y * 0.5f);
+        float cz = MathF.Cos(euler.z * 0.5f);
+        float sz = MathF.Sin(euler.z * 0.5f);
+
+        return new Quaternion(
+            sx * cy * cz + cx * sy * sz,
+            cx * sy * cz - sx * cy * sz,
+            cx * cy * sz + sx * sy * cz,
+            cx * cy * cz - sx * sy * sz
+        );
+    }
 
     public static Quaternion FromEulerAnglesZYX(Vector3 euler)
     {
+        float cz = MathF.Cos(euler.z * 0.5f);
+        float sz = MathF.Sin(euler.z * 0.5f);
+        float cy = MathF.Cos(euler.y * 0.5f);
+        float sy = MathF.Sin(euler.y * 0.5f);
+        float cx = MathF.Cos(euler.x * 0.5f);
+        float sx = MathF.Sin(euler.x * 0.5f);
+
+        return new Quaternion(
+            sx * cy * cz - cx * sy * sz,
+            cx * sy * cz + sx * cy * sz,
+            cx * cy * sz - sx * sy * cz,
+            cx * cy * cz + sx * sy * sz
+        );
+    }
+    
+    public static Quaternion FromEulerAnglesZYXDegrees(Vector3 eulerDegrees)
+    {
+        var euler = eulerDegrees * (MathF.PI / 180f);
+
         float cz = MathF.Cos(euler.z * 0.5f);
         float sz = MathF.Sin(euler.z * 0.5f);
         float cy = MathF.Cos(euler.y * 0.5f);

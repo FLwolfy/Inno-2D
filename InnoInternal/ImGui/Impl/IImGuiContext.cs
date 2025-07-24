@@ -50,6 +50,7 @@ internal interface IImGuiContext
     bool InputFloat(string label, ref float value);
     bool InputFloat2(string label, ref Vector2 value);
     bool InputFloat3(string label, ref Vector3 value);
+    bool InputQuaternion(string label, ref Quaternion value);
     bool InputText(string label, ref string value, uint maxLength);
     
     // Event

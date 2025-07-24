@@ -71,6 +71,17 @@ internal class ImGuiNETContext : IImGuiContext
         return result;
     }
 
+    public bool InputQuaternion(string label, ref Quaternion value)   
+    {
+        System.Numerics.Vector4 value2 = new(value.x, value.y, value.z,  value.w);
+        bool result = ImGuiNET.ImGui.InputFloat4(label, ref value2);
+        value.x = value2.X;
+        value.y = value2.Y;
+        value.z = value2.Z;
+        value.w = value2.W;
+        return result;
+    }
+
     public bool InputText(string label, ref string value, uint maxLength) => ImGuiNET.ImGui.InputText(label, ref value, maxLength);
 
     // Style
