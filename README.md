@@ -86,18 +86,18 @@ Inno —— Inspired Notions, No Obedience.
 - Editor Shell 初始化流程
 - 加入空白 SceneView、Inspector、Hierarchy 等 Panel
 
-### ⚠️ 阶段二：场景渲染系统
+### ✅ 阶段二：场景渲染系统
 - Editor Camera（支持缩放、平移）
 - 渲染 GameObject + SpriteRenderer
 - Editor Gizmo 基础功能（坐标轴绘制）
 - 鼠标选中逻辑实现（HitTest / Picking）
 
-### ❓ 阶段三：组件系统编辑支持
+### ⚠️ 阶段三：组件系统编辑支持
 - ECS 中组件可序列化
 - Inspector 动态显示所有组件
 - 支持基础类型字段的 ImGui 编辑（float、int、bool、Vector2 等）
 
-### ❓ 阶段四：层级管理器（Hierarchy）
+### ⚠️ 阶段四：层级管理器（Hierarchy）
 - 展示场景中所有 GameObject
 - 选中同步、拖动父子关系
 - 增删物体支持（+按钮 / Delete）
