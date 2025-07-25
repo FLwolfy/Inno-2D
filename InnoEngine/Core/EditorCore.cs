@@ -17,8 +17,8 @@ namespace InnoEngine.Core;
 /// </summary>
 public abstract class EditorCore
 {
-    private const int C_WINDOW_WIDTH = 1280;
-    private const int C_WINDOW_HEIGHT = 700;
+    private const int c_windowWidth = 1280;
+    private const int c_windowHeight = 700;
     
     private readonly IGameShell m_gameShell = new MonoGameShell();
     private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
@@ -28,7 +28,7 @@ public abstract class EditorCore
     protected EditorCore()
     {
         // Initialization Callbacks
-        m_gameShell.SetWindowSize(C_WINDOW_WIDTH,  C_WINDOW_HEIGHT);
+        m_gameShell.SetWindowSize(c_windowWidth,  c_windowHeight);
         m_gameShell.SetWindowResizable(true);
         m_gameShell.SetOnLoad(Load);
         m_gameShell.SetOnSetup(() =>
@@ -85,10 +85,10 @@ public abstract class EditorCore
     /// <summary>
     /// Try to render the scene. This automatically checks whether there is an active scene.
     /// </summary>
-    protected void TryRenderScene(Matrix viewMatrix, Matrix projectionMatrix)
+    protected bool TryRenderScene(Matrix viewMatrix, Matrix projectionMatrix)
     {
         var scene = SceneManager.GetActiveScene();
-        if (scene == null)  { return; }
+        if (scene == null)  { return false; }
     
         m_renderAPI.context.viewMatrix = viewMatrix;
         m_renderAPI.context.projectionMatrix = projectionMatrix;
@@ -96,6 +96,8 @@ public abstract class EditorCore
         m_renderSystem.Begin();
         m_renderSystem.RenderPasses();
         m_renderSystem.End();
+        
+        return true;
     }
     
     /// <summary>

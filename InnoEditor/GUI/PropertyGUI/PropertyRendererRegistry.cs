@@ -5,7 +5,7 @@ public static class PropertyRendererRegistry
     private static readonly Dictionary<Type, IPropertyRenderer> RENDERERS = new();
     private static readonly Dictionary<Type, Type> OPEN_GENERIC_RENDERERS = new();
 
-    internal static void Initialize()
+    static PropertyRendererRegistry()
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -13,41 +13,48 @@ public static class PropertyRendererRegistry
         {
             foreach (var type in assembly.GetTypes())
             {
-                if (type.IsAbstract || type.IsInterface)
-                    continue;
-
-                var baseType = type.BaseType;
-                while (baseType != null)
-                {
-                    if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(PropertyRenderer<>))
-                    {
-                        if (type.IsGenericTypeDefinition)
-                        {
-                            var genericArg = baseType.GetGenericArguments()[0];
-                            var genericParam = genericArg.IsGenericType ? genericArg.GetGenericTypeDefinition() : genericArg;
-                            OPEN_GENERIC_RENDERERS[genericParam] = type;
-                        }
-                        else
-                        {
-                            var instance = Activator.CreateInstance(type) as IPropertyRenderer;
-                            if (instance != null)
-                            {
-                                var genericArg = baseType.GetGenericArguments()[0];
-                                RENDERERS[genericArg] = instance;
-                            }
-                        }
-                        break;
-                    }
-                    baseType = baseType.BaseType;
-                }
+                Register(type);
             }
         }
     }
 
-    public static IPropertyRenderer? GetRenderer(Type type)
+    public static void Register(Type type)
+    {
+        if (type.IsAbstract || type.IsInterface)
+            return;
+
+        var baseType = type.BaseType;
+        while (baseType != null)
+        {
+            if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(PropertyRenderer<>))
+            {
+                if (type.IsGenericTypeDefinition)
+                {
+                    var genericArg = baseType.GetGenericArguments()[0];
+                    var genericParam = genericArg.IsGenericType ? genericArg.GetGenericTypeDefinition() : genericArg;
+                    OPEN_GENERIC_RENDERERS[genericParam] = type;
+                }
+                else
+                {
+                    if (Activator.CreateInstance(type) is IPropertyRenderer instance)
+                    {
+                        var genericArg = baseType.GetGenericArguments()[0];
+                        RENDERERS[genericArg] = instance;
+                    }
+                }
+                break;
+            }
+            baseType = baseType.BaseType;
+        }
+    }
+
+    public static bool TryGetRenderer(Type type, out IPropertyRenderer? propertyRenderer)
     {
         if (RENDERERS.TryGetValue(type, out var renderer))
-            return renderer;
+        {
+            propertyRenderer = renderer;
+            return true;
+        }
 
         if (type.IsGenericType)
         {
@@ -59,13 +66,19 @@ public static class PropertyRendererRegistry
                 var closedRendererType = openGenericRendererType.MakeGenericType(genericArgs);
                 
                 var instance = (IPropertyRenderer?)Activator.CreateInstance(closedRendererType);
-                if (instance == null) { return null; }
+                if (instance == null)
+                {
+                    propertyRenderer = null;
+                    return false;
+                }
 
                 RENDERERS[type] = instance;
-                return instance;
+                propertyRenderer = instance;
+                return true;
             }
         }
 
-        return null;
+        propertyRenderer = null;
+        return false;
     }
 }

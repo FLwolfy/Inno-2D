@@ -19,7 +19,6 @@ public abstract class EditorApp : EditorCore
         
         // GUI Setup
         EditorGUILayout.Initialize(m_imGuiRenderer.context);
-        PropertyRendererRegistry.Initialize();
         
         // MenuBar Setup
         // TODO: Setup MenuBar

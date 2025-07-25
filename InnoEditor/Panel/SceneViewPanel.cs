@@ -17,8 +17,8 @@ public class SceneViewPanel : EditorPanel
     private static readonly int AXIS_INTERVAL = 100;
     private static readonly float AXIS_INTERVAL_SCALE_RATE = 0.5f;
     private static readonly Input.MouseButton MOUSE_BUTTON_PAN = Input.MouseButton.Left;
-    
-    private readonly Action<Matrix, Matrix> m_onSceneRender;
+    internal delegate bool SceneRenderPredicate(Matrix view, Matrix projection);
+    private readonly SceneRenderPredicate m_onSceneRender;
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
     
@@ -28,7 +28,7 @@ public class SceneViewPanel : EditorPanel
     private int m_width = 0;
     private int m_height = 0;
     
-    internal SceneViewPanel(Action<Matrix, Matrix> onSceneRender)
+    internal SceneViewPanel(SceneRenderPredicate onSceneRender)
     {
         m_onSceneRender = onSceneRender;
         
@@ -38,6 +38,24 @@ public class SceneViewPanel : EditorPanel
     }
     
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
+    {
+        // Check if region changed
+        CheckRegionChange(context, renderAPI);
+
+        // Handle editorCamera action
+        HandlePanZoom(context);
+
+        // render and display scene on new render target
+        RenderSceneToBuffer(renderAPI);
+
+        // display on scene view
+        DrawScene(context);
+        
+        // Draw axis gizmo
+        DrawAxisGizmo(context);
+    }
+
+    private void CheckRegionChange(IImGuiContext context, IRenderAPI renderAPI)
     {
         // Get Available region
         var available = context.GetContentRegionAvail();
@@ -55,11 +73,10 @@ public class SceneViewPanel : EditorPanel
             m_renderTarget = renderAPI.command.CreateRenderTarget(m_width, m_height);
             m_renderTexture = m_renderTarget.GetColorTexture();
         }
+    }
 
-        // Handle editorCamera action
-        HandlePanZoom(context);
-
-        // render scene on new render target
+    private void RenderSceneToBuffer(IRenderAPI renderAPI)
+    {
         if (m_renderTarget != null)
         {
             renderAPI.command.SetRenderTarget(m_renderTarget);
@@ -70,15 +87,6 @@ public class SceneViewPanel : EditorPanel
             renderAPI.command.SetRenderTarget(null);
             renderAPI.command.SetViewport(null);
         }
-
-        // display on scene view
-        if (m_renderTexture != null)
-        {
-            context.Image(m_renderTexture, m_width, m_height);
-        }
-        
-        // Draw axis gizmo
-        DrawAxisGizmo(context);
     }
     
     private void HandlePanZoom(IImGuiContext context)
@@ -98,6 +106,14 @@ public class SceneViewPanel : EditorPanel
         Vector2 localMousePos = mousePos - screenPos - windowPos;
 
         m_editorCamera2D.Update(panDelta, zoomDelta, localMousePos);
+    }
+
+    private void DrawScene(IImGuiContext context)
+    {
+        if (m_renderTexture != null)
+        {
+            context.Image(m_renderTexture, m_width, m_height);
+        }
     }
     
     private void DrawAxisGizmo(IImGuiContext context)

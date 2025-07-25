@@ -6,7 +6,7 @@ public class ListPropertyRenderer<T> : PropertyRenderer<List<T>>
     
     protected override void Bind(string name, Func<List<T>?> getter, Action<List<T>> setter, bool enabled)
     {
-        if (m_renderer == null) { m_renderer = PropertyRendererRegistry.GetRenderer(typeof(T)); }
+        if (m_renderer == null) { PropertyRendererRegistry.TryGetRenderer(typeof(T), out m_renderer); }
         
         // TODO
     }

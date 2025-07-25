@@ -71,7 +71,7 @@ public static class EditorGUILayout
     /// </summary>
     public static bool IntField(string label, ref int value, bool enabled = true)
     {
-        using (new DrawScope(enabled))
+        using (new DrawScope(enabled)) 
             return m_context.InputInt(label, ref value);
     }
 
@@ -136,6 +136,21 @@ public static class EditorGUILayout
     {
         using (new DrawScope(enabled))
             return m_context.ColorEdit4(label, in input, out output);
+    }
+    
+    /// <summary>
+    /// Render a Collapsable Header with a label and an action to call when closed.
+    /// </summary>
+    public static bool CollapsingHeader(string label, Action onClose, bool defaultOpen = true)
+    {
+        using (new DrawScope(true))
+        {
+            bool visibility = true;
+            var openFlag = defaultOpen ? IImGuiContext.TreeNodeFlags.DefaultOpen : IImGuiContext.TreeNodeFlags.None;
+            bool result = m_context.CollapsingHeader(label, ref visibility, openFlag);
+            if (!visibility) { onClose.Invoke(); }
+            return result;
+        }
     }
     
     #endregion

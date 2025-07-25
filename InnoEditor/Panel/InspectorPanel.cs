@@ -1,5 +1,5 @@
 using InnoEditor.Core;
-using InnoEditor.GUI;
+using InnoEditor.GUI.InspectorGUI;
 using InnoEditor.GUI.PropertyGUI;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
@@ -17,39 +17,15 @@ namespace InnoEditor.Panel
 
         internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
         {
-            GameObject? selectedObject = EditorManager.selection.selectedObject;
+            // TODO: Change this to any type that needs to show Inspector View.
+            var selectedObject = EditorManager.selection.selectedObject;
             if (selectedObject == null) { return; }
+            
             context.PushID(selectedObject.id.GetHashCode());
 
-            var components = selectedObject.GetAllComponents();
-            foreach (var comp in components)
+            if (InspectorEditorRegistry.TryGetEditor(selectedObject.GetType(), out var editor))
             {
-                // Render Components
-                string compName = comp.GetType().Name;
-                bool openState = true;
-                if (context.CollapsingHeader(compName, ref openState, IImGuiContext.TreeNodeFlags.DefaultOpen))
-                {
-                    var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();;
-                    if (serializedProps.Count == 0) { context.Text("No editable properties."); }
-                    foreach (var prop in serializedProps)
-                    {
-                        var renderer = PropertyRendererRegistry.GetRenderer(prop.propertyType);
-                        if (renderer == null)
-                        {
-                            context.Text($"No renderer for {prop.name} ({prop.propertyType.Name})");
-                            continue;
-                        }
-
-                        renderer.Bind(prop.name, () => prop.GetValue(), val => prop.SetValue(val), prop.visibility == PropertyVisibility.Show);
-                    }
-                }
-                
-                // Check Delete
-                if (!openState)
-                {
-                    if (comp is Transform) continue;
-                    selectedObject.RemoveComponent(comp);
-                }
+                editor!.OnInspectorGUI(selectedObject);
             }
             
             context.PopID();

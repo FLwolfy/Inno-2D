@@ -84,6 +84,11 @@ public class GameObject : Serializable
     /// </summary>
     public void RemoveComponent<T>() where T : GameComponent
     {
+        if (typeof(T) == typeof(Transform))
+        {
+            // TODO: Add warning here.
+            return;
+        }
         scene.GetComponentManager().Remove<T>(id);
     }
 
@@ -92,6 +97,11 @@ public class GameObject : Serializable
     /// </summary>
     public void RemoveComponent(GameComponent component)
     {
+        if (component is Transform)
+        {
+            // TODO: Add warning here.
+            return;
+        }
         scene.GetComponentManager().Remove(id, component);
     }
 }
