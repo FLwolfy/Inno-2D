@@ -24,6 +24,58 @@ internal interface IImGuiContext
     Vector2 GetWindowSize();
     Vector2 GetWindowPos();
     
+    // Child
+    [Flags]
+    enum WindowFlags
+    {
+        None = 0,
+        NoTitleBar = 1,
+        NoResize = 2,
+        NoMove = 4,
+        NoScrollbar = 8,
+        NoScrollWithMouse = 16, // 0x00000010
+        NoCollapse = 32, // 0x00000020
+        AlwaysAutoResize = 64, // 0x00000040
+        NoBackground = 128, // 0x00000080
+        NoSavedSettings = 256, // 0x00000100
+        NoMouseInputs = 512, // 0x00000200
+        MenuBar = 1024, // 0x00000400
+        HorizontalScrollbar = 2048, // 0x00000800
+        NoFocusOnAppearing = 4096, // 0x00001000
+        NoBringToFrontOnFocus = 8192, // 0x00002000
+        AlwaysVerticalScrollbar = 16384, // 0x00004000
+        AlwaysHorizontalScrollbar = 32768, // 0x00008000
+        NoNavInputs = 65536, // 0x00010000
+        NoNavFocus = 131072, // 0x00020000
+        UnsavedDocument = 262144, // 0x00040000
+        NoDocking = 524288, // 0x00080000
+        NoNav = NoNavFocus | NoNavInputs, // 0x00030000
+        NoDecoration = NoCollapse | NoScrollbar | NoResize | NoTitleBar, // 0x0000002B
+        NoInputs = NoNav | NoMouseInputs, // 0x00030200
+        ChildWindow = 16777216, // 0x01000000
+        Tooltip = 33554432, // 0x02000000
+        Popup = 67108864, // 0x04000000
+        Modal = 134217728, // 0x08000000
+        ChildMenu = 268435456, // 0x10000000
+        DockNodeHost = 536870912, // 0x20000000
+    }
+    [Flags]
+    enum ChildFlags
+    {
+        None = 0,
+        Borders = 1,
+        AlwaysUseWindowPadding = 2,
+        ResizeX = 4,
+        ResizeY = 8,
+        AutoResizeX = 16, // 0x00000010
+        AutoResizeY = 32, // 0x00000020
+        AlwaysAutoResize = 64, // 0x00000040
+        FrameStyle = 128, // 0x00000080
+        NavFlattened = 256, // 0x00000100
+    }
+    bool BeginChild(string name, Vector2 size = default, ChildFlags childFlags = ChildFlags.None);
+    void EndChild();
+     
     // Cursor
     Vector2 GetCursorStartPos();
     void SetCursorPosX(float x);
@@ -35,6 +87,8 @@ internal interface IImGuiContext
     void SameLine();
     float CalcItemWidth();
     float CalcItemHeight();
+    void Dummy(Vector2 size);
+    void Separator();
     
     // Widget
     void Text(string text);

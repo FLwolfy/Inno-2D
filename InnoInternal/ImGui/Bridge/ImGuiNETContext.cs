@@ -28,18 +28,24 @@ internal class ImGuiNETContext : IImGuiContext
 
     public Vector2 GetContentRegionAvail() => new Vector2(ImGuiNET.ImGui.GetContentRegionAvail().X, ImGuiNET.ImGui.GetContentRegionAvail().Y);
     public Vector2 GetWindowSize() => new Vector2(ImGuiNET.ImGui.GetWindowSize().X, ImGuiNET.ImGui.GetWindowSize().Y);
-
     public Vector2 GetWindowPos() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
     public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);
     public void SetCursorPosX(float x) => ImGuiNET.ImGui.SetCursorPosX(x);
     public void SetCursorPosY(float y) => ImGuiNET.ImGui.SetCursorPosY(y);
+    
+    // Layout
     public void BeginGroup() => ImGuiNET.ImGui.BeginGroup();
     public void EndGroup() => ImGuiNET.ImGui.EndGroup();
     public void SameLine() => ImGuiNET.ImGui.SameLine();
     public float CalcItemWidth() => ImGuiNET.ImGui.CalcItemWidth();
     public float CalcItemHeight() => ImGuiNET.ImGui.CalcItemWidth();
+    public void Dummy(Vector2 size) => ImGuiNET.ImGui.Dummy(new System.Numerics.Vector2(size.x, size.y));
+    public void Separator() => ImGuiNET.ImGui.Separator();
 
-
+    // Child
+    public bool BeginChild(string name, Vector2 size = default, IImGuiContext.ChildFlags childFlags = IImGuiContext.ChildFlags.None) => ImGuiNET.ImGui.BeginChild(name, new System.Numerics.Vector2(size.x, size.y), (ImGuiNET.ImGuiChildFlags)(int)childFlags);
+    public void EndChild() => ImGuiNET.ImGui.EndChild();
+    
     // Widget
     public void Text(string text) => ImGuiNET.ImGui.Text(text);
     public void BulletText(string text) => ImGuiNET.ImGui.BulletText(text);

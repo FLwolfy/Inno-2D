@@ -94,7 +94,7 @@ public class SceneViewPanel : EditorPanel
         Vector2 panDelta = Vector2.ZERO;
         float zoomDelta = context.GetMouseWheel();
 
-        if (context.IsWindowHovered() && context.IsMouseDown((int)MOUSE_BUTTON_PAN))
+        if (context.IsWindowHovered() && (context.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f))
         {
             if (context.IsWindowFocused()) { panDelta = context.GetMouseDelta(); }
             else { context.SetWindowFocus(); }
@@ -105,7 +105,10 @@ public class SceneViewPanel : EditorPanel
         Vector2 mousePos = context.GetMousePosition();
         Vector2 localMousePos = mousePos - screenPos - windowPos;
 
-        m_editorCamera2D.Update(panDelta, zoomDelta, localMousePos);
+        if (context.IsWindowFocused())
+        {
+            m_editorCamera2D.Update(panDelta, zoomDelta, localMousePos);
+        }
     }
 
     private void DrawScene(IImGuiContext context)

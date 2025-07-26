@@ -1,4 +1,3 @@
-using InnoBase;
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
@@ -13,8 +12,8 @@ namespace InnoEngine.Core;
 
 public abstract class EngineCore
 {
-    private const int C_WINDOW_WIDTH = 1280;
-    private const int C_WINDOW_HEIGHT = 720;
+    private static readonly int WINDOW_WIDTH = 1280;
+    private static readonly int WINDOW_HEIGHT = 720;
     
     private readonly IGameShell m_gameShell = new MonoGameShell();
     private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
@@ -24,7 +23,7 @@ public abstract class EngineCore
     protected EngineCore()
     {
         // Initialization Callbacks
-        m_gameShell.SetWindowSize(C_WINDOW_WIDTH,  C_WINDOW_HEIGHT);
+        m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
         m_gameShell.SetWindowResizable(true);
         m_gameShell.SetOnLoad(Load);
         m_gameShell.SetOnSetup(() =>

@@ -26,6 +26,8 @@ public class GameObjectEditor : IInspectorEditor
             {
                 defaultEditor!.OnInspectorGUI(comp);
             }
+            
+            EditorGUILayout.Space(10f);
         }
     }
 }

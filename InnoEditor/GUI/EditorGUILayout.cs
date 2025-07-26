@@ -153,6 +153,30 @@ public static class EditorGUILayout
         }
     }
     
+    /// <summary>
+    /// Creates a visual background block for grouping content. Use in a using statement.
+    /// </summary>
+    public static IDisposable Box(string name, bool bordered = false, bool enabled = true)
+    {
+        return new BoxScope(name, bordered, enabled);
+    }
+    
+    /// <summary>
+    /// Inserts vertical spacing of given height (default 8px)
+    /// </summary>
+    public static void Space(float pixels = 8f)
+    {
+        m_context.Dummy(new Vector2(1, pixels));
+    }
+
+    /// <summary>
+    /// Inserts a horizontal separator line
+    /// </summary>
+    public static void Separator()
+    {
+        m_context.Separator();
+    }
+    
     #endregion
     
 
@@ -215,6 +239,32 @@ public static class EditorGUILayout
         {
             if (!m_enabled) m_context.EndDisabled();
         }
+    }
+    
+    /// <summary>
+    /// The BoxScope is used to create a visual box with optional border and auto-resize.
+    /// It should be used in a using statement to ensure proper disposal.
+    /// </summary>
+    private readonly struct BoxScope : IDisposable
+    {
+        public BoxScope(string boxName, bool bordered, bool enabled)
+        {
+            m_drawScope = new DrawScope(enabled);
+
+            var flags = IImGuiContext.ChildFlags.AlwaysAutoResize | IImGuiContext.ChildFlags.AutoResizeY;
+            if (bordered)
+                flags |= IImGuiContext.ChildFlags.Borders;
+
+            m_context.BeginChild("##Box_" + boxName, new Vector2(0, 0), flags);
+        }
+
+        public void Dispose()
+        {
+            m_context.EndChild();
+            m_drawScope.Dispose();
+        }
+
+        private readonly DrawScope m_drawScope;
     }
     
     #endregion
