@@ -12,6 +12,7 @@ public static class EditorGUILayout
     private static readonly Stack<LayoutType> LAYOUT_STACK = new();
     private static readonly Stack<LayoutAlign> ALIGN_STACK = new();
 
+    private static int m_autoID = 0;
     private static IImGuiContext m_context = null!;
 
     internal static void Initialize(IImGuiContext context)
@@ -19,35 +20,184 @@ public static class EditorGUILayout
         m_context = context;
     }
 
-    #region APIs
+    #region Lifecycles
+
+    /// <summary>
+    /// Reset auto ID.
+    /// </summary>
+    public static void BeginFrame()
+    {
+        m_autoID = 0;
+    }
     
     /// <summary>
-    /// Begin a layout group, with optional vertical/horizontal layout and alignment
+    /// Reset the layout stacks at the end of a frame.
     /// </summary>
-    public static void Begin(LayoutType layout = LayoutType.Vertical, LayoutAlign align = LayoutAlign.Left)
+    public static void EndFrame()
     {
-        if (m_context == null) throw new InvalidOperationException("EditorLayout.Context is not set");
-
+        // Reset Layout and Align stacks
+        LAYOUT_STACK.Clear();
+        ALIGN_STACK.Clear();
+    }
+    
+    #endregion
+    
+    #region Layouts
+    
+    /// <summary>
+    /// Begin a new layout with specified type and alignment.
+    /// </summary>
+    public static void Layout(LayoutType layout, LayoutAlign align, Action guiDrawCall)
+    {
+        // Invisible Buffer to get size
+        m_context.BeginInvisible();
+        guiDrawCall.Invoke();
+        m_context.EndInvisible();
+        
+        // Align Start
         LAYOUT_STACK.Push(layout);
         ALIGN_STACK.Push(align);
-
         m_context.BeginGroup();
+        
+        // Draw
+        guiDrawCall.Invoke();
+        
+        // Align End
+        if (LAYOUT_STACK.Count == 0 || ALIGN_STACK.Count == 0) {throw new InvalidOperationException("EditorLayout.End called without matching Begin");}
+        LAYOUT_STACK.Pop();
+        ALIGN_STACK.Pop();
+        m_context.EndGroup();
+    }
+    
+    /// <summary>
+    /// Creates a visual background block for grouping content. Use in a using statement.
+    /// </summary>
+    public static IDisposable Box(string name, bool bordered = false, bool enabled = true)
+    {
+        return new BoxScope(name, bordered, enabled);
+    }
+    
+    /// <summary>
+    /// The BoxScope is used to create a visual box with optional border and auto-resize.
+    /// It should be used in a using statement to ensure proper disposal.
+    /// </summary>
+    private readonly struct BoxScope : IDisposable
+    {
+        public BoxScope(string boxName, bool bordered, bool enabled)
+        {
+            m_drawScope = new DrawScope(enabled, false);
+
+            var flags = IImGuiContext.ChildFlags.AlwaysAutoResize | IImGuiContext.ChildFlags.AutoResizeY;
+            if (bordered)
+                flags |= IImGuiContext.ChildFlags.Borders;
+
+            m_context.BeginChild(boxName, new Vector2(0, 0), flags);
+        }
+
+        public void Dispose()
+        {
+            m_context.EndChild();
+            m_drawScope.Dispose();
+        }
+
+        private readonly DrawScope m_drawScope;
     }
 
     /// <summary>
-    /// End the current layout group; must be paired with Begin
+    /// Align the next widget horizontally based on current alignment
     /// </summary>
-    public static void End()
+    private static void AlignNextItem()
     {
-        if (LAYOUT_STACK.Count == 0 || ALIGN_STACK.Count == 0)
-            throw new InvalidOperationException("EditorLayout.End called without matching Begin");
+        if (ALIGN_STACK.Count == 0) return;
 
-        LAYOUT_STACK.Pop();
-        ALIGN_STACK.Pop();
+        var align = ALIGN_STACK.Peek();
+        var cursorPos = m_context.GetCursorPos();
+        var regionAvail = m_context.GetContentRegionAvail();
+        var itemSize = m_context.GetItemRectSize();
 
-        m_context.EndGroup();
+        var offsetY = 0f;
+        var offsetX = 0f;
+        if (LAYOUT_STACK.Count > 0 && LAYOUT_STACK.Peek() == LayoutType.Horizontal)
+        {
+            switch (align)
+            {
+                case LayoutAlign.Center:
+                    offsetX = (regionAvail.x - itemSize.x) * 0.5f;
+                    break;
+                case LayoutAlign.Back:
+                    offsetX = regionAvail.x - itemSize.x;
+                    break;
+                case LayoutAlign.Front:
+                default:
+                    offsetX = 0f;
+                    break;
+            }
+
+            m_context.SetCursorPosX(cursorPos.x + offsetX);
+        }
+        else // Vertical layout
+        {
+            switch (align)
+            {
+                case LayoutAlign.Center:
+                    offsetY = (regionAvail.y - itemSize.y) * 0.5f;
+                    break;
+                case LayoutAlign.Back: // “Back” interpreted as Bottom here
+                    offsetY = regionAvail.y - itemSize.y;
+                    break;
+                case LayoutAlign.Front: // “Front” interpreted as Top
+                default:
+                    offsetY = 0f;
+                    break;
+            }
+
+            m_context.SetCursorPosY(cursorPos.y + offsetY);
+        }
     }
 
+
+    /// <summary>
+    /// All Widgets calls should be within this scope.
+    /// </summary>
+    private readonly struct DrawScope : IDisposable
+    {
+        private readonly bool m_enabled;
+        public DrawScope(bool enabled = true, bool applyAlign = true)
+        {
+            // Align if needed
+            if (applyAlign)
+            {
+                AlignNextItem();
+            }
+            
+            // Check Horizontal
+            // TODO: CHECK HERE, THIS IS BUGGED
+            // if (LAYOUT_STACK.Count > 0 && LAYOUT_STACK.Peek() == LayoutType.Horizontal)
+            // {
+            //     m_context.SameLine();
+            // }
+            
+            // ID
+            m_context.PushID(m_autoID++);
+            
+            // Disable Check
+            m_enabled = enabled;
+            if (!enabled)
+            {
+                m_context.BeginDisabled();
+            }
+        }
+        
+        public void Dispose()
+        {
+            if (!m_enabled) m_context.EndDisabled();
+            m_context.PopID();
+        }
+    }
+    
+    #endregion
+
+    #region Widgets
     /// <summary>
     /// Render a text label
     /// </summary>
@@ -143,7 +293,7 @@ public static class EditorGUILayout
     /// </summary>
     public static bool CollapsingHeader(string label, Action onClose, bool defaultOpen = true)
     {
-        using (new DrawScope(true))
+        using (new DrawScope(true, false))
         {
             bool visibility = true;
             var openFlag = defaultOpen ? IImGuiContext.TreeNodeFlags.DefaultOpen : IImGuiContext.TreeNodeFlags.None;
@@ -151,14 +301,6 @@ public static class EditorGUILayout
             if (!visibility) { onClose.Invoke(); }
             return result;
         }
-    }
-    
-    /// <summary>
-    /// Creates a visual background block for grouping content. Use in a using statement.
-    /// </summary>
-    public static IDisposable Box(string name, bool bordered = false, bool enabled = true)
-    {
-        return new BoxScope(name, bordered, enabled);
     }
     
     /// <summary>
@@ -175,96 +317,6 @@ public static class EditorGUILayout
     public static void Separator()
     {
         m_context.Separator();
-    }
-    
-    #endregion
-    
-
-    #region Private Helpers
-    
-    /// <summary>
-    /// Returns whether the current layout is horizontal
-    /// </summary>
-    private static bool IsHorizontalLayout() =>
-        LAYOUT_STACK.Count > 0 && LAYOUT_STACK.Peek() == LayoutType.Horizontal;
-
-    /// <summary>
-    /// Align the next widget horizontally based on current alignment
-    /// </summary>
-    private static void AlignNextItem()
-    {
-        if (ALIGN_STACK.Count == 0) return;
-        var align = ALIGN_STACK.Peek();
-
-        var windowSize = m_context.GetWindowSize();
-        float windowWidth = windowSize.x;
-        float itemWidth = m_context.CalcItemWidth();
-
-        if (align == LayoutAlign.Center)
-        {
-            float cursorX = (windowWidth - itemWidth) * 0.5f;
-            m_context.SetCursorPosX(cursorX);
-        }
-        else if (align == LayoutAlign.Right)
-        {
-            float cursorX = windowWidth - itemWidth;
-            m_context.SetCursorPosX(cursorX);
-        }
-        // No adjustment needed for Left alignment (default)
-    }
-
-    /// <summary>
-    /// All Widgets calls should be within this scope.
-    /// </summary>
-    private readonly struct DrawScope : IDisposable
-    {
-        private readonly bool m_enabled;
-        public DrawScope(bool enabled = true)
-        {
-            // Align
-            AlignNextItem();
-            
-            // Layout
-            if (IsHorizontalLayout()) m_context.SameLine();
-            
-            // Check Disable
-            m_enabled = enabled;
-            if (!enabled)
-            {
-                m_context.BeginDisabled();
-            }
-        }
-        
-        public void Dispose()
-        {
-            if (!m_enabled) m_context.EndDisabled();
-        }
-    }
-    
-    /// <summary>
-    /// The BoxScope is used to create a visual box with optional border and auto-resize.
-    /// It should be used in a using statement to ensure proper disposal.
-    /// </summary>
-    private readonly struct BoxScope : IDisposable
-    {
-        public BoxScope(string boxName, bool bordered, bool enabled)
-        {
-            m_drawScope = new DrawScope(enabled);
-
-            var flags = IImGuiContext.ChildFlags.AlwaysAutoResize | IImGuiContext.ChildFlags.AutoResizeY;
-            if (bordered)
-                flags |= IImGuiContext.ChildFlags.Borders;
-
-            m_context.BeginChild("##Box_" + boxName, new Vector2(0, 0), flags);
-        }
-
-        public void Dispose()
-        {
-            m_context.EndChild();
-            m_drawScope.Dispose();
-        }
-
-        private readonly DrawScope m_drawScope;
     }
     
     #endregion

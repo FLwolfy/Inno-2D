@@ -20,7 +20,7 @@ public class ComponentEditor : IInspectorEditor
         {
             using (EditorGUILayout.Box(compName, true))
             {
-                var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();;
+                var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();
                 if (serializedProps.Count == 0)
                 {
                     EditorGUILayout.Label("No editable properties.");

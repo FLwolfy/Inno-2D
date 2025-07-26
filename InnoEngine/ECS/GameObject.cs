@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using InnoEngine.ECS.Component;
 using InnoEngine.Serialization;
 

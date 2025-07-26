@@ -18,7 +18,7 @@ namespace InnoEngine.Core;
 public abstract class EditorCore
 {
     private const int c_windowWidth = 1280;
-    private const int c_windowHeight = 700;
+    private const int c_windowHeight = 720;
     
     private readonly IGameShell m_gameShell = new MonoGameShell();
     private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();

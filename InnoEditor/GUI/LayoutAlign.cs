@@ -2,7 +2,7 @@ namespace InnoEditor.GUI;
 
 public enum LayoutAlign
 {
-    Left,
+    Front,
     Center,
-    Right
+    Back
 }

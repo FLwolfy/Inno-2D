@@ -18,7 +18,7 @@ namespace InnoEditor.Panel
             if (selectedObject == null) { return; }
             
             context.PushID(selectedObject.id.GetHashCode());
-
+            
             if (InspectorEditorRegistry.TryGetEditor(selectedObject.GetType(), out var editor))
             {
                 editor!.OnInspectorGUI(selectedObject);

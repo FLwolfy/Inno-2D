@@ -40,7 +40,9 @@ public abstract class EditorApp : EditorCore
     protected override void OnEditorGUI(float deltaTime)
     {
         m_imGuiRenderer.BeginLayout(deltaTime);
+        EditorGUILayout.BeginFrame();
         EditorManager.DrawPanels(m_imGuiRenderer.context, (IRenderAPI) GetRenderAPI());
+        EditorGUILayout.EndFrame();
         m_imGuiRenderer.EndLayout();
     }
 

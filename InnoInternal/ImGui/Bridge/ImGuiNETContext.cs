@@ -7,6 +7,7 @@ namespace InnoInternal.ImGui.Bridge;
 internal class ImGuiNETContext : IImGuiContext
 {
     private readonly IImGuiRenderer m_renderer;
+    private readonly Stack<System.Numerics.Vector2> m_oldCursorStack = new();
 
     internal ImGuiNETContext(IImGuiRenderer renderer)
     {
@@ -30,15 +31,32 @@ internal class ImGuiNETContext : IImGuiContext
     public Vector2 GetWindowSize() => new Vector2(ImGuiNET.ImGui.GetWindowSize().X, ImGuiNET.ImGui.GetWindowSize().Y);
     public Vector2 GetWindowPos() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
     public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);
+    public Vector2 GetCursorPos() => new Vector2(ImGuiNET.ImGui.GetCursorPos().X, ImGuiNET.ImGui.GetCursorPos().Y);
+
     public void SetCursorPosX(float x) => ImGuiNET.ImGui.SetCursorPosX(x);
     public void SetCursorPosY(float y) => ImGuiNET.ImGui.SetCursorPosY(y);
     
     // Layout
     public void BeginGroup() => ImGuiNET.ImGui.BeginGroup();
     public void EndGroup() => ImGuiNET.ImGui.EndGroup();
+    public void BeginInvisible()
+    {
+        m_oldCursorStack.Push(ImGuiNET.ImGui.GetCursorScreenPos());
+        ImGuiNET.ImGui.BeginDisabled();
+        ImGuiNET.ImGui.PushStyleVar(ImGuiNET.ImGuiStyleVar.Alpha, 0.0f);
+        ImGuiNET.ImGui.SetNextItemAllowOverlap();
+        ImGuiNET.ImGui.BeginGroup();
+    }
+    public void EndInvisible()
+    {
+        ImGuiNET.ImGui.EndGroup();
+        ImGuiNET.ImGui.PopStyleVar();
+        ImGuiNET.ImGui.EndDisabled();
+        ImGuiNET.ImGui.SetCursorScreenPos(m_oldCursorStack.Pop());
+    }
     public void SameLine() => ImGuiNET.ImGui.SameLine();
     public float CalcItemWidth() => ImGuiNET.ImGui.CalcItemWidth();
-    public float CalcItemHeight() => ImGuiNET.ImGui.CalcItemWidth();
+    public Vector2 GetItemRectSize() => new Vector2(ImGuiNET.ImGui.GetItemRectSize().X, ImGuiNET.ImGui.GetItemRectSize().Y);
     public void Dummy(Vector2 size) => ImGuiNET.ImGui.Dummy(new System.Numerics.Vector2(size.x, size.y));
     public void Separator() => ImGuiNET.ImGui.Separator();
 

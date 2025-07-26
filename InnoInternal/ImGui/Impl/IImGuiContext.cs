@@ -78,15 +78,18 @@ internal interface IImGuiContext
      
     // Cursor
     Vector2 GetCursorStartPos();
+    Vector2 GetCursorPos();
     void SetCursorPosX(float x);
     void SetCursorPosY(float y);
     
     // Layout
     void BeginGroup();
     void EndGroup();
+    void BeginInvisible();
+    void EndInvisible();
     void SameLine();
     float CalcItemWidth();
-    float CalcItemHeight();
+    Vector2 GetItemRectSize();
     void Dummy(Vector2 size);
     void Separator();
     
