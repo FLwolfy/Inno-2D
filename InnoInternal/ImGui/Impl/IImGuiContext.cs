@@ -79,6 +79,7 @@ internal interface IImGuiContext
     // Cursor
     Vector2 GetCursorStartPos();
     Vector2 GetCursorPos();
+    void SetCursorPos(Vector2 pos);
     void SetCursorPosX(float x);
     void SetCursorPosY(float y);
     
@@ -87,6 +88,7 @@ internal interface IImGuiContext
     void EndGroup();
     void BeginInvisible();
     void EndInvisible();
+    Vector2 GetInvisibleItemRectSize();
     void SameLine();
     float CalcItemWidth();
     Vector2 GetItemRectSize();

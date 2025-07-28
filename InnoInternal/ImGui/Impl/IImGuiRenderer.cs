@@ -33,4 +33,14 @@ internal interface IImGuiRenderer
     /// Gets the associated ImGui context abstraction.
     /// </summary>
     IImGuiContext context { get; }
+    
+    /// <summary>
+    /// Gets the pointer to the main ImGui context.
+    /// </summary>
+    IntPtr mainMainContextPtr { get; }
+    
+    /// <summary>
+    /// Gets the pointer to the virtual ImGui context.
+    /// </summary>
+    IntPtr virtualContextPtr { get; }
 }

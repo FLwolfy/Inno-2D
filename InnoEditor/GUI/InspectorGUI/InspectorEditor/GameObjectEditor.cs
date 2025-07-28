@@ -10,7 +10,7 @@ public class GameObjectEditor : IInspectorEditor
         if (target is not GameObject gameObject) { return; }
         
         // Render Components
-        EditorGUILayout.Layout(LayoutType.Vertical, LayoutAlign.Front, () => { OnShowComponents(gameObject); });
+        OnShowComponents(gameObject);
     }
 
     private void OnShowComponents(GameObject gameObject)
@@ -30,12 +30,11 @@ public class GameObjectEditor : IInspectorEditor
             EditorGUILayout.Space(10f);
         }
         
-        EditorGUILayout.Layout(LayoutType.Horizontal, LayoutAlign.Center, () =>
+        EditorGUILayout.BeginAlignment(EditorGUILayout.LayoutAlign.Center);
+        if (EditorGUILayout.Button("Add Component"))
         {
-            if (EditorGUILayout.Button("Add Component"))
-            {
-                Console.WriteLine("SYFCJS");
-            }
-        });
+            Console.WriteLine("SYFCJS");
+        }
+        EditorGUILayout.EndAlignment();
     }
 }

@@ -35,6 +35,11 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     private IndexBuffer m_indexBuffer;
     private int m_indexBufferSize;
 
+    private IntPtr m_imguiMainContextPtr;
+    public IntPtr mainMainContextPtr => m_imguiMainContextPtr;
+    private IntPtr m_imguiVirtualContextPtr;
+    public IntPtr virtualContextPtr => m_imguiVirtualContextPtr;
+
     // Textures
     private readonly Dictionary<IntPtr, Texture2D> m_loadedTextures = new Dictionary<IntPtr, Texture2D>();
 
@@ -54,11 +59,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         
         m_game = game;
         m_imGuiContext = new ImGuiNETContext(this);
-        
-        var ctx = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(ctx);
-
-        m_rasterizerState = new RasterizerState()
+        m_rasterizerState = new RasterizerState
         {
             CullMode = CullMode.None,
             DepthBias = 0,
@@ -67,7 +68,15 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
             ScissorTestEnable = true,
             SlopeScaleDepthBias = 0
         };
-
+        
+        // Virtual Context
+        m_imguiVirtualContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        RebuildFontAtlas();
+        
+        // Main Context
+        m_imguiMainContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
         SetupInput();
         SetupFlags();
         RebuildFontAtlas();
@@ -137,13 +146,16 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     /// <param name="deltaTime">The deltaTime between two render frame in seconds</param>
     public virtual void BeginLayout(float deltaTime)
     {
-        ImGuiNET.ImGui.GetIO().DeltaTime = deltaTime;
-
-        UpdateInput();
-
+        // Virtual Context
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight);
         ImGuiNET.ImGui.NewFrame();
         
-        // Start Docking Space
+        // Main Context
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
+        ImGuiNET.ImGui.GetIO().DeltaTime = deltaTime;
+        UpdateInput();
+        ImGuiNET.ImGui.NewFrame();
         ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
     }
 
@@ -152,8 +164,13 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     /// </summary>
     public virtual void EndLayout()
     {
+        // Virtual Context
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        ImGuiNET.ImGui.EndFrame();
+        
+        // Main Context
+        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
         ImGuiNET.ImGui.Render();
-
         { RenderDrawData(ImGuiNET.ImGui.GetDrawData()); }
         
         // Set Cursor

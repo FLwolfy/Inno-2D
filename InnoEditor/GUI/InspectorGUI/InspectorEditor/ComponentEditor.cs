@@ -18,24 +18,21 @@ public class ComponentEditor : IInspectorEditor
         
         if (EditorGUILayout.CollapsingHeader(compName, onClose))
         {
-            using (EditorGUILayout.Box(compName, true))
+            var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();
+            if (serializedProps.Count == 0)
             {
-                var serializedProps = comp.GetSerializedProperties().Where(p => p.visibility != PropertyVisibility.Hide).ToList();
-                if (serializedProps.Count == 0)
+                EditorGUILayout.Label("No editable properties.");
+            }
+            
+            foreach (var prop in serializedProps)
+            {
+                if (PropertyRendererRegistry.TryGetRenderer(prop.propertyType, out var renderer))
                 {
-                    EditorGUILayout.Label("No editable properties.");
+                    renderer!.Bind(prop.name, () => prop.GetValue(), val => prop.SetValue(val), prop.visibility == PropertyVisibility.Show);
                 }
-                
-                foreach (var prop in serializedProps)
+                else
                 {
-                    if (PropertyRendererRegistry.TryGetRenderer(prop.propertyType, out var renderer))
-                    {
-                        renderer!.Bind(prop.name, () => prop.GetValue(), val => prop.SetValue(val), prop.visibility == PropertyVisibility.Show);
-                    }
-                    else
-                    {
-                        EditorGUILayout.Label($"No renderer for {prop.name} ({prop.propertyType.Name})");
-                    }
+                    EditorGUILayout.Label($"No renderer for {prop.name} ({prop.propertyType.Name})");
                 }
             }
         }
