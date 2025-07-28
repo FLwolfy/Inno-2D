@@ -90,8 +90,8 @@ public static class EditorGUILayout
             }
             m_context.PopID();
         }
-        private readonly DrawScope m_drawScope;
     }
+
 
     private static void AlignNextItem(float itemWidth)
     {
