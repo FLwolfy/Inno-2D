@@ -57,7 +57,7 @@ public class Transform : GameComponent
     /// <summary>
     /// Local rotation relative to parent transform.
     /// </summary>
-    [SerializableProperty(PropertyVisibility.Hide)]
+    [SerializableProperty(SerializedProperty.PropertyVisibility.Hide)]
     public Quaternion localRotation
     {
         get => m_localRotation;

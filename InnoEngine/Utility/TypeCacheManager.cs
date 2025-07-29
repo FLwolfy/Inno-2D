@@ -14,6 +14,9 @@ public static class TypeCacheManager
     
     public static event Action? OnRefreshed;
 
+    /// <summary>
+    /// This needs to wait until all the OnRefreshed methods are set up and subscribe to the event.
+    /// </summary>
     internal static void Initialize()
     {
         AppDomain.CurrentDomain.AssemblyLoad += (_, __) =>
@@ -82,6 +85,9 @@ public static class TypeCacheManager
         OnRefreshed?.Invoke();
     }
 
+    /// <summary>
+    /// Gets all subtypes of the given type T in the Assembly Company specified above.
+    /// </summary>
     public static IReadOnlyList<Type> GetSubTypesOf<T>()
     {
         if (m_isDirty) Refresh();
@@ -89,6 +95,9 @@ public static class TypeCacheManager
         return [];
     }
 
+    /// <summary>
+    /// Gets all subtypes of the given interface in the Assembly Company specified above.
+    /// </summary>
     public static IReadOnlyList<Type> GetTypesImplementing<TInterface>()
     {
         if (m_isDirty) Refresh();
@@ -96,6 +105,9 @@ public static class TypeCacheManager
         return [];
     }
 
+    /// <summary>
+    /// Gets all types with the specified attribute in the Assembly Company specified above.
+    /// </summary>
     public static IReadOnlyList<Type> GetTypesWithAttribute<TAttr>() where TAttr : Attribute
     {
         if (m_isDirty) Refresh();

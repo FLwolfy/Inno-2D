@@ -7,12 +7,15 @@ namespace InnoEngine.ECS.Component;
 /// </summary>
 public class OrthographicCamera : GameCamera
 {
-    private const float c_near = -1f;
-    private const float c_far = 1f;
+    private const float C_NEAR = -1f;
+    private const float C_FAR = 1f;
 
     private float m_size = 10f;
     private float m_aspectRatio = 1.7777f;
 
+    /// <summary>
+    /// The size of the camera's view in world units.
+    /// </summary>
     public float size
     {
         get => m_size;
@@ -26,6 +29,11 @@ public class OrthographicCamera : GameCamera
         }
     }
 
+    /// <summary>
+    /// The aspect ratio of the camera's view (width / height).
+    /// Default is 16:9 (1.7777).
+    /// This affects how the camera's view is rendered, especially in different screen resolutions.
+    /// </summary>
     public float aspectRatio
     {
         get => m_aspectRatio;
@@ -60,8 +68,8 @@ public class OrthographicCamera : GameCamera
         return Matrix.CreateOrthographic(
             width: halfWidth * 2,
             height: halfHeight * 2,
-            c_near,
-            c_far
+            C_NEAR,
+            C_FAR
         );
     }
 
