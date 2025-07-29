@@ -1,4 +1,5 @@
 using System.Reflection;
+using InnoEngine.Utility;
 
 namespace InnoEditor.GUI.InspectorGUI;
 
@@ -6,19 +7,20 @@ public static class InspectorEditorRegistry
 {
     private static readonly Dictionary<Type, IInspectorEditor> REGISTRY = new();
 
-    static InspectorEditorRegistry()
+    internal static void Initialize()
     {
-        var editorTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .Where(t => typeof(IInspectorEditor).IsAssignableFrom(t) && !t.IsAbstract);
-
-        foreach (var editorType in editorTypes)
+        TypeCacheManager.OnRefreshed += () =>
         {
-            Register(editorType);
-        }
+            REGISTRY.Clear();
+            
+            foreach (var editorType in TypeCacheManager.GetTypesImplementing<IInspectorEditor>())
+            {
+                Register(editorType);
+            }
+        };
     }
 
-    public static void Register(Type type)
+    private static void Register(Type type)
     {
         if (type.IsAbstract || type.IsInterface) return;
 

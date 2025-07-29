@@ -1,3 +1,5 @@
+using InnoEngine.Utility;
+
 namespace InnoEditor.GUI.PropertyGUI;
 
 public static class PropertyRendererRegistry
@@ -5,20 +7,21 @@ public static class PropertyRendererRegistry
     private static readonly Dictionary<Type, IPropertyRenderer> RENDERERS = new();
     private static readonly Dictionary<Type, Type> OPEN_GENERIC_RENDERERS = new();
 
-    static PropertyRendererRegistry()
+    internal static void Initialize()
     {
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-        foreach (var assembly in assemblies)
+        TypeCacheManager.OnRefreshed += () =>
         {
-            foreach (var type in assembly.GetTypes())
+            RENDERERS.Clear();
+            OPEN_GENERIC_RENDERERS.Clear();
+            
+            foreach (var type in TypeCacheManager.GetTypesImplementing<IPropertyRenderer>())
             {
                 Register(type);
             }
-        }
+        };
     }
 
-    public static void Register(Type type)
+    private static void Register(Type type)
     {
         if (type.IsAbstract || type.IsInterface)
             return;

@@ -2,6 +2,7 @@ using InnoBase;
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
+using InnoEngine.Utility;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Bridge;
@@ -34,7 +35,7 @@ public abstract class EditorCore
         m_gameShell.SetOnSetup(() =>
         {
             Setup();
-            OnEditorStart();
+            TypeCacheManager.Initialize();
         });
 
         // Update Callbacks
@@ -124,9 +125,4 @@ public abstract class EditorCore
     /// Called every frame to draw ImGui panels.
     /// </summary>
     protected abstract void OnEditorGUI(float deltaTime);
-
-    /// <summary>
-    /// Called once after setup, editor is now fully ready.
-    /// </summary>
-    protected virtual void OnEditorStart() { }
 }

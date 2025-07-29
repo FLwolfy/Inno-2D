@@ -1,6 +1,7 @@
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
+using InnoEngine.Utility;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Bridge;
@@ -29,6 +30,7 @@ public abstract class EngineCore
         m_gameShell.SetOnSetup(() =>
         {
             Setup();
+            TypeCacheManager.Initialize();
             SceneManager.BeginRuntime();
         });
         

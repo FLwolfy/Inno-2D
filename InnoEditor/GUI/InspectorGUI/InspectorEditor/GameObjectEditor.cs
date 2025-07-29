@@ -1,4 +1,5 @@
 using InnoEngine.ECS;
+using InnoEngine.Utility;
 
 namespace InnoEditor.GUI.InspectorGUI.InspectorEditor;
 
@@ -17,7 +18,7 @@ public class GameObjectEditor : IInspectorEditor
     }
     
 
-    private void OnShowComponents(GameObject gameObject)
+    private static void OnShowComponents(GameObject gameObject)
     {
         var components = gameObject.GetAllComponents();
         foreach (var comp in components)
@@ -35,15 +36,15 @@ public class GameObjectEditor : IInspectorEditor
         }
     }
 
-    private void OnShowAddComponent(GameObject gameObject)
+    private static void OnShowAddComponent(GameObject gameObject)
     {
         var existingTypes = gameObject.GetAllComponents()
             .Select(c => c.GetType())
             .ToHashSet();
-        var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(a => a.GetTypes())
-            .Where(t => t.IsSubclassOf(typeof(GameComponent)) && !t.IsAbstract && !existingTypes.Contains(t))
-            .ToList();
+        
+        var componentTypes = TypeCacheManager.GetSubTypesOf<GameComponent>()
+            .Where(t => !t.IsAbstract && !t.IsInterface && !existingTypes.Contains(t))
+            .ToArray();
         
         var typeNames = componentTypes.Select(t => t.Name).ToArray();
 

@@ -1,6 +1,9 @@
 using InnoEditor.GUI;
+using InnoEditor.GUI.InspectorGUI;
+using InnoEditor.GUI.PropertyGUI;
 using InnoEditor.Panel;
 using InnoEngine.Core;
+using InnoEngine.Utility;
 using InnoInternal.ImGui.Bridge;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
@@ -18,6 +21,8 @@ public abstract class EditorApp : EditorCore
         
         // GUI Setup
         EditorGUILayout.Initialize(m_imGuiRenderer.context);
+        PropertyRendererRegistry.Initialize();
+        InspectorEditorRegistry.Initialize();
         
         // MenuBar Setup
         // TODO: Setup MenuBar

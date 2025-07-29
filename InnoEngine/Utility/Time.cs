@@ -1,4 +1,4 @@
-namespace InnoEngine.Core;
+namespace InnoEngine.Utility;
 
 public static class Time
 {
