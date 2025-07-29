@@ -92,7 +92,7 @@ Inno —— Inspired Notions, No Obedience.
 - Editor Gizmo 基础功能（坐标轴绘制）
 - 鼠标选中逻辑实现（HitTest / Picking）
 
-### ⚠️ 阶段三：组件系统编辑支持
+### ✅ 阶段三：组件系统编辑支持
 - ECS 中组件可序列化
 - Inspector 动态显示所有组件
 - 支持基础类型字段的 ImGui 编辑（float、int、bool、Vector2 等）
@@ -102,7 +102,7 @@ Inno —— Inspired Notions, No Obedience.
 - 选中同步、拖动父子关系
 - 增删物体支持（+按钮 / Delete）
 
-### ❓ 阶段五：资源系统 & Project 面板
+### ⚠️ 阶段五：资源系统 & Project 面板
 - 构建资源加载系统（统一入口）
 - 支持纹理、Prefab、音效等的浏览和加载
 - Project 面板展示资源 + 拖拽功能
