@@ -13,10 +13,14 @@ public static class EditorGUILayout
 
     private static readonly Stack<int> SCOPE_STACK = new();
     private static readonly Stack<LayoutAlign> ALIGN_STACK = new();
-
+    private static readonly Stack<bool> COLUMN_DIRTY_STACK = new();
+    private static readonly Dictionary<int, int> COLUMN_COUNT_MAP = new();
+    
     private static int m_autoID = 0;
     private static int m_autoMeasureID = 0;
+    private static int m_columnDepth = 0;
     private static bool m_frameBegin = false;
+    
     private static IImGuiContext m_context = null!;
 
     internal static void Initialize(IImGuiContext context)
@@ -79,17 +83,25 @@ public static class EditorGUILayout
     /// <summary>
     /// Begins a column layout with specified column numbers.
     /// </summary>
-    public static void BeginColumns(int columnCount = 1, bool bordered = false)
+    public static void BeginColumns(bool bordered = false)
     {
         var flags = IImGuiContext.TableFlags.SizingStretchSame;
         if (bordered)
         {
             flags |= IImGuiContext.TableFlags.BordersInner | IImGuiContext.TableFlags.BordersOuter;
         }
+        
+        m_columnDepth++;
+        COLUMN_DIRTY_STACK.Push(!COLUMN_COUNT_MAP.ContainsKey(m_columnDepth));
 
-        m_context.BeginTable("EditorLayout", columnCount, flags);
-        m_context.TableNextRow();
-        m_context.TableSetColumnIndex(0);
+        if (!COLUMN_DIRTY_STACK.Peek())
+        {
+            m_context.BeginTable("EditorLayout", COLUMN_COUNT_MAP[m_columnDepth], flags);
+            m_context.TableNextRow();
+            m_context.TableSetColumnIndex(0);
+        }
+
+        COLUMN_COUNT_MAP[m_columnDepth] = 1;
     }
 
     /// <summary>
@@ -97,15 +109,25 @@ public static class EditorGUILayout
     /// </summary>
     public static void EndColumns()
     {
-        m_context.EndTable();
+        if (!COLUMN_DIRTY_STACK.Peek())
+        {
+            m_context.EndTable();
+        }
+        
+        m_columnDepth--;
     }
 
     /// <summary>
     /// Split columns in the current column layout.
     /// </summary>
-    public static void SplitColumn()
+    public static void SplitColumns()
     {
-        m_context.TableNextColumn();
+        if (!COLUMN_DIRTY_STACK.Peek())
+        {
+            m_context.TableNextColumn();
+        }
+
+        COLUMN_COUNT_MAP[m_columnDepth]++;
     }
     
     /// <summary>
@@ -361,6 +383,9 @@ public static class EditorGUILayout
         using (new DrawScope(enabled)) { return m_context.Combo(label, ref selectedIndex, list); }
     }
 
+    /// <summary>
+    /// Render a popup menu for selecting items.
+    /// </summary>
     public static bool PopupMenu(string label, string emptyMsg, string[] itemNameList, out int? selectedIndex, bool enabled = true)
     {
         bool changed = false;

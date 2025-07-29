@@ -15,6 +15,7 @@ public class GameObjectEditor : IInspectorEditor
         OnShowAddComponent(gameObject);
         EditorGUILayout.EndScope();
     }
+    
 
     private void OnShowComponents(GameObject gameObject)
     {
