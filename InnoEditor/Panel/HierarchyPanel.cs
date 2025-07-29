@@ -17,9 +17,54 @@ public class HierarchyPanel : EditorPanel
 
     internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
     {
+        // Draw Scene root
+        DrawSceneObjectRoot(context);
+
+        // Draw root GameObjects
+        foreach (var obj in SceneManager.GetActiveScene()!.GetAllRootGameObjects())
+        {
+            DrawRootGameObject(context, obj);
+        }
+        
+        // Handle Menu Events
+        HandleMenu(context);
+
+        // Apply delayed actions
+        while (m_pendingGUIUpdateAction.Count > 0)
+        {
+            m_pendingGUIUpdateAction.Dequeue().Invoke();
+        }
+    }
+
+    private void HandleMenu(IImGuiContext context)
+    {
+        if (!context.IsAnyItemHovered() && context.IsWindowHovered() && context.IsMouseClicked((int)Input.MouseButton.Right))
+        {
+            context.OpenPopup("HierarchyContextMenu");
+        }
+
+        if (context.BeginPopup("HierarchyContextMenu"))
+        {
+            if (context.BeginMenu("Create"))
+            {
+                if (context.MenuItem("GameObject"))
+                {
+                    m_pendingGUIUpdateAction.Enqueue(() =>
+                    {
+                        var go = new GameObject("New GameObject");
+                        EditorManager.selection.Select(go);
+                    });
+                }
+                context.EndMenu();
+            }
+            context.EndPopup();
+        }
+    }
+
+    private void DrawSceneObjectRoot(IImGuiContext context)
+    {
         // Draw "Scene Root" as non-selectable, non-draggable
         context.Text("[ Scene Root ]");
-
         if (context.BeginDragDropTarget())
         {
             var payload = context.AcceptDragDropPayload<Guid>(C_GAMEOBJECT_GUID_TYPE);
@@ -30,21 +75,9 @@ public class HierarchyPanel : EditorPanel
             }
             context.EndDragDropTarget();
         }
-
-        // Draw root GameObjects
-        foreach (var obj in SceneManager.GetActiveScene()!.GetAllRootGameObjects())
-        {
-            DrawGameObjectTree(context, obj);
-        }
-
-        // Apply delayed actions
-        while (m_pendingGUIUpdateAction.Count > 0)
-        {
-            m_pendingGUIUpdateAction.Dequeue().Invoke();
-        }
     }
 
-    private void DrawGameObjectTree(IImGuiContext context, GameObject obj)
+    private void DrawRootGameObject(IImGuiContext context, GameObject obj)
     {
         var selection = EditorManager.selection;
         bool isSelected = selection.IsSelected(obj);
@@ -55,7 +88,21 @@ public class HierarchyPanel : EditorPanel
         if (isSelected) { flags |= IImGuiContext.TreeNodeFlags.Selected; }
 
         ////////////// Begin Tree Node //////////////
-        bool isOpenTree = context.TreeNode(obj.name, flags);
+        bool isOpenTree = context.TreeNode($"{obj.name}###{obj.id}", flags);
+        
+        // Handle Right Click menu
+        if (context.BeginPopupContextItem($"Popup_{obj.id}"))
+        {
+            if (context.MenuItem("Delete"))
+            {
+                m_pendingGUIUpdateAction.Enqueue(() =>
+                {
+                    obj.scene.UnregisterGameObject(obj);
+                });
+            }
+
+            context.EndPopup();
+        }
         
         // Handle click selection
         if (context.IsItemClicked((int)Input.MouseButton.Left))
@@ -86,8 +133,7 @@ public class HierarchyPanel : EditorPanel
         // Draw Children
         if (hasChildren && isOpenTree)
         {
-            foreach (var child in obj.transform.children)
-                DrawGameObjectTree(context, child.gameObject);
+            foreach (var child in obj.transform.children) DrawRootGameObject(context, child.gameObject);
         }
         
         ////////////// End Tree Node //////////////

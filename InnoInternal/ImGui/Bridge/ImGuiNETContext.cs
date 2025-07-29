@@ -135,6 +135,7 @@ internal class ImGuiNETContext : IImGuiContext
     // Item Flags
     public void PushItemFlag(IImGuiContext.ItemFlags flags, bool enabled) => ImGuiNET.ImGui.PushItemFlag((ImGuiNET.ImGuiItemFlags)flags, enabled);
     public void PopItemFlag() => ImGuiNET.ImGui.PopItemFlag();
+    public bool IsAnyItemHovered() => ImGuiNET.ImGui.IsAnyItemHovered();
     
     // Disable
     public void BeginDisabled() => ImGuiNET.ImGui.BeginDisabled();
@@ -159,6 +160,7 @@ internal class ImGuiNETContext : IImGuiContext
     
     // Popup
     public bool BeginPopup(string label) => ImGuiNET.ImGui.BeginPopup(label);
+    public bool BeginPopupContextItem(string label) => ImGuiNET.ImGui.BeginPopupContextItem(label);
     public void EndPopup() => ImGuiNET.ImGui.EndPopup();
     public void OpenPopup(string label) => ImGuiNET.ImGui.OpenPopup(label);
     public void CloseCurrentPopup() => ImGuiNET.ImGui.CloseCurrentPopup();

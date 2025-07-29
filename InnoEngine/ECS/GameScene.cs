@@ -10,6 +10,9 @@ public class GameScene : Serializable
     public readonly Guid id = Guid.NewGuid();
     public string name = "GameScene";
     
+    private bool m_isRunning;
+    private bool m_isUpdating;
+    
     private readonly List<GameObject> m_gameObjects = [];
     private readonly List<GameObject> m_pendingGameObjectRemoves = [];
     private readonly ComponentManager m_componentManager = new();
@@ -51,8 +54,15 @@ public class GameScene : Serializable
         {
             m_componentManager.Remove(obj.id, comp);
         }
-        
-        m_pendingGameObjectRemoves.Add(obj);
+
+        if (m_isRunning || m_isUpdating)
+        {
+            m_pendingGameObjectRemoves.Add(obj);
+        }
+        else
+        {
+            m_gameObjects.Remove(obj);
+        }
     }
 
     /// <summary>
@@ -94,6 +104,7 @@ public class GameScene : Serializable
     {
         m_componentManager.WakeAll();
         m_componentManager.BeginRuntime();
+        m_isRunning = true;
     }
 
     /// <summary>
@@ -101,8 +112,12 @@ public class GameScene : Serializable
     /// </summary>
     internal void Update()
     {
+        // Updates
+        m_isUpdating = true;
         m_componentManager.UpdateAll();
+        m_isUpdating = false;
         
+        // Remove objects
         foreach (var gameObject in m_pendingGameObjectRemoves) { m_gameObjects.Remove(gameObject); }
         m_pendingGameObjectRemoves.Clear();
     }

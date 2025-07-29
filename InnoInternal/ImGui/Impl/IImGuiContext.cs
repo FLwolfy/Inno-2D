@@ -180,6 +180,7 @@ internal interface IImGuiContext
     }
     void PushItemFlag(ItemFlags flags, bool enabled);
     void PopItemFlag();
+    bool IsAnyItemHovered();
     
     // Disable
     void BeginDisabled();
@@ -263,6 +264,7 @@ internal interface IImGuiContext
     
     // Popup
     bool BeginPopup(string label);
+    bool BeginPopupContextItem(string label);
     void EndPopup();
     void OpenPopup(string label);
     void CloseCurrentPopup();
