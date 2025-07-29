@@ -9,13 +9,14 @@ namespace InnoEditor.GUI;
 /// </summary>
 public static class EditorGUILayout
 {
-    public enum LayoutType { Vertical, Horizontal }
     public enum LayoutAlign { Front, Center, Back }
-    
+
+    private static readonly Stack<int> SCOPE_STACK = new();
     private static readonly Stack<LayoutAlign> ALIGN_STACK = new();
 
     private static int m_autoID = 0;
     private static int m_autoMeasureID = 0;
+    private static bool m_frameBegin = false;
     private static IImGuiContext m_context = null!;
 
     internal static void Initialize(IImGuiContext context)
@@ -30,24 +31,99 @@ public static class EditorGUILayout
     /// </summary>
     public static void BeginFrame()
     {
+        if (m_frameBegin)
+        {
+            throw new InvalidOperationException("BeginFrame() can only be called once.");
+        }
+
         m_autoID = 0;
         m_autoMeasureID = 0;
+        m_frameBegin = true;
     }
     
     /// <summary>
-    /// Reset the layout stacks at the end of a frame.
+    /// Check the end condition.
     /// </summary>
     public static void EndFrame()
     {
-        if (ALIGN_STACK.Count != 0)
+        if (ALIGN_STACK.Count != 0 || SCOPE_STACK.Count != 0 || !m_frameBegin)
         {
-            throw new InvalidOperationException("EditorLayout.EndFrame called without matching EndAlignment");
+            throw new InvalidOperationException("EndFrame() is called improperly.");
         }
+        
+        m_frameBegin = false;
+    }
+
+    /// <summary>
+    /// Begin a scope for the following GUI render.
+    /// </summary>
+    public static void BeginScope(int id)
+    {
+        m_context.PushID(id);
+        SCOPE_STACK.Push(id);
+    }
+
+    /// <summary>
+    /// End the current GUI scope.
+    /// </summary>
+    public static void EndScope()
+    {
+        m_context.PopID();
+        SCOPE_STACK.Pop();
     }
     
     #endregion
     
     #region Layouts
+
+    /// <summary>
+    /// Begins a column layout with specified column numbers.
+    /// </summary>
+    public static void BeginColumns(int columnCount = 1, bool bordered = false)
+    {
+        var flags = IImGuiContext.TableFlags.SizingStretchSame;
+        if (bordered)
+        {
+            flags |= IImGuiContext.TableFlags.BordersInner | IImGuiContext.TableFlags.BordersOuter;
+        }
+
+        m_context.BeginTable("EditorLayout", columnCount, flags);
+        m_context.TableNextRow();
+        m_context.TableSetColumnIndex(0);
+    }
+
+    /// <summary>
+    /// Ends the current column layout.
+    /// </summary>
+    public static void EndColumns()
+    {
+        m_context.EndTable();
+    }
+
+    /// <summary>
+    /// Split columns in the current column layout.
+    /// </summary>
+    public static void SplitColumn()
+    {
+        m_context.TableNextColumn();
+    }
+    
+    /// <summary>
+    /// Inserts vertical spacing of given height (default 8px)
+    /// </summary>
+    public static void Space(float pixels = 8f)
+    {
+        m_context.Dummy(new Vector2(1, pixels));
+    }
+    
+    /// <summary>
+    /// Inserts horizontal indentation of given width (default 8px)
+    /// </summary>
+    public static void Indent(float pixels = 8f)
+    {
+        m_context.Dummy(new Vector2(pixels, 1));
+        m_context.SameLine();
+    }
     
     /// <summary>
     /// Begin a new layout with specified type and alignment.
@@ -254,32 +330,74 @@ public static class EditorGUILayout
     /// <summary>
     /// Render a Collapsable Header with a label and an action to call when closed.
     /// </summary>
-    public static bool CollapsingHeader(string label, Action onClose, bool defaultOpen = true, bool enabled = true)
+    public static bool CollapsingHeader(string label, Action? onClose = null, bool defaultOpen = true, bool enabled = true)
     {
         bool visibility = true;
         var openFlag = defaultOpen ? IImGuiContext.TreeNodeFlags.DefaultOpen : IImGuiContext.TreeNodeFlags.None;
-        
+
         bool result;
-        using (new DrawScope(enabled)) { result = m_context.CollapsingHeader(label, ref visibility, openFlag); }
-        if (!visibility) { onClose.Invoke(); }
+        if (onClose == null)
+        {
+            result = m_context.CollapsingHeader(label, openFlag);
+        }
+        else
+        {
+            using (new DrawScope(enabled)) { result = m_context.CollapsingHeader(label, ref visibility, openFlag); }
+            if (!visibility) { onClose.Invoke(); }
+        }
+        
         return result;
-    }
-    
-    /// <summary>
-    /// Inserts vertical spacing of given height (default 8px)
-    /// </summary>
-    public static void Space(float pixels = 8f)
-    {
-        m_context.Dummy(new Vector2(1, pixels));
     }
 
     /// <summary>
-    /// Inserts a horizontal separator line
+    /// Render a combo box for selecting objects.
     /// </summary>
-    public static void Separator()
+    public static bool Combo(string label, string[] list, ref int selectedIndex, bool enabled = true)
     {
-        m_context.Separator();
+        var demmySelected = selectedIndex;
+        float width = MeasureWidth(() => m_context.Combo(label, ref demmySelected, list));
+        AlignNextItem(width);
+        
+        using (new DrawScope(enabled)) { return m_context.Combo(label, ref selectedIndex, list); }
     }
+
+    public static bool PopupMenu(string label, string emptyMsg, string[] itemNameList, out int? selectedIndex, bool enabled = true)
+    {
+        bool changed = false;
+        selectedIndex = null;
+
+        using (new DrawScope(enabled))
+        {
+            AlignNextItem(MeasureWidth(() => m_context.Button(label)));
+            if (m_context.Button(label))
+            {
+                m_context.OpenPopup(label);
+            }
+
+            if (m_context.BeginPopup(label))
+            {
+                if (itemNameList.Length == 0)
+                {
+                    m_context.Text(emptyMsg);
+                }
+                
+                for (int i = 0; i < itemNameList.Length; i++)
+                {
+                    if (m_context.MenuItem(itemNameList[i]))
+                    {
+                        selectedIndex = i;
+                        changed = true;
+                        m_context.CloseCurrentPopup();
+                    }
+                }
+
+                m_context.EndPopup();
+            }
+        }
+
+        return changed;
+    }
+
     
     #endregion
 }

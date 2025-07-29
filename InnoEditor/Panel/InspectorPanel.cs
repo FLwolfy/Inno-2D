@@ -17,14 +17,10 @@ namespace InnoEditor.Panel
             var selectedObject = EditorManager.selection.selectedObject;
             if (selectedObject == null) { return; }
             
-            context.PushID(selectedObject.id.GetHashCode());
-            
             if (InspectorEditorRegistry.TryGetEditor(selectedObject.GetType(), out var editor))
             {
                 editor!.OnInspectorGUI(selectedObject);
             }
-            
-            context.PopID();
         }
 
 

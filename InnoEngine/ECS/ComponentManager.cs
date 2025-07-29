@@ -80,6 +80,56 @@ internal class ComponentManager
         
         return component;
     }
+    
+    /// <summary>
+    /// Adds a component with given type to the entity if it doesn't exist.
+    /// Returns the existing or new component instance.
+    /// </summary>
+    public GameComponent? Add(GameObject obj, Type type)
+    {
+        // Check type
+        if (!typeof(GameComponent).IsAssignableFrom(type)) { return null; }
+        
+        // Initialize the List for a new entity
+        if (!m_componentsByEntity.TryGetValue(obj.id, out var entityComponents))
+        {
+            entityComponents = new Dictionary<Type, GameComponent>();
+            m_componentsByEntity[obj.id] = entityComponents;
+        }
+
+        // Already exists, return it directly
+        if (entityComponents.TryGetValue(type, out var existingComponent))
+        {
+            return existingComponent;
+        }
+
+        // Create new component instance
+        var component = (GameComponent?)Activator.CreateInstance(type);
+        if (component == null) return null;
+        
+        component.Initialize(obj);
+        entityComponents[type] = component;
+        AddToTypeMap(component);
+        
+        // Add or delay add to tag map (for safe iterations)
+        if (m_isUpdating) { m_pendingAddRemoveAction.Add(() => InsertSorted(m_componentsByTag[component.orderTag], component)); }
+        else { InsertSorted(m_componentsByTag[component.orderTag], component); }
+        
+        // Game already started, execute Awake()
+        if (m_isRunning && !component.hasAwakened)
+        {
+            component.Awake();
+            component.hasAwakened = true;
+        }
+
+        // Delay Start()
+        if (component.isActive && !component.hasStarted)
+        {
+            m_pendingStartComponents.Add(component);
+        }
+        
+        return component;
+    }
 
     /// <summary>
     /// Removes a component of type T from the entity.

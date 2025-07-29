@@ -21,6 +21,7 @@ internal class ImGuiNETContext : IImGuiContext
     public void EndMainMenuBar() => ImGuiNET.ImGui.EndMainMenuBar();
     public bool BeginMenu(string title, bool open = true) => ImGuiNET.ImGui.BeginMenu(title, open);
     public void EndMenu() => ImGuiNET.ImGui.EndMenu();
+    public bool MenuItem(string title) => ImGuiNET.ImGui.MenuItem(title);
 
     // Window
     public bool BeginWindow(string title, bool open = true) => ImGuiNET.ImGui.Begin(title, ref open);
@@ -34,10 +35,12 @@ internal class ImGuiNETContext : IImGuiContext
     public Vector2 GetWindowPos() => new Vector2(ImGuiNET.ImGui.GetWindowPos().X, ImGuiNET.ImGui.GetWindowPos().Y);
     public Vector2 GetCursorStartPos() => new Vector2(ImGuiNET.ImGui.GetCursorStartPos().X, ImGuiNET.ImGui.GetCursorStartPos().Y);
     public Vector2 GetCursorPos() => new Vector2(ImGuiNET.ImGui.GetCursorPos().X, ImGuiNET.ImGui.GetCursorPos().Y);
+    public Vector2 GetCursorScreenPos() => new Vector2(ImGuiNET.ImGui.GetCursorScreenPos().X, ImGuiNET.ImGui.GetCursorScreenPos().Y);
     public void SetCursorPos(Vector2 pos) => ImGuiNET.ImGui.SetCursorPos(new System.Numerics.Vector2(pos.x, pos.y));
     public void SetCursorPosX(float x) => ImGuiNET.ImGui.SetCursorPosX(x);
     public void SetCursorPosY(float y) => ImGuiNET.ImGui.SetCursorPosY(y);
-    
+    public void SetCursorScreenPos(Vector2 pos) => ImGuiNET.ImGui.SetCursorScreenPos(new System.Numerics.Vector2(pos.x, pos.y));
+
     // Layout
     public void BeginGroup() => ImGuiNET.ImGui.BeginGroup();
     public void EndGroup() => ImGuiNET.ImGui.EndGroup();
@@ -45,15 +48,19 @@ internal class ImGuiNETContext : IImGuiContext
     {
         if (m_inInvisible) throw new InvalidOperationException("Cannot nest invisible groups.");
         m_inInvisible = true;
+
+        System.Numerics.Vector2 currentAvailSize = ImGuiNET.ImGui.GetContentRegionAvail();
         
         ImGuiNET.ImGui.SetCurrentContext(m_renderer.virtualContextPtr);
         ImGuiNET.ImGui.PushID("INVISIBLE_ID");
+        ImGuiNET.ImGui.BeginChild("INVISIBLE_GROUP", currentAvailSize);
         ImGuiNET.ImGui.BeginGroup();
     }
     public void EndInvisible()
     {
         ImGuiNET.ImGui.EndGroup();
         m_invisibleSizeCache = new Vector2(ImGuiNET.ImGui.GetItemRectSize().X, ImGuiNET.ImGui.GetItemRectSize().Y);
+        ImGuiNET.ImGui.EndChild();
         ImGuiNET.ImGui.PopID();
         ImGuiNET.ImGui.SetCurrentContext(m_renderer.mainMainContextPtr);
         
@@ -78,8 +85,10 @@ internal class ImGuiNETContext : IImGuiContext
     public bool Button(string label) => ImGuiNET.ImGui.Button(label);
     public bool Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);
     public bool SliderFloat(string label, ref float value, float min, float max) => ImGuiNET.ImGui.SliderFloat(label, ref value, min, max);
+    public bool CollapsingHeader(string compName, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.CollapsingHeader(compName, (ImGuiNET.ImGuiTreeNodeFlags)flags);
     public bool CollapsingHeader(string compName, ref bool visible, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.CollapsingHeader(compName, ref visible, (ImGuiNET.ImGuiTreeNodeFlags)flags);
-   
+    public bool Combo(string label, ref int selectedIndex, string[] list) => ImGuiNET.ImGui.Combo(label, ref selectedIndex, list, list.Length);
+
     // Input
     public bool InputInt(string label, ref int value) => ImGuiNET.ImGui.InputInt(label, ref value);
     public bool InputFloat(string label, ref float value) => ImGuiNET.ImGui.InputFloat(label, ref value);
@@ -135,11 +144,24 @@ internal class ImGuiNETContext : IImGuiContext
     public void PushID(int id) => ImGuiNET.ImGui.PushID(id);
     public void PopID() => ImGuiNET.ImGui.PopID();
     public bool IsItemClicked(int button) => ImGuiNET.ImGui.IsItemClicked((ImGuiNET.ImGuiMouseButton)button);
+    
+    // Table
+    public void BeginTable(string text, int columnCount, IImGuiContext.TableFlags flags) => ImGuiNET.ImGui.BeginTable(text, columnCount, (ImGuiNET.ImGuiTableFlags)flags);
+    public void EndTable() => ImGuiNET.ImGui.EndTable();
+    public void TableNextRow() => ImGuiNET.ImGui.TableNextRow();
+    public void TableNextColumn() => ImGuiNET.ImGui.TableNextColumn();
+    public void TableSetColumnIndex(int index) => ImGuiNET.ImGui.TableSetColumnIndex(index);
 
     // Tree
     public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)flags);
     
     public void TreePop() => ImGuiNET.ImGui.TreePop();
+    
+    // Popup
+    public bool BeginPopup(string label) => ImGuiNET.ImGui.BeginPopup(label);
+    public void EndPopup() => ImGuiNET.ImGui.EndPopup();
+    public void OpenPopup(string label) => ImGuiNET.ImGui.OpenPopup(label);
+    public void CloseCurrentPopup() => ImGuiNET.ImGui.CloseCurrentPopup();
     
     // Drag & Drop
     public bool BeginDragDropSource() => ImGuiNET.ImGui.BeginDragDropSource();

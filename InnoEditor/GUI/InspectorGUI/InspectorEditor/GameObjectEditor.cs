@@ -10,7 +10,10 @@ public class GameObjectEditor : IInspectorEditor
         if (target is not GameObject gameObject) { return; }
         
         // Render Components
+        EditorGUILayout.BeginScope(gameObject.id.GetHashCode());
         OnShowComponents(gameObject);
+        OnShowAddComponent(gameObject);
+        EditorGUILayout.EndScope();
     }
 
     private void OnShowComponents(GameObject gameObject)
@@ -29,12 +32,28 @@ public class GameObjectEditor : IInspectorEditor
             
             EditorGUILayout.Space(10f);
         }
+    }
+
+    private void OnShowAddComponent(GameObject gameObject)
+    {
+        var existingTypes = gameObject.GetAllComponents()
+            .Select(c => c.GetType())
+            .ToHashSet();
+        var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsSubclassOf(typeof(GameComponent)) && !t.IsAbstract && !existingTypes.Contains(t))
+            .ToList();
         
+        var typeNames = componentTypes.Select(t => t.Name).ToArray();
+
         EditorGUILayout.BeginAlignment(EditorGUILayout.LayoutAlign.Center);
-        if (EditorGUILayout.Button("Add Component"))
+
+        if (EditorGUILayout.PopupMenu("Add Component", "No available components to add.", typeNames, out var selectedIndex))
         {
-            Console.WriteLine("SYFCJS");
+            var selectedType = componentTypes[selectedIndex!.Value];
+            gameObject.AddComponent(selectedType);
         }
+
         EditorGUILayout.EndAlignment();
     }
 }

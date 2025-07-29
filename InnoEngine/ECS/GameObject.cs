@@ -55,6 +55,14 @@ public class GameObject : Serializable
     }
 
     /// <summary>
+    /// Adds a component with given Type to this GameObject.
+    /// </summary>
+    public GameComponent? AddComponent(Type type)
+    {
+        return scene.GetComponentManager().Add(this, type);
+    }
+
+    /// <summary>
     /// Gets a component of type T from this GameObject.
     /// </summary>
     public T? GetComponent<T>() where T : GameComponent
