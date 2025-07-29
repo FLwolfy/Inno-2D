@@ -33,6 +33,10 @@ public static class InspectorEditorRegistry
         }
     }
     
+    /// <summary>
+    /// Get the editor for the specified type.
+    /// If the editor is not found, it will return false and the editor will be null
+    /// </summary>
     public static bool TryGetEditor(Type type, out IInspectorEditor? editor)
         => REGISTRY.TryGetValue(type, out editor);
 }

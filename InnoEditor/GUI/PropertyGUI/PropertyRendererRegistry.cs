@@ -51,6 +51,11 @@ public static class PropertyRendererRegistry
         }
     }
 
+    /// <summary>
+    /// Gets the renderer for the specified type.
+    /// If the renderer is not found, it will return false and the propertyRenderer will be null.
+    /// If the type is a generic type, it will try to find an open generic.
+    /// </summary>
     public static bool TryGetRenderer(Type type, out IPropertyRenderer? propertyRenderer)
     {
         if (RENDERERS.TryGetValue(type, out var renderer))

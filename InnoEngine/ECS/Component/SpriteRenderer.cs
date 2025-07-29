@@ -15,6 +15,9 @@ public class SpriteRenderer : GameBehavior
     
     public override ComponentTag orderTag => ComponentTag.Render;
     
+    /// <summary>
+    /// The sprite to render.
+    /// </summary>
     public Sprite sprite { get; set; } = new Sprite();
     
     /// <summary>

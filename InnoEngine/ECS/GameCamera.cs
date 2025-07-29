@@ -12,12 +12,19 @@ public abstract class GameCamera : GameComponent
     private Matrix m_cachedProjectionMatrix;
     private Rect m_cachedViewRect;
 
+    /// <summary>
+    /// Sets or gets whether this camera is the main camera in the scene.
+    /// </summary>
     public bool isMainCamera
     {
         get => gameObject.scene.GetCameraManager().mainCamera == this;
         set { gameObject.scene.GetCameraManager().SetMainCamera(value ? this : null); }
     }
 
+    /// <summary>
+    /// The view matrix of the camera.
+    /// This matrix transforms world coordinates into camera space.
+    /// </summary>
     public Matrix viewMatrix
     {
         get
@@ -27,6 +34,10 @@ public abstract class GameCamera : GameComponent
         }
     }
 
+    /// <summary>
+    /// The projection matrix of the camera.
+    /// This matrix defines how the camera's view is projected onto the screen.
+    /// </summary>
     public Matrix projectionMatrix
     {
         get
@@ -36,6 +47,10 @@ public abstract class GameCamera : GameComponent
         }
     }
 
+    /// <summary>
+    /// The view rectangle of the camera.
+    /// This rectangle defines the area of the world that is visible through the camera.
+    /// </summary>
     public Rect viewRect
     {
         get
