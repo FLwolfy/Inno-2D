@@ -97,7 +97,7 @@ Inno —— Inspired Notions, No Obedience.
 - Inspector 动态显示所有组件
 - 支持基础类型字段的 ImGui 编辑（float、int、bool、Vector2 等）
 
-### ⚠️ 阶段四：层级管理器（Hierarchy）
+### ✅ 阶段四：层级管理器（Hierarchy）
 - 展示场景中所有 GameObject
 - 选中同步、拖动父子关系
 - 增删物体支持（+按钮 / Delete）
@@ -107,9 +107,8 @@ Inno —— Inspired Notions, No Obedience.
 - 支持纹理、Prefab、音效等的浏览和加载
 - Project 面板展示资源 + 拖拽功能
 
-### ❓ 阶段六：Gizmo 与 Handles
+### ⚠️ 阶段六：Gizmo 与 Handles
 - 实现拖动、旋转、缩放 Gizmo
-- 鼠标吸附、局部/全局坐标系统切换
 - 多选支持
 - 支持组件独立控制 Gizmo 显示（如 Camera Gizmo、Collider Gizmo）
 
