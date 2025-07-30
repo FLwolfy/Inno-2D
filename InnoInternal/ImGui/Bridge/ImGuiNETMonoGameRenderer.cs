@@ -4,45 +4,49 @@
 
 using System.Net.Mime;
 using System.Runtime.InteropServices;
-using ImGuiNET;
+
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Resource.Bridge;
 using InnoInternal.Resource.Impl;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+
+using ImGuiNET;
 
 namespace InnoInternal.ImGui.Bridge;
 
 internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
 {
     // Graphics
-    private static GraphicsDevice graphicsDevice => MonoGameRenderAPI.graphicsDevice;
-    private Game m_game;
+    private GraphicsDevice graphicsDevice => MonoGameRenderAPI.graphicsDevice;
+    private Game m_game = null!;
     
-    private IImGuiContext m_imGuiContext;
-    public IImGuiContext context => m_imGuiContext;
+    private BasicEffect m_effect = null!;
+    private RasterizerState m_rasterizerState = null!;
     
-    private BasicEffect m_effect;
-    private RasterizerState m_rasterizerState;
-    
-    private byte[] m_vertexData;
-    private VertexBuffer m_vertexBuffer;
+    private byte[] m_vertexData = null!;
+    private VertexBuffer m_vertexBuffer = null!;
     private int m_vertexBufferSize;
 
-    private byte[] m_indexData;
-    private IndexBuffer m_indexBuffer;
+    private byte[] m_indexData = null!;
+    private IndexBuffer m_indexBuffer = null!;
     private int m_indexBufferSize;
 
-    private IntPtr m_imguiMainContextPtr;
-    public IntPtr mainMainContextPtr => m_imguiMainContextPtr;
-    private IntPtr m_imguiVirtualContextPtr;
-    public IntPtr virtualContextPtr => m_imguiVirtualContextPtr;
+    private IImGuiContext m_imGuiContext = null!;
+    private IntPtr m_imGuiMainContextPtr;
+    private IntPtr m_imGuiVirtualContextPtr;
+    
+    // Properties
+    public IImGuiContext context => m_imGuiContext;
+    public IntPtr mainMainContextPtr => m_imGuiMainContextPtr;
+    public IntPtr virtualContextPtr => m_imGuiVirtualContextPtr;
 
     // Textures
-    private readonly Dictionary<IntPtr, Texture2D> m_loadedTextures = new Dictionary<IntPtr, Texture2D>();
-
+    private readonly Dictionary<IntPtr, Texture2D> m_loadedTextures = new();
+    
     private int m_textureId;
     private IntPtr? m_fontTextureId;
 
@@ -70,15 +74,16 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         };
         
         // Virtual Context
-        m_imguiVirtualContextPtr = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        m_imGuiVirtualContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
         RebuildFontAtlas();
         
         // Main Context
-        m_imguiMainContextPtr = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
+        m_imGuiMainContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
         SetupInput();
         SetupFlags();
+        SetupThemes();
         RebuildFontAtlas();
     }
 
@@ -135,7 +140,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     /// <summary>
     /// Removes a previously created texture pointer, releasing its reference and allowing it to be deallocated
     /// </summary>
-    public void UnbindTexture(IntPtr textureId)
+    private void UnbindTexture(IntPtr textureId)
     {
         m_loadedTextures.Remove(textureId);
     }
@@ -147,12 +152,12 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     public virtual void BeginLayout(float deltaTime)
     {
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
         ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight);
         ImGuiNET.ImGui.NewFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
         ImGuiNET.ImGui.GetIO().DeltaTime = deltaTime;
         UpdateInput();
         ImGuiNET.ImGui.NewFrame();
@@ -165,11 +170,11 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     public virtual void EndLayout()
     {
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiVirtualContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
         ImGuiNET.ImGui.EndFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imguiMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
         ImGuiNET.ImGui.Render();
         { RenderDrawData(ImGuiNET.ImGui.GetDrawData()); }
         
@@ -229,6 +234,57 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         //    ImGui.GetIO().AddInputCharacter(c);
         //};
         ///////////////////////////////////////////
+    }
+
+    private void SetupThemes()
+    {
+        ImGuiNET.ImGui.StyleColorsDark();
+        
+        var style = ImGuiNET.ImGui.GetStyle();
+        var colors = style.Colors;
+
+        // Window Background
+        colors[(int)ImGuiCol.WindowBg] = new System.Numerics.Vector4(0.10f, 0.10f, 0.11f, 1.0f);
+
+        // Headers
+        colors[(int)ImGuiCol.Header] = new System.Numerics.Vector4(0.20f, 0.205f, 0.25f, 1.0f);
+        colors[(int)ImGuiCol.HeaderHovered] = new System.Numerics.Vector4(0.35f, 0.30f, 0.45f, 1.0f); // muted purple
+        colors[(int)ImGuiCol.HeaderActive] = new System.Numerics.Vector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Buttons
+        colors[(int)ImGuiCol.Button] = new System.Numerics.Vector4(0.20f, 0.205f, 0.21f, 1.0f);
+        colors[(int)ImGuiCol.ButtonHovered] = new System.Numerics.Vector4(0.35f, 0.30f, 0.45f, 1.0f);
+        colors[(int)ImGuiCol.ButtonActive] = new System.Numerics.Vector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Frame BG
+        colors[(int)ImGuiCol.FrameBg] = new System.Numerics.Vector4(0.18f, 0.18f, 0.20f, 1.0f);
+        colors[(int)ImGuiCol.FrameBgHovered] = new System.Numerics.Vector4(0.35f, 0.30f, 0.45f, 1.0f);
+        colors[(int)ImGuiCol.FrameBgActive] = new System.Numerics.Vector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Tabs
+        colors[(int)ImGuiCol.Tab] = new System.Numerics.Vector4(0.13f, 0.13f, 0.16f, 1.0f);
+        colors[(int)ImGuiCol.TabHovered] = new System.Numerics.Vector4(0.45f, 0.35f, 0.60f, 1.0f);
+        colors[(int)ImGuiCol.TabSelected] = new System.Numerics.Vector4(0.38f, 0.32f, 0.50f, 1.0f);
+        colors[(int)ImGuiCol.TabDimmed] = new System.Numerics.Vector4(0.10f, 0.10f, 0.12f, 1.0f);
+        colors[(int)ImGuiCol.TabDimmedSelected] = new System.Numerics.Vector4(0.28f, 0.23f, 0.36f, 1.0f);
+
+        // Title bar
+        colors[(int)ImGuiCol.TitleBg] = new System.Numerics.Vector4(0.12f, 0.12f, 0.15f, 1.0f);
+        colors[(int)ImGuiCol.TitleBgActive] = new System.Numerics.Vector4(0.18f, 0.18f, 0.22f, 1.0f);
+        colors[(int)ImGuiCol.TitleBgCollapsed] = new System.Numerics.Vector4(0.08f, 0.08f, 0.10f, 1.0f);
+
+        // Optional: Resize grip, scrollbar, etc. for more polish
+        colors[(int)ImGuiCol.ResizeGrip] = new System.Numerics.Vector4(0.3f, 0.3f, 0.35f, 0.6f);
+        colors[(int)ImGuiCol.ResizeGripHovered] = new System.Numerics.Vector4(0.4f, 0.35f, 0.5f, 0.7f);
+        colors[(int)ImGuiCol.ScrollbarGrab] = new System.Numerics.Vector4(0.30f, 0.30f, 0.35f, 1.0f);
+        colors[(int)ImGuiCol.ScrollbarGrabHovered] = new System.Numerics.Vector4(0.40f, 0.35f, 0.50f, 1.0f);
+        colors[(int)ImGuiCol.CheckMark] = new System.Numerics.Vector4(0.7f, 0.6f, 0.9f, 1.0f);
+
+        // Style tweaks
+        style.WindowRounding = 4.0f;
+        style.FrameRounding = 3.0f;
+        style.ScrollbarRounding = 3.0f;
+        style.GrabRounding = 3.0f;
     }
     
 
@@ -471,7 +527,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
                 {
                     pass.Apply();
 
-#pragma warning disable CS0618 // // FNA does not expose an alternative method.
+                    #pragma warning disable CS0618 // // FNA does not expose an alternative method.
                     graphicsDevice.DrawIndexedPrimitives(
                         primitiveType: PrimitiveType.TriangleList,
                         baseVertex: (int)drawCmd.VtxOffset + vtxOffset,
@@ -480,7 +536,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
                         startIndex: (int)drawCmd.IdxOffset + idxOffset,
                         primitiveCount: (int)drawCmd.ElemCount / 3
                     );
-#pragma warning restore CS0618
+                    #pragma warning restore CS0618
                 }
             }
 

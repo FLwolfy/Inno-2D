@@ -7,7 +7,7 @@ public static class AssetRegistry
     private static readonly Dictionary<Guid, string> GUID_TO_PATH = new();
     private static readonly Dictionary<string, Guid> PATH_TO_GUID = new();
 
-    private const string c_registryFile = "AssetRegistry.json";
+    private const string C_REGISTRY_FILE = "AssetRegistry.json";
 
     public static void Register(Guid guid, string path)
     {
@@ -28,15 +28,15 @@ public static class AssetRegistry
             dict[kv.Key] = kv.Value.ToString();
 
         var json = JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(c_registryFile, json);
+        File.WriteAllText(C_REGISTRY_FILE, json);
     }
 
     public static void LoadFromDisk()
     {
-        if (!File.Exists(c_registryFile))
+        if (!File.Exists(C_REGISTRY_FILE))
             return;
 
-        var json = File.ReadAllText(c_registryFile);
+        var json = File.ReadAllText(C_REGISTRY_FILE);
         var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(json)!;
 
         PATH_TO_GUID.Clear();
