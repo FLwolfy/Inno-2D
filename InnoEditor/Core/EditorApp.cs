@@ -17,7 +17,7 @@ public abstract class EditorApp : EditorCore
     protected override void Setup()
     {
         // Renderer Setup
-        m_imGuiRenderer.Initialize(GetWindowHolder());
+        m_imGuiRenderer.Initialize(GetWindowHolder(), GetWindowHolder());
         
         // GUI Setup
         EditorGUILayout.Initialize(m_imGuiRenderer.context);

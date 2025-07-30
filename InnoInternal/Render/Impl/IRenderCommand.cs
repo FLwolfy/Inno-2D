@@ -5,7 +5,9 @@ namespace InnoInternal.Render.Impl;
 internal interface IRenderCommand
 {
     void Clear(Color color);
-    void SetViewport(Rect? viewport);
     void SetRenderTarget(IRenderTarget? target);
-    IRenderTarget CreateRenderTarget(int width, int height);
+    IRenderTarget CreateRenderTarget(uint width, uint height);
+    
+    void BeginFrame();
+    void EndFrame();
 }

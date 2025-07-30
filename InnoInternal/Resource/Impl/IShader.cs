@@ -1,7 +1,18 @@
 namespace InnoInternal.Resource.Impl;
 
-internal interface IShader : IAsset
+internal interface IShader
 {
-    void SetTexture(string name, ITexture2D texture);
-    void Apply();
+    string name { get; }
+    ShaderStage stage { get; }
+}
+
+public enum ShaderInputType
+{
+    Float, Float2, Float3, Float4
+}
+
+public enum ShaderStage
+{
+    Vertex,
+    Fragment
 }

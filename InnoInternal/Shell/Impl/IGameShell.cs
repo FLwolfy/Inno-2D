@@ -1,3 +1,5 @@
+using InnoInternal.Shell.Bridge;
+
 namespace InnoInternal.Shell.Impl;
 
 internal interface IGameShell
@@ -20,4 +22,18 @@ internal interface IGameShell
     object GetWindowHolder();
     
     void Run();
+    
+    // Create Shell
+    enum ShellType { Veldrid }
+    
+    static IGameShell CreateShell(ShellType shellType)
+    {
+        return shellType switch
+        {
+            ShellType.Veldrid => new VeldridShell(),
+            
+            // Default case to handle unsupported shell types
+            _ => throw new NotSupportedException($"Shell type {shellType} is not supported.")
+        };
+    }
 }

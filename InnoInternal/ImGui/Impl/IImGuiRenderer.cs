@@ -10,7 +10,7 @@ namespace InnoInternal.ImGui.Impl;
 /// </summary>
 internal interface IImGuiRenderer
 {
-    void Initialize(object windowHolder);
+    void Initialize(object graphicsDevice, object windowHolder);
     
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.

@@ -1,19 +1,27 @@
 using InnoBase;
 using InnoInternal.Render.Impl;
 
+using Veldrid;
+
 namespace InnoInternal.Render.Bridge;
 
-internal class MonoGameRenderContext : IRenderContext
+internal class VeldridRenderContext : IRenderContext
 {
-    private static readonly Color DEFAULT_SCREEN_COLOR = Color.LIGHTGRAY;
-    private static Microsoft.Xna.Framework.Graphics.GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
+    private readonly GraphicsDevice m_graphicsDevice;
+    private readonly VeldridRenderCommand m_command;
 
     private Matrix m_cachedViewMatrix = Matrix.identity;
     private Matrix m_cachedProjectionMatrix = Matrix.identity;
     private Matrix m_cachedWorldToScreenMatrix = Matrix.identity;
     private Vector2 m_cachedRenderTargetSize = Vector2.ZERO;
-    
+
     private bool m_matrixDirty = true;
+
+    public VeldridRenderContext(GraphicsDevice device, VeldridRenderCommand command)
+    {
+        m_graphicsDevice = device;
+        m_command = command;
+    }
 
     public Matrix viewMatrix
     {
@@ -39,7 +47,7 @@ internal class MonoGameRenderContext : IRenderContext
     {
         get
         {
-            Vector2 currentSize = GetRenderTargetSize();
+            Vector2 currentSize = GetCurrentRenderTargetSize();
             if (m_matrixDirty || currentSize != m_cachedRenderTargetSize)
             {
                 Matrix viewProjectionMatrix = m_cachedViewMatrix * m_cachedProjectionMatrix;
@@ -56,32 +64,12 @@ internal class MonoGameRenderContext : IRenderContext
 
     public Vector2 GetWindowSize()
     {
-        var pp = device.PresentationParameters;
-        return new Vector2(pp.BackBufferWidth, pp.BackBufferHeight);
+        var swapchain = m_graphicsDevice.MainSwapchain;
+        return new Vector2(swapchain.Framebuffer.Width, swapchain.Framebuffer.Height);
     }
 
-    public Vector2 GetRenderTargetSize()
+    public Vector2 GetCurrentRenderTargetSize()
     {
-        Microsoft.Xna.Framework.Graphics.RenderTargetBinding[] targets = device.GetRenderTargets();
-        if (targets.Length > 0)
-        {
-            var rt = (Microsoft.Xna.Framework.Graphics.RenderTarget2D)targets[0].RenderTarget;
-            return new Vector2(rt.Width, rt.Height);
-        }
-        else
-        {
-            var vp = device.Viewport;
-            return new Vector2(vp.Width, vp.Height);
-        }
+        return new Vector2(m_command.currentFrameBuffer.Width, m_command.currentFrameBuffer.Height);
     }
-
-    public void BeginFrame()
-    {
-        device.Clear(ToXnaColor(DEFAULT_SCREEN_COLOR));
-    }
-
-    public void EndFrame() { }
-
-    private static Microsoft.Xna.Framework.Color ToXnaColor(Color c) =>
-        new Microsoft.Xna.Framework.Color(c.r, c.g, c.b, c.a);
 }

@@ -7,7 +7,6 @@ using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Bridge;
 using InnoInternal.Resource.Impl;
-using InnoInternal.Shell.Bridge;
 using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
@@ -22,7 +21,7 @@ public abstract class EditorCore
     private const int c_windowHeight = 720;
     
     private readonly IGameShell m_gameShell = new MonoGameShell();
-    private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
+    private readonly IRenderAPI m_renderAPI = new VeldridRenderAPI();
     private readonly IAssetLoader m_assetLoader = new MonoGameAssetLoader();
     private readonly RenderSystem m_renderSystem = new();
 

@@ -3,7 +3,7 @@ using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.Render.Impl;
 
-internal interface ISpriteBatch
+internal interface IRenderer2D
 {
     void Begin();
     void DrawQuad(

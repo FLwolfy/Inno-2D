@@ -14,7 +14,7 @@ internal class SpriteRenderPass : IRenderPass
 
     public void Render(IRenderAPI api)
     {
-        api.spriteBatch.Begin();
+        api.renderer2D.Begin();
 
         var renderers = SceneManager.GetActiveScene()!.GetComponentManager().GetAll<SpriteRenderer>();
         foreach (var r in renderers)
@@ -37,7 +37,7 @@ internal class SpriteRenderPass : IRenderPass
                 (int)width, 
                 (int)height);
 
-            api.spriteBatch.DrawQuad(
+            api.renderer2D.DrawQuad(
                 destinationRect,
                 sprite.sourceRect,
                 sprite.texture.texture2DImpl,
@@ -48,7 +48,7 @@ internal class SpriteRenderPass : IRenderPass
             );
         }
 
-        api.spriteBatch.End();
+        api.renderer2D.End();
     }
 
 }

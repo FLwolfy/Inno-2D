@@ -5,6 +5,7 @@ namespace InnoInternal.Render.Impl;
 
 internal interface IRenderTarget : IDisposable
 {
-    void Clear(Color clearColor);  
+    uint width { get; }
+    uint height { get; }
     ITexture2D GetColorTexture();
 }

@@ -1,3 +1,4 @@
 namespace InnoInternal.Resource.Impl;
 
-public interface IAsset { }
+public interface IAsset : IDisposable
+{ }

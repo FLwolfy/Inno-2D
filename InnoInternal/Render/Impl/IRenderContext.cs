@@ -5,13 +5,9 @@ namespace InnoInternal.Render.Impl;
 internal interface IRenderContext
 {
     Vector2 GetWindowSize();
-    Vector2 GetRenderTargetSize();
+    Vector2 GetCurrentRenderTargetSize();
     
     public Matrix viewMatrix { get; set; }
     public Matrix projectionMatrix { get; set; }
-    
     public Matrix worldToScreenMatrix { get; }
-
-    void BeginFrame();
-    void EndFrame();
 }
