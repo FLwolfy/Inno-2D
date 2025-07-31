@@ -6,8 +6,8 @@ public class Texture2D : InnoAsset
 {
     internal ITexture2D texture2DImpl { get; private set; } = null!;
 
-    public int width => texture2DImpl.width;
-    public int height => texture2DImpl.height;
+    public int width => (int)texture2DImpl.width;
+    public int height => (int)texture2DImpl.height;
     
     internal Texture2D() {}
 

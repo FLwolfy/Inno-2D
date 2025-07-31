@@ -1,3 +1,4 @@
+using InnoInternal.ImGui.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
@@ -43,4 +44,18 @@ internal interface IImGuiRenderer
     /// Gets the pointer to the virtual ImGui context.
     /// </summary>
     IntPtr virtualContextPtr { get; }
+    
+    // Create Shell
+    enum ImGuiRendererType { Veldrid }
+    
+    static IImGuiRenderer CreateRenderer(ImGuiRendererType rendererType)
+    {
+        return rendererType switch
+        {
+            ImGuiRendererType.Veldrid => new ImGuiNETVeldridRenderer(),
+            
+            // Default case to handle unsupported shell types
+            _ => throw new NotSupportedException($"ImGuiRenderer type {rendererType} is not supported.")
+        };
+    }
 }

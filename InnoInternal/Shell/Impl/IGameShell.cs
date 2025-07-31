@@ -1,8 +1,9 @@
+using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Bridge;
 
 namespace InnoInternal.Shell.Impl;
 
-internal interface IGameShell
+internal interface IGameShell : IDisposable
 {
     // Callbacks
     void SetOnLoad(Action callback);
@@ -20,7 +21,9 @@ internal interface IGameShell
     // TODO: Change the following to specific types
     object GetGraphicsDevice();
     object GetWindowHolder();
+    IRenderAPI GetRenderAPI();
     
+    // Start
     void Run();
     
     // Create Shell

@@ -1,75 +1,40 @@
 using InnoBase;
 using InnoInternal.Render.Impl;
 
-using Veldrid;
-
 namespace InnoInternal.Render.Bridge;
 
 internal class VeldridRenderContext : IRenderContext
 {
-    private readonly GraphicsDevice m_graphicsDevice;
-    private readonly VeldridRenderCommand m_command;
-
-    private Matrix m_cachedViewMatrix = Matrix.identity;
-    private Matrix m_cachedProjectionMatrix = Matrix.identity;
-    private Matrix m_cachedWorldToScreenMatrix = Matrix.identity;
-    private Vector2 m_cachedRenderTargetSize = Vector2.ZERO;
-
-    private bool m_matrixDirty = true;
-
-    public VeldridRenderContext(GraphicsDevice device, VeldridRenderCommand command)
+    private VeldridRenderCommand m_command = null!;
+    private IRenderTarget? m_renderTarget;
+    
+    public Matrix viewMatrix { get; set; } = Matrix.identity;
+    public Matrix projectionMatrix { get; set; } = Matrix.identity;
+    
+    public void Initialize(IRenderCommand command)
     {
-        m_graphicsDevice = device;
-        m_command = command;
+        m_command = (VeldridRenderCommand) command;
     }
-
-    public Matrix viewMatrix
-    {
-        get => m_cachedViewMatrix;
-        set
-        {
-            m_cachedViewMatrix = value;
-            m_matrixDirty = true;
-        }
-    }
-
-    public Matrix projectionMatrix
-    {
-        get => m_cachedProjectionMatrix;
-        set
-        {
-            m_cachedProjectionMatrix = value;
-            m_matrixDirty = true;
-        }
-    }
-
-    public Matrix worldToScreenMatrix
-    {
-        get
-        {
-            Vector2 currentSize = GetCurrentRenderTargetSize();
-            if (m_matrixDirty || currentSize != m_cachedRenderTargetSize)
-            {
-                Matrix viewProjectionMatrix = m_cachedViewMatrix * m_cachedProjectionMatrix;
-                Matrix scale = Matrix.CreateScale(currentSize.x * 0.5f, currentSize.y * 0.5f, 1f);
-                Matrix translate = Matrix.CreateTranslation(currentSize.x * 0.5f, currentSize.y * 0.5f, 0f);
-                m_cachedWorldToScreenMatrix = viewProjectionMatrix * scale * translate;
-
-                m_cachedRenderTargetSize = currentSize;
-                m_matrixDirty = false;
-            }
-            return m_cachedWorldToScreenMatrix;
-        }
-    }
-
+    
     public Vector2 GetWindowSize()
     {
-        var swapchain = m_graphicsDevice.MainSwapchain;
-        return new Vector2(swapchain.Framebuffer.Width, swapchain.Framebuffer.Height);
+        var frameBuffer = m_command.graphicsDevice.SwapchainFramebuffer;
+        return new Vector2(frameBuffer.Width, frameBuffer.Height);
     }
 
-    public Vector2 GetCurrentRenderTargetSize()
+    public void SetRenderTarget(IRenderTarget? target)
     {
-        return new Vector2(m_command.currentFrameBuffer.Width, m_command.currentFrameBuffer.Height);
+        m_renderTarget = target;
+        m_command.SetRenderTarget(target);
+    }
+
+    public IRenderTarget? GetRenderTarget()
+    {
+        return m_renderTarget;
+    }
+
+    public IRenderTarget CreateRenderTarget(uint width, uint height)
+    {
+        return new VeldridRenderTarget(m_command.graphicsDevice, width, height);
     }
 }

@@ -12,12 +12,12 @@ namespace InnoEditor.Core;
 
 public abstract class EditorApp : EditorCore
 {
-    private readonly IImGuiRenderer m_imGuiRenderer = new ImGuiNETMonoGameRenderer();
+    private readonly IImGuiRenderer m_imGuiRenderer = IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid);
 
     protected override void Setup()
     {
         // Renderer Setup
-        m_imGuiRenderer.Initialize(GetWindowHolder(), GetWindowHolder());
+        m_imGuiRenderer.Initialize(GetGraphicsDevice(), GetWindowHolder());
         
         // GUI Setup
         EditorGUILayout.Initialize(m_imGuiRenderer.context);

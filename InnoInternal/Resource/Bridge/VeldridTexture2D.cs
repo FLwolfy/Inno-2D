@@ -1,10 +1,12 @@
 using System.Runtime.InteropServices;
-
+using InnoInternal.Render.Bridge;
+using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Veldrid;
+using Veldrid.SPIRV;
 
 namespace InnoInternal.Resource.Bridge;
 
@@ -12,7 +14,13 @@ internal class VeldridTexture2D : ITexture2D
 {
     private readonly Texture m_texture;
     private readonly TextureView m_view;
+    
+    public uint width => m_texture.Width;
+    public uint height => m_texture.Height;
 
+    public Texture rawTexture => m_texture;
+    public TextureView textureView => m_view;
+    
     internal VeldridTexture2D(Texture texture, TextureView view)
     {
         m_texture = texture;
@@ -24,31 +32,20 @@ internal class VeldridTexture2D : ITexture2D
         m_texture = texture;
         m_view = device.ResourceFactory.CreateTextureView(m_texture);
     }
-
-    public int width => (int)m_texture.Width;
-    public int height => (int)m_texture.Height;
-
-    public Texture rawTexture => m_texture;
-    public TextureView textureView => m_view;
-
-    public void Dispose()
+    
+    public static VeldridTexture2D LoadFromFile(IRenderCommand command, string? path)
     {
-        m_view.Dispose();
-        m_texture.Dispose();
-    }
-
-    public static VeldridTexture2D LoadFromFile(GraphicsDevice device, string? path)
-    {
-        if (path == null) return CreateWhitePixel(device);
+        VeldridRenderCommand veldridCommand = (command as VeldridRenderCommand)!;
+        if (path == null) return CreateWhitePixel(veldridCommand.graphicsDevice);
         
         using var fs = File.OpenRead(path);
-        return LoadFromStream(device, fs);
+        return LoadFromStream(veldridCommand.graphicsDevice, fs);
     }
 
     private static VeldridTexture2D LoadFromStream(GraphicsDevice device, Stream stream)
     {
         using var img = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
-        img.Mutate(x => x.Flip(FlipMode.Vertical)); // 注意 Vulkan 的坐标系统
+        img.Mutate(x => x.Flip(FlipMode.Vertical)); // Flip for RenderAPI
 
         TextureDescription desc = TextureDescription.Texture2D(
             (uint)img.Width, (uint)img.Height, mipLevels: 1, arrayLayers: 1,
@@ -75,5 +72,11 @@ internal class VeldridTexture2D : ITexture2D
         device.UpdateTexture(texture, pixel, 0, 0, 0, 1, 1, 1, 0, 0);
 
         return new VeldridTexture2D(device, texture);
+    }
+    
+    public void Dispose()
+    {
+        m_view.Dispose();
+        m_texture.Dispose();
     }
 }

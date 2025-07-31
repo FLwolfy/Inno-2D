@@ -1,62 +1,57 @@
+using System.Text;
+
+using InnoBase;
+using InnoInternal.Render.Bridge;
+using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
 using Veldrid;
-using Veldrid.SPIRV;
 
 namespace InnoInternal.Resource.Bridge;
 
 internal class VeldridShader : IShader
 {
-    public string name { get; }
-    public ShaderStage stage { get; }
-    public Shader veldridHandle { get; }
+    private const string C_SHADER_ENTRY_POINT = "main";
 
-    private VeldridShader(string name, ShaderStage stage, Shader shader)
+    public ShaderState shaderState { get; }
+    public ShaderDescription shaderDesc { get; }
+
+    private VeldridShader(string name, ShaderDescription shaderDesc, ShaderState shaderState)
     {
-        this.name = name;
-        this.stage = stage;
-        veldridHandle = shader;
+        this.shaderState = shaderState;
+        this.shaderDesc = shaderDesc;
     }
 
-    public static VeldridShader LoadFromFile(GraphicsDevice device, string? path)
+    public static VeldridShader LoadFromFile(IRenderCommand command, string? path)
     {
         if (string.IsNullOrEmpty(path))
-            return CreateWhitePixel(device);
+            return CreateWhitePixel();
 
         if (!File.Exists(path))
             throw new FileNotFoundException($"Shader file not found: {path}");
 
         string sourceCode = File.ReadAllText(path);
         string fileName = Path.GetFileName(path);
-        string entryPoint = "main";
-
-        // 推断 shader stage（可根据文件名后缀）
         ShaderStages veldridStage = InferShaderStage(fileName);
-        ShaderStage shaderStage = ConvertStageEnum(veldridStage);
-
-        // 编译 GLSL -> SPIR-V
-        SpirvCompilationResult compilationResult = SpirvCompilation.CompileGlslToSpirv(sourceCode, fileName, veldridStage, new GlslCompileOptions());
-        Shader shaderHandle = device.ResourceFactory.CreateShader(new ShaderDescription(veldridStage, compilationResult.SpirvBytes, "main"));
-
-        return new VeldridShader(fileName, shaderStage, shaderHandle);
+        ShaderDescription shaderDesc = new ShaderDescription(veldridStage, Encoding.UTF8.GetBytes(sourceCode), C_SHADER_ENTRY_POINT);
+        
+        return new VeldridShader(fileName, shaderDesc, GetStateFromStage(veldridStage));
     }
 
-    private static VeldridShader CreateWhitePixel(GraphicsDevice device)
+    private static VeldridShader CreateWhitePixel()
     {
-        // 一个最简单的 fragment shader，直接输出白色
-        string fragCode = @"
+        // A Simple White frag code.
+        string sourceCode = @"
 #version 450
 layout(location = 0) out vec4 fsout_Color;
 void main() {
     fsout_Color = vec4(1.0);
 }";
+        string fileName = "WhitePixel";
         ShaderStages veldridStage = ShaderStages.Fragment;
-        ShaderStage stage = ShaderStage.Fragment;
+        ShaderDescription shaderDesc = new ShaderDescription(veldridStage, Encoding.UTF8.GetBytes(sourceCode), C_SHADER_ENTRY_POINT);
         
-        SpirvCompilationResult compilationResult = SpirvCompilation.CompileGlslToSpirv(fragCode, "white.frag", veldridStage, new GlslCompileOptions());
-        Shader shaderHandle = device.ResourceFactory.CreateShader(new ShaderDescription(veldridStage, compilationResult.SpirvBytes, "main"));
-
-        return new VeldridShader("WhitePixel", stage, shaderHandle);
+        return new VeldridShader(fileName, shaderDesc, GetStateFromStage(veldridStage));
     }
 
     private static ShaderStages InferShaderStage(string fileName)
@@ -72,11 +67,42 @@ void main() {
         };
     }
 
-    private static ShaderStage ConvertStageEnum(ShaderStages stage) => stage switch
+    private static ShaderState GetStateFromStage(ShaderStages stage)
     {
-        ShaderStages.Vertex => ShaderStage.Vertex,
-        ShaderStages.Fragment => ShaderStage.Fragment,
-        _ => throw new NotSupportedException($"Unsupported shader stage: {stage}")
-    };
+        return stage switch
+        {
+            ShaderStages.Vertex => ShaderState.Vertex,
+            ShaderStages.Fragment => ShaderState.Fragment,
+            ShaderStages.Compute => ShaderState.Compute,
+            _ => throw new ArgumentOutOfRangeException(nameof(stage), $"Unsupported shader stage: {stage}")
+        };
+    }
+    
+    public static VertexElementFormat GetFormatFromType(Type type)
+    {
+        return type switch
+        {
+            _ when type == typeof(Vector2) => VertexElementFormat.Float2,
+            _ when type == typeof(Vector3) => VertexElementFormat.Float3,
+            _ when type == typeof(Vector4) => VertexElementFormat.Float4,
+            _ when type == typeof(Color)   => VertexElementFormat.Float4,
+            _ when type == typeof(uint)    => VertexElementFormat.UInt1,
+            _ => throw new NotSupportedException($"Unsupported vertex element type: {type}")
+        };
+    }
 
+    public void SetUniform<T>(string name, T value)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void SetTexture(string name, ITexture2D texture)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Bind()
+    {
+        throw new NotImplementedException();
+    }
 }

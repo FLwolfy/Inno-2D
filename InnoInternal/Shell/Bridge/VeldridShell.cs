@@ -1,3 +1,6 @@
+using InnoInternal.Render.Bridge;
+using InnoInternal.Render.Impl;
+
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
@@ -5,11 +8,11 @@ using InnoInternal.Shell.Impl;
 
 namespace InnoInternal.Shell.Bridge;
 
-internal sealed class VeldridShell : IGameShell, IDisposable
+internal sealed class VeldridShell : IGameShell
 {
     private readonly Sdl2Window m_window;
     private readonly GraphicsDevice m_graphicsDevice;
-    private readonly CommandList m_commandList;
+    private readonly IRenderAPI m_renderAPI;
 
     private Action? m_onLoad;
     private Action? m_onSetup;
@@ -38,10 +41,10 @@ internal sealed class VeldridShell : IGameShell, IDisposable
             SyncToVerticalBlank = true,
             ResourceBindingModel = ResourceBindingModel.Improved
         };
+        
         m_graphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window, gdOptions);
-
-        m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
-
+        m_renderAPI = new VeldridRenderAPI();
+        m_renderAPI.Initialize(m_graphicsDevice);
         m_window.Resized += () =>
         {
             int w = m_window.Width;
@@ -70,18 +73,9 @@ internal sealed class VeldridShell : IGameShell, IDisposable
 
             // Logics
             m_onStep?.Invoke((float)now, delta);
-
-            m_commandList.Begin();
-            m_commandList.SetFramebuffer(m_graphicsDevice.MainSwapchain.Framebuffer);
-            m_commandList.ClearColorTarget(0, RgbaFloat.Grey);
-            m_commandList.End();
-
-            m_graphicsDevice.SubmitCommands(m_commandList);
-
+            
+            // Draws
             m_onDraw?.Invoke(delta);
-
-            m_graphicsDevice.SwapBuffers();
-            m_graphicsDevice.WaitForIdle();
         }
 
         m_onClose?.Invoke();
@@ -89,7 +83,6 @@ internal sealed class VeldridShell : IGameShell, IDisposable
 
     public void Dispose()
     {
-        m_commandList.Dispose();
         m_graphicsDevice.Dispose();
         m_window.Close();
     }
@@ -117,4 +110,5 @@ internal sealed class VeldridShell : IGameShell, IDisposable
 
     public object GetGraphicsDevice() => m_graphicsDevice;
     public object GetWindowHolder() => m_window;
+    public IRenderAPI GetRenderAPI() => m_renderAPI;
 }

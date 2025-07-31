@@ -13,12 +13,12 @@ internal class RenderSystem
 
     public void Begin()
     {
-        m_renderAPI.context.BeginFrame();
+        m_renderAPI.renderer2D.BeginScene();
     }
     
     public void End()
     {
-        m_renderAPI.context.EndFrame();
+        m_renderAPI.renderer2D.BeginScene();
     }
     
     public void Initialize(IRenderAPI api)

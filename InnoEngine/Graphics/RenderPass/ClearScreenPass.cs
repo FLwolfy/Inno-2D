@@ -14,6 +14,6 @@ internal class ClearScreenPass : IRenderPass
 
     public void Render(IRenderAPI api)
     {
-        api.command.Clear(CLEAR_COLOR);
+        api.renderer2D.Clear(CLEAR_COLOR);
     }
 }

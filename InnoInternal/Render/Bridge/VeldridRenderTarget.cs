@@ -34,7 +34,7 @@ internal class VeldridRenderTarget : IRenderTarget
 
     public ITexture2D GetColorTexture()
     {
-        return new VeldridTexture2D(m_colorTexture, m_colorView); // 你需要定义这个类
+        return new VeldridTexture2D(m_colorTexture, m_colorView);
     }
     
     public void Dispose()

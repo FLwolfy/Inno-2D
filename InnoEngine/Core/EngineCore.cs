@@ -15,10 +15,10 @@ public abstract class EngineCore
     private static readonly int WINDOW_WIDTH = 1280;
     private static readonly int WINDOW_HEIGHT = 720;
     
-    private readonly IGameShell m_gameShell = new MonoGameShell();
-    private readonly IRenderAPI m_renderAPI = new VeldridRenderAPI();
-    private readonly IAssetLoader m_assetLoader = new MonoGameAssetLoader();
+    private readonly IGameShell m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
     private readonly RenderSystem m_renderSystem = new();
+    
+    private IRenderAPI m_renderAPI => m_gameShell.GetRenderAPI();
     
     protected EngineCore()
     {
@@ -46,7 +46,7 @@ public abstract class EngineCore
         // Resource Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        AssetManager.RegisterLoader(m_assetLoader);
+        AssetManager.RegisterLoader(m_renderAPI.renderAssetLoader);
         
         // Render Initialization
         m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
@@ -75,8 +75,8 @@ public abstract class EngineCore
         if (camera == null) { return; }
         
         // Render Pipeline
-        m_renderAPI.context.viewMatrix = camera.viewMatrix;
-        m_renderAPI.context.projectionMatrix = camera.projectionMatrix;
+        m_renderAPI.renderContext.viewMatrix = camera.viewMatrix;
+        m_renderAPI.renderContext.projectionMatrix = camera.projectionMatrix;
         m_renderSystem.Begin();
         m_renderSystem.RenderPasses();
         m_renderSystem.End();

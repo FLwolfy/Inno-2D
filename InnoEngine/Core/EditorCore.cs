@@ -3,10 +3,7 @@ using InnoEngine.ECS;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
-using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Bridge;
-using InnoInternal.Resource.Impl;
 using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
@@ -17,18 +14,18 @@ namespace InnoEngine.Core;
 /// </summary>
 public abstract class EditorCore
 {
-    private const int c_windowWidth = 1280;
-    private const int c_windowHeight = 720;
+    private const int C_WINDOW_WIDTH = 1280;
+    private const int C_WINDOW_HEIGHT = 720;
     
-    private readonly IGameShell m_gameShell = new MonoGameShell();
-    private readonly IRenderAPI m_renderAPI = new VeldridRenderAPI();
-    private readonly IAssetLoader m_assetLoader = new MonoGameAssetLoader();
+    private readonly IGameShell m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
     private readonly RenderSystem m_renderSystem = new();
+    
+    private IRenderAPI m_renderAPI => m_gameShell.GetRenderAPI();
 
     protected EditorCore()
     {
         // Initialization Callbacks
-        m_gameShell.SetWindowSize(c_windowWidth,  c_windowHeight);
+        m_gameShell.SetWindowSize(C_WINDOW_WIDTH,  C_WINDOW_HEIGHT);
         m_gameShell.SetWindowResizable(true);
         m_gameShell.SetOnLoad(Load);
         m_gameShell.SetOnSetup(() =>
@@ -50,11 +47,10 @@ public abstract class EditorCore
         // Asset Load
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        AssetManager.RegisterLoader(m_assetLoader);
+        AssetManager.RegisterLoader(m_renderAPI.renderAssetLoader);
 
         // Render Init
-        m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
-        m_renderSystem.Initialize(m_renderAPI);
+        m_renderSystem.Initialize(m_gameShell.GetRenderAPI());
         m_renderSystem.LoadPasses();
     }
 
@@ -90,8 +86,8 @@ public abstract class EditorCore
         var scene = SceneManager.GetActiveScene();
         if (scene == null)  { return false; }
     
-        m_renderAPI.context.viewMatrix = viewMatrix;
-        m_renderAPI.context.projectionMatrix = projectionMatrix;
+        m_renderAPI.renderContext.viewMatrix = viewMatrix;
+        m_renderAPI.renderContext.projectionMatrix = projectionMatrix;
         
         m_renderSystem.Begin();
         m_renderSystem.RenderPasses();
@@ -99,6 +95,11 @@ public abstract class EditorCore
         
         return true;
     }
+    
+    /// <summary>
+    /// Gets the graphic device of the game shell.
+    /// </summary>
+    protected object GetGraphicsDevice() => m_gameShell.GetGraphicsDevice();
     
     /// <summary>
     /// Gets the window holder of the game shell.

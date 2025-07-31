@@ -1,26 +1,27 @@
+using InnoInternal.Render.Impl;
 using InnoInternal.Resource.Impl;
 
-using Veldrid;
 
 namespace InnoInternal.Resource.Bridge;
 
 internal class VeldridAssetLoader : IAssetLoader
 {
-    private readonly GraphicsDevice m_device;
+    private IRenderCommand m_command = null!;
     
-    private readonly Dictionary<Type, Func<GraphicsDevice, string?, object>> m_fileLoaderMap = new();
+    private readonly Dictionary<Type, Func<IRenderCommand, string?, object>> m_fileLoaderMap = new();
     
-    public VeldridAssetLoader(GraphicsDevice device)
+    public void Initialize(IRenderCommand renderCommand)
     {
-        m_device = device;
-
+        m_command = renderCommand;
+        
         RegisterLoaderMap();
     }
 
     private void RegisterLoaderMap()
     {
         m_fileLoaderMap[typeof(ITexture2D)] = VeldridTexture2D.LoadFromFile;
-        m_fileLoaderMap[typeof(IShader)]    = VeldridShader.LoadFromFile;
+        m_fileLoaderMap[typeof(IShader)] = VeldridShader.LoadFromFile;
+        m_fileLoaderMap[typeof(IMaterial2D)] = VeldridMaterial2D.LoadFromFile;
     }
 
     public bool TryLoad<TInterface>(string? path, out TInterface? result)
@@ -28,7 +29,7 @@ internal class VeldridAssetLoader : IAssetLoader
     {
         if (m_fileLoaderMap.TryGetValue(typeof(TInterface), out var loader))
         {
-            if (loader(m_device, path) is TInterface loaded)
+            if (loader(m_command, path) is TInterface loaded)
             {
                 result = loaded;
                 return true;

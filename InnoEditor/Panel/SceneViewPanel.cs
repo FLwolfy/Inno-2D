@@ -70,7 +70,7 @@ public class SceneViewPanel : EditorPanel
             m_editorCamera2D.SetViewportSize(m_width, m_height);
 
             m_renderTarget?.Dispose();
-            m_renderTarget = renderAPI.command.CreateRenderTarget(m_width, m_height);
+            m_renderTarget = renderAPI.renderContext.CreateRenderTarget((uint)m_width, (uint)m_height);
             m_renderTexture = m_renderTarget.GetColorTexture();
         }
     }
@@ -79,13 +79,11 @@ public class SceneViewPanel : EditorPanel
     {
         if (m_renderTarget != null)
         {
-            renderAPI.command.SetRenderTarget(m_renderTarget);
-            renderAPI.command.SetViewport(new Rect(0, 0, m_width, m_height));
+            renderAPI.renderContext.SetRenderTarget(m_renderTarget);
             
             m_onSceneRender.Invoke(m_editorCamera2D.viewMatrix, m_editorCamera2D.projectionMatrix);
             
-            renderAPI.command.SetRenderTarget(null);
-            renderAPI.command.SetViewport(null);
+            renderAPI.renderContext.SetRenderTarget(null);
         }
     }
     

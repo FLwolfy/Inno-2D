@@ -1,5 +1,5 @@
-using InnoBase;
 using InnoInternal.Render.Impl;
+using InnoInternal.Resource.Bridge;
 
 using Veldrid;
 
@@ -19,21 +19,12 @@ internal class VeldridVertexLayout : IVertexLayout
             veldridElements[i] = new VertexElementDescription(
                 e.semanticName,
                 VertexElementSemantic.TextureCoordinate, // This makes no effect
-                GetFormatFromType(e.fieldType)
+                VeldridShader.GetFormatFromType(e.fieldType)
             );
         }
 
         layoutDescription = new VertexLayoutDescription(veldridElements);
     }
 
-    private VertexElementFormat GetFormatFromType(Type type)
-    {
-        if (type == typeof(Vector2)) return VertexElementFormat.Float2;
-        if (type == typeof(Vector3)) return VertexElementFormat.Float3;
-        if (type == typeof(Vector4)) return VertexElementFormat.Float4;
-        if (type == typeof(Color)) return VertexElementFormat.Float4;
-        if (type == typeof(uint)) return VertexElementFormat.UInt1;
-
-        throw new NotSupportedException($"Unsupported vertex element type: {type}");
-    }
+    
 }
