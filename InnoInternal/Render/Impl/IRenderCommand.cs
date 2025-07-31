@@ -6,8 +6,4 @@ internal interface IRenderCommand
 {
     void Clear(Color color);
     void SetRenderTarget(IRenderTarget? target);
-    IRenderTarget CreateRenderTarget(uint width, uint height);
-    
-    void BeginFrame();
-    void EndFrame();
 }

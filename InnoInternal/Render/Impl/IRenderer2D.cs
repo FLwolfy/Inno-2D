@@ -5,15 +5,11 @@ namespace InnoInternal.Render.Impl;
 
 internal interface IRenderer2D
 {
-    void Begin();
-    void DrawQuad(
-        Rect destinationRect,
-        Rect? sourceRect,
-        ITexture2D texture,
-        Color color,
-        float rotation = 0f,
-        float layerDepth = 0f,
-        Vector2? origin = null
-    );
-    void End();
+    void BeginScene();
+    void EndScene();
+
+    void BeginPass(string name);
+    void EndPass();
+    
+    void DrawQuad(Matrix transform, IMaterial2D material, ITexture2D? textureOverride = null);
 }
