@@ -1,3 +1,6 @@
+using InnoInternal.Render.Impl;
+using InnoInternal.Shell.Bridge;
+
 namespace InnoInternal.Shell.Impl;
 
 internal interface IGameShell
@@ -18,6 +21,23 @@ internal interface IGameShell
     // TODO: Change the following to specific types
     object GetGraphicsDevice();
     object GetWindowHolder();
+    IRenderAPI GetRenderAPI();
     
+    // Start
     void Run();
+    
+    // Create Shell
+    enum ShellType { MonoGame }
+    
+    static IGameShell CreateShell(ShellType shellType)
+    {
+        return shellType switch
+        {
+            ShellType.MonoGame => new MonoGameShell(),
+            
+            // Default case to handle unsupported shell types
+            _ => throw new NotSupportedException($"Shell type {shellType} is not supported.")
+        };
+    }
+    
 }

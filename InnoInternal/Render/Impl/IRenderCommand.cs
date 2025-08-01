@@ -4,8 +4,12 @@ namespace InnoInternal.Render.Impl;
 
 internal interface IRenderCommand
 {
-    void Clear(Color color);
-    void SetViewport(Rect? viewport);
+    void Initialize(object graphicDevice);
+    
+    void Begin();
+    void End();
+    
     void SetRenderTarget(IRenderTarget? target);
-    IRenderTarget CreateRenderTarget(int width, int height);
+    void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0);
+    void Clear(Color color);
 }

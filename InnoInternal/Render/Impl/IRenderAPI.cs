@@ -1,10 +1,14 @@
+using InnoInternal.ImGui.Impl;
+using InnoInternal.Resource.Impl;
+
 namespace InnoInternal.Render.Impl;
 
 internal interface IRenderAPI
 {
-    IRenderContext context { get; }
-    IRenderCommand command { get; }
-    ISpriteBatch spriteBatch { get; }
+    IRenderer2D renderer2D { get; }
+    IImGuiRenderer rendererGUI { get; }
+    IRenderContext renderContext { get; }
+    IAssetLoader renderAssetLoader { get; }
     
-    void Initialize(object device);
+    void Initialize(object graphicDevice);
 }

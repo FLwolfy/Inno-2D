@@ -9,7 +9,7 @@ internal class MonoGameRenderAPI : IRenderAPI
     
     public IRenderContext context { get; private set; } = null!;
     public IRenderCommand command { get; private set; } = null!;
-    public ISpriteBatch spriteBatch { get; private set; } = null!;
+    public IRenderer2D renderer2D { get; private set; } = null!;
 
     public void Initialize(object device)
     {
@@ -22,6 +22,6 @@ internal class MonoGameRenderAPI : IRenderAPI
         
         context = new MonoGameRenderContext();
         command = new MonoGameRenderCommand();
-        spriteBatch = new MonoGameSpriteBatch(context);
+        renderer2D = new MonoGameRenderer2D(context);
     }
 }

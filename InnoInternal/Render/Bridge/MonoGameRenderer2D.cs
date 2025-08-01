@@ -6,14 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace InnoInternal.Render.Bridge;
 
-internal class MonoGameSpriteBatch : ISpriteBatch
+internal class MonoGameRenderer2D : IRenderer2D
 {
     private readonly SpriteBatch m_spriteBatch;
     private readonly IRenderContext m_renderContext;
     
     private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
-    public MonoGameSpriteBatch(IRenderContext renderContext)
+    public MonoGameRenderer2D(IRenderContext renderContext)
     {
         m_spriteBatch = new SpriteBatch(device);
         m_renderContext = renderContext;

@@ -6,7 +6,6 @@ using System.Net.Mime;
 using System.Runtime.InteropServices;
 
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Bridge;
 using InnoInternal.Resource.Bridge;
 using InnoInternal.Resource.Impl;
 
@@ -20,33 +19,28 @@ namespace InnoInternal.ImGui.Bridge;
 
 internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
 {
-    // Graphics
-    private GraphicsDevice graphicsDevice => MonoGameRenderAPI.graphicsDevice;
+    // Graphics Dependencies
+    private GraphicsDevice m_graphicsDevice = null!;
     private Game m_game = null!;
     
-    private BasicEffect m_effect = null!;
-    private RasterizerState m_rasterizerState = null!;
+    private readonly RasterizerState m_rasterizerState;
+    private BasicEffect m_effect;
     
-    private byte[] m_vertexData = null!;
-    private VertexBuffer m_vertexBuffer = null!;
+    private byte[] m_vertexData;
+    private VertexBuffer m_vertexBuffer;
     private int m_vertexBufferSize;
 
-    private byte[] m_indexData = null!;
-    private IndexBuffer m_indexBuffer = null!;
+    private byte[] m_indexData;
+    private IndexBuffer m_indexBuffer;
     private int m_indexBufferSize;
 
-    private IImGuiContext m_imGuiContext = null!;
-    private IntPtr m_imGuiMainContextPtr;
-    private IntPtr m_imGuiVirtualContextPtr;
-    
     // Properties
-    public IImGuiContext context => m_imGuiContext;
-    public IntPtr mainMainContextPtr => m_imGuiMainContextPtr;
-    public IntPtr virtualContextPtr => m_imGuiVirtualContextPtr;
+    public IImGuiContext context { get; private set; }
+    public IntPtr mainMainContextPtr { get; private set; }
+    public IntPtr virtualContextPtr { get; private set; }
 
     // Textures
     private readonly Dictionary<IntPtr, Texture2D> m_loadedTextures = new();
-    
     private int m_textureId;
     private IntPtr? m_fontTextureId;
 
@@ -56,13 +50,12 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     private readonly float m_wheelDelta = 120;
     private readonly Keys[] m_allKeys = Enum.GetValues<Keys>();
 
-    public void Initialize(object windowHolder)
+    public ImGuiNETMonoGameRenderer()
     {
-        if (windowHolder == null || windowHolder is not Game game)
-            throw new ArgumentException("graphicsHolder is null or not Game object", nameof(windowHolder));
+        // Set the API context
+        context = new ImGuiNETContext(this);
         
-        m_game = game;
-        m_imGuiContext = new ImGuiNETContext(this);
+        // Set variables
         m_rasterizerState = new RasterizerState
         {
             CullMode = CullMode.None,
@@ -74,17 +67,29 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         };
         
         // Virtual Context
-        m_imGuiVirtualContextPtr = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
+        virtualContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
         RebuildFontAtlas();
         
         // Main Context
-        m_imGuiMainContextPtr = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
+        mainMainContextPtr = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
         SetupInput();
         SetupFlags();
         SetupThemes();
         RebuildFontAtlas();
+    }
+
+    public void Initialize(object graphicsDevice, object windowHolder)
+    {
+        if (graphicsDevice == null || graphicsDevice is not GraphicsDevice gd)
+            throw new ArgumentException("graphicsDevice is null or not GraphicsDevice object", nameof(graphicsDevice));
+        if (windowHolder == null || windowHolder is not Game game)
+            throw new ArgumentException("graphicsHolder is null or not Game object", nameof(windowHolder));
+        
+        m_graphicsDevice = gd;
+        m_game = game;
+        m_effect = new BasicEffect(gd);
     }
 
     #region ImGuiRenderer
@@ -103,7 +108,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         unsafe { Marshal.Copy(new IntPtr(pixelData), pixels, 0, pixels.Length); }
 
         // Create and register the texture as an XNA texture
-        var tex2d = new Texture2D(graphicsDevice, width, height, false, SurfaceFormat.Color);
+        var tex2d = new Texture2D(m_graphicsDevice, width, height, false, SurfaceFormat.Color);
         tex2d.SetData(pixels);
 
         // Should a texture already have been build previously, unbind it first so it can be deallocated
@@ -152,12 +157,12 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     public virtual void BeginLayout(float deltaTime)
     {
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
-        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight);
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
+        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_graphicsDevice.PresentationParameters.BackBufferWidth, m_graphicsDevice.PresentationParameters.BackBufferHeight);
         ImGuiNET.ImGui.NewFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
         ImGuiNET.ImGui.GetIO().DeltaTime = deltaTime;
         UpdateInput();
         ImGuiNET.ImGui.NewFrame();
@@ -170,11 +175,11 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     public virtual void EndLayout()
     {
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiVirtualContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
         ImGuiNET.ImGui.EndFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(m_imGuiMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
         ImGuiNET.ImGui.Render();
         { RenderDrawData(ImGuiNET.ImGui.GetDrawData()); }
         
@@ -218,7 +223,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         var io = ImGuiNET.ImGui.GetIO();
 
         // MonoGame-specific //////////////////////
-        m_game.Window.TextInput += (s, a) =>
+        m_game.Window.TextInput += (_, a) =>
         {
             if (a.Character == '\t') return;
             io.AddInputCharacter(a.Character);
@@ -293,8 +298,6 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     /// </summary>
     private Effect UpdateEffect(Texture2D texture)
     {
-        m_effect = m_effect ?? new BasicEffect(graphicsDevice);
-
         var io = ImGuiNET.ImGui.GetIO();
 
         m_effect.World = Matrix.Identity;
@@ -340,7 +343,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
             }
         }
 
-        io.DisplaySize = new System.Numerics.Vector2(graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight);
+        io.DisplaySize = new System.Numerics.Vector2(m_graphicsDevice.PresentationParameters.BackBufferWidth, m_graphicsDevice.PresentationParameters.BackBufferHeight);
         io.DisplayFramebufferScale = new System.Numerics.Vector2(1f, 1f);
     }
 
@@ -415,27 +418,27 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
     private void RenderDrawData(ImDrawDataPtr drawData)
     {
         // Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, vertex/texcoord/color pointers
-        var lastViewport = graphicsDevice.Viewport;
-        var lastScissorBox = graphicsDevice.ScissorRectangle;
+        var lastViewport = m_graphicsDevice.Viewport;
+        var lastScissorBox = m_graphicsDevice.ScissorRectangle;
 
-        graphicsDevice.BlendFactor = Color.White;
-        graphicsDevice.BlendState = BlendState.NonPremultiplied;
-        graphicsDevice.RasterizerState = m_rasterizerState;
-        graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+        m_graphicsDevice.BlendFactor = Color.White;
+        m_graphicsDevice.BlendState = BlendState.NonPremultiplied;
+        m_graphicsDevice.RasterizerState = m_rasterizerState;
+        m_graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
         // Handle cases of screen coordinates != from framebuffer coordinates (e.g. retina displays)
         drawData.ScaleClipRects(ImGuiNET.ImGui.GetIO().DisplayFramebufferScale);
 
         // Setup projection
-        graphicsDevice.Viewport = new Viewport(0, 0, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight);
+        m_graphicsDevice.Viewport = new Viewport(0, 0, m_graphicsDevice.PresentationParameters.BackBufferWidth, m_graphicsDevice.PresentationParameters.BackBufferHeight);
 
         UpdateBuffers(drawData);
 
         RenderCommandLists(drawData);
 
         // Restore modified state
-        graphicsDevice.Viewport = lastViewport;
-        graphicsDevice.ScissorRectangle = lastScissorBox;
+        m_graphicsDevice.Viewport = lastViewport;
+        m_graphicsDevice.ScissorRectangle = lastScissorBox;
     }
 
     private unsafe void UpdateBuffers(ImDrawDataPtr drawData)
@@ -451,7 +454,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
             m_vertexBuffer?.Dispose();
 
             m_vertexBufferSize = (int)(drawData.TotalVtxCount * 1.5f);
-            m_vertexBuffer = new VertexBuffer(graphicsDevice, DrawVertDeclaration.DECLARATION, m_vertexBufferSize, BufferUsage.None);
+            m_vertexBuffer = new VertexBuffer(m_graphicsDevice, DrawVertDeclaration.DECLARATION, m_vertexBufferSize, BufferUsage.None);
             m_vertexData = new byte[m_vertexBufferSize * DrawVertDeclaration.SIZE];
         }
 
@@ -460,7 +463,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
             m_indexBuffer?.Dispose();
 
             m_indexBufferSize = (int)(drawData.TotalIdxCount * 1.5f);
-            m_indexBuffer = new IndexBuffer(graphicsDevice, IndexElementSize.SixteenBits, m_indexBufferSize, BufferUsage.None);
+            m_indexBuffer = new IndexBuffer(m_graphicsDevice, IndexElementSize.SixteenBits, m_indexBufferSize, BufferUsage.None);
             m_indexData = new byte[m_indexBufferSize * sizeof(ushort)];
         }
 
@@ -484,14 +487,14 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
         }
 
         // Copy the managed byte arrays to the gpu vertex- and index buffers
-        m_vertexBuffer.SetData(m_vertexData, 0, drawData.TotalVtxCount * DrawVertDeclaration.SIZE);
-        m_indexBuffer.SetData(m_indexData, 0, drawData.TotalIdxCount * sizeof(ushort));
+        m_vertexBuffer!.SetData(m_vertexData, 0, drawData.TotalVtxCount * DrawVertDeclaration.SIZE);
+        m_indexBuffer!.SetData(m_indexData, 0, drawData.TotalIdxCount * sizeof(ushort));
     }
 
     private void RenderCommandLists(ImDrawDataPtr drawData)
     {
-        graphicsDevice.SetVertexBuffer(m_vertexBuffer);
-        graphicsDevice.Indices = m_indexBuffer;
+        m_graphicsDevice.SetVertexBuffer(m_vertexBuffer);
+        m_graphicsDevice.Indices = m_indexBuffer;
 
         int vtxOffset = 0;
         int idxOffset = 0;
@@ -514,7 +517,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
                     throw new InvalidOperationException($"Could not find a texture with id '{drawCmd.TextureId}', please check your bindings");
                 }
 
-                graphicsDevice.ScissorRectangle = new Rectangle(
+                m_graphicsDevice.ScissorRectangle = new Rectangle(
                     (int)drawCmd.ClipRect.X,
                     (int)drawCmd.ClipRect.Y,
                     (int)(drawCmd.ClipRect.Z - drawCmd.ClipRect.X),
@@ -528,7 +531,7 @@ internal class ImGuiNETMonoGameRenderer : IImGuiRenderer
                     pass.Apply();
 
                     #pragma warning disable CS0618 // // FNA does not expose an alternative method.
-                    graphicsDevice.DrawIndexedPrimitives(
+                    m_graphicsDevice.DrawIndexedPrimitives(
                         primitiveType: PrimitiveType.TriangleList,
                         baseVertex: (int)drawCmd.VtxOffset + vtxOffset,
                         minVertexIndex: 0,

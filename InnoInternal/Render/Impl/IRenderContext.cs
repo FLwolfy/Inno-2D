@@ -4,14 +4,17 @@ namespace InnoInternal.Render.Impl;
 
 internal interface IRenderContext
 {
-    Vector2 GetWindowSize();
-    Vector2 GetRenderTargetSize();
-    
     public Matrix viewMatrix { get; set; }
     public Matrix projectionMatrix { get; set; }
     
-    public Matrix worldToScreenMatrix { get; }
+    void Initialize(IRenderCommand renderCommand);
+    
+    Vector2 GetWindowSize();
+    
+    void SetRenderTarget(IRenderTarget? target);
+    IRenderTarget? GetRenderTarget();
+    IRenderTarget CreateRenderTarget(uint width, uint height);
+    
+    
 
-    void BeginFrame();
-    void EndFrame();
 }
