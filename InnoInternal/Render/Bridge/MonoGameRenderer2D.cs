@@ -13,10 +13,9 @@ internal class MonoGameRenderer2D : IRenderer2D
     
     private static GraphicsDevice device => MonoGameRenderAPI.graphicsDevice;
 
-    public MonoGameRenderer2D(IRenderContext renderContext)
+    public MonoGameRenderer2D()
     {
         m_spriteBatch = new SpriteBatch(device);
-        m_renderContext = renderContext;
     }
 
     public void Begin()

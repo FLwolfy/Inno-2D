@@ -7,7 +7,7 @@ internal interface IRenderer2D
 {
     void Initialize(IRenderCommand renderCommand);
     
-    void BeginScene();
+    void BeginScene(Matrix viewMatrix, Matrix projectionMatrix);
     void EndScene();
     
     void Clear(Color color);

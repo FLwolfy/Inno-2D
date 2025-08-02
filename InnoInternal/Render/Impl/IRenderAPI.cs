@@ -10,5 +10,5 @@ internal interface IRenderAPI
     IRenderContext renderContext { get; }
     IAssetLoader renderAssetLoader { get; }
     
-    void Initialize(object graphicDevice);
+    void Initialize(object graphicDevice, object windowHolder);
 }

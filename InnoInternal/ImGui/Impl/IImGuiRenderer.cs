@@ -1,4 +1,3 @@
-using InnoInternal.ImGui.Bridge;
 using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.ImGui.Impl;
@@ -43,18 +42,4 @@ internal interface IImGuiRenderer
     /// Gets the pointer to the virtual ImGui context.
     /// </summary>
     IntPtr virtualContextPtr { get; }
-    
-    // Create Shell
-    enum ImGuiRendererType { MonoGame }
-    
-    static IImGuiRenderer CreateRenderer(ImGuiRendererType rendererType)
-    {
-        return rendererType switch
-        {
-            ImGuiRendererType.MonoGame => new ImGuiNETMonoGameRenderer(),
-            
-            // Default case to handle unsupported shell types
-            _ => throw new NotSupportedException($"ImGuiRenderer type {rendererType} is not supported.")
-        };
-    }
 }

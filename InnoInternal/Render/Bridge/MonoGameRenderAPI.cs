@@ -1,27 +1,33 @@
+using InnoInternal.ImGui.Bridge;
+using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
+using InnoInternal.Resource.Bridge;
+using InnoInternal.Resource.Impl;
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace InnoInternal.Render.Bridge;
 
 internal class MonoGameRenderAPI : IRenderAPI
 {
-    internal static GraphicsDevice graphicsDevice { get; private set; } = null!;
+    public IRenderer2D renderer2D { get; } = new MonoGameRenderer2D();
+    public IImGuiRenderer rendererGUI { get; } = new ImGuiNETMonoGameRenderer();
+    public IRenderContext renderContext { get; } = new MonoGameRenderContext();
+    public IAssetLoader renderAssetLoader { get; } = new MonoGameAssetLoader();
     
-    public IRenderContext context { get; private set; } = null!;
-    public IRenderCommand command { get; private set; } = null!;
-    public IRenderer2D renderer2D { get; private set; } = null!;
-
-    public void Initialize(object device)
+    public void Initialize(object graphicDevice, object windowHolder)
     {
-        if (device is not GraphicsDevice)
-        {
-            throw new ArgumentException("Invalid data type. Expected GraphicsDevice.", nameof(device));
-        }
+        if (graphicDevice is not GraphicsDevice) 
+            throw new ArgumentException("Invalid data type. Expected 'GraphicsDevice'.", nameof(graphicDevice));
+        if (windowHolder is not Game)
+            throw new ArgumentException("Invalid data type. Expected 'Game'.", nameof(windowHolder));
         
-        graphicsDevice = (GraphicsDevice)device;
+        var command = new MonoGameRenderCommand();
         
-        context = new MonoGameRenderContext();
-        command = new MonoGameRenderCommand();
-        renderer2D = new MonoGameRenderer2D(context);
+        renderer2D.Initialize(command);
+        rendererGUI.Initialize(graphicDevice, windowHolder);
+        renderContext.Initialize(command);
+        renderAssetLoader.Initialize(command);
     }
 }

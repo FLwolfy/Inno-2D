@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.Render.Impl;
 
@@ -6,10 +7,15 @@ internal interface IRenderCommand
 {
     void Initialize(object graphicDevice);
     
-    void Begin();
+    // Lifecycle
+    void Begin(Matrix viewMatrix, Matrix projectionMatrix);
     void End();
     
-    void SetRenderTarget(IRenderTarget? target);
-    void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexStart = 0, int vertexOffset = 0, uint instanceStart = 0);
+    // Draw
     void Clear(Color color);
+    void DrawMesh(IMesh mesh, IMaterial material, ITexture2D? textureOverride = null);
+    
+    // Render View
+    void SetRenderTarget(IRenderTarget? target);
+    void SetViewPort(Vector4 viewport);
 }

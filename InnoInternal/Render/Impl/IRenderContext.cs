@@ -4,17 +4,13 @@ namespace InnoInternal.Render.Impl;
 
 internal interface IRenderContext
 {
-    public Matrix viewMatrix { get; set; }
-    public Matrix projectionMatrix { get; set; }
-    
     void Initialize(IRenderCommand renderCommand);
     
-    Vector2 GetWindowSize();
+    // Camera properties
+    public Matrix viewMatrix { get; }
+    public Matrix projectionMatrix { get; }
     
-    void SetRenderTarget(IRenderTarget? target);
-    IRenderTarget? GetRenderTarget();
+    // Render target
+    IRenderTarget? renderTarget { get; }
     IRenderTarget CreateRenderTarget(uint width, uint height);
-    
-    
-
 }
