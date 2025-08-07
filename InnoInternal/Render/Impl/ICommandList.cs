@@ -5,9 +5,12 @@ public interface ICommandList : IDisposable
     void Begin();
     void End();
 
-    void SetPipelineState(IPipelineState pipelineState);
-    void SetVertexBuffer(int slot, IVertexBuffer vertexBuffer);
+    void SetFrameBuffer(IFrameBuffer frameBuffer);
+    void SetVertexBuffer(IVertexBuffer vertexBuffer);
     void SetIndexBuffer(IIndexBuffer indexBuffer);
+    void SetResourceSet(int setIndex, IResourceSet resourceSet);
+    void SetPipelineState(IPipelineState pipelineState);
+    
 
     void Draw(uint vertexCount, uint startVertex = 0);
     void DrawIndexed(uint indexCount, uint startIndex = 0, int baseVertex = 0);
