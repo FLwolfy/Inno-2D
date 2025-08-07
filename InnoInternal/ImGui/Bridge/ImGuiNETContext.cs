@@ -80,7 +80,7 @@ internal class ImGuiNETContext : IImGuiContext
     // Widget
     public void Text(string text) => ImGuiNET.ImGui.Text(text);
     public void BulletText(string text) => ImGuiNET.ImGui.BulletText(text);
-    public void Image(ITexture2D texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
+    public void Image(ITexture texture, float width, float height) => ImGuiNET.ImGui.Image(m_renderer.BindTexture(texture), new System.Numerics.Vector2(width, height));
     public bool Selectable(string text) => ImGuiNET.ImGui.Selectable(text);
     public bool Button(string label) => ImGuiNET.ImGui.Button(label);
     public bool Checkbox(string label, ref bool value) => ImGuiNET.ImGui.Checkbox(label, ref value);

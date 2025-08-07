@@ -9,7 +9,7 @@ namespace InnoInternal.ImGui.Impl;
 /// Responsible for handling frame lifecycle, rendering ImGui draw data,
 /// and binding textures for use in ImGui.
 /// </summary>
-internal interface IImGuiRenderer
+public interface IImGuiRenderer
 {
     void Initialize(object graphicsDevice, object windowHolder);
     

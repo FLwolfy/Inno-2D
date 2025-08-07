@@ -6,7 +6,7 @@ namespace InnoInternal.ImGui.Impl;
 /// <summary>
 /// A encapsulated immeadiate-mode GUI interface
 /// </summary>
-internal interface IImGuiContext
+public interface IImGuiContext
 {
     // Menu
     bool BeginMainMenuBar();
