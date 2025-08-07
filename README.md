@@ -196,3 +196,36 @@ Editor/
   ├── SceneSerializer.cs
   └── ComponentSerializer.cs
 ```
+
+## 🎨 渲染封装示例结构
+```
+InnoInternal.Graphics
+│
+├── Impl                     // 纯接口定义，不依赖第三方库
+│   ├── IDevice.cs           // 渲染设备接口
+│   ├── ICommandList.cs      // 命令列表接口
+│   ├── IVertexBuffer.cs     // 顶点缓冲接口
+│   ├── IIndexBuffer.cs      // 索引缓冲接口
+│   ├── ITexture.cs          // 纹理接口
+│   ├── IShader.cs           // Shader接口
+│   └── IPipelineState.cs    // 渲染管线状态接口
+│
+└── Bridge                   // 具体实现，封装Veldrid等
+    ├── VeldridDevice.cs
+    ├── VeldridCommandList.cs
+    ├── VeldridVertexBuffer.cs
+    ├── VeldridIndexBuffer.cs
+    ├── VeldridTexture.cs
+    ├── VeldridShader.cs
+    └── VeldridPipelineState.cs
+
+InnoEngine.Graphics
+│
+├── Mesh.cs                // Mesh接口及实现，顶点数据结构
+├── Material.cs            // 材质及参数管理
+├── Renderer.cs            // 渲染器抽象和具体实现
+├── SpriteRenderer.cs      // Sprite渲染组件
+├── ParticleSystem.cs      // 粒子系统
+├── LightSystem.cs         // 光照系统
+└── Camera.cs              // 摄像机管理
+```
