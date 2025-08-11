@@ -18,8 +18,4 @@
       <ProjectReference Include="..\InnoBase\InnoBase.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Render\Bridge\" />
-    </ItemGroup>
-
 </Project>

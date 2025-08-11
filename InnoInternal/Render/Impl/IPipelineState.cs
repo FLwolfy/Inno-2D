@@ -2,8 +2,8 @@ namespace InnoInternal.Render.Impl;
 
 public struct PipelineStateDescription
 {
-    public IShader VertexShader;
-    public IShader FragmentShader;
+    public IShader vertexShader;
+    public IShader fragmentShader;
 }
 
 public interface IPipelineState : IDisposable;
