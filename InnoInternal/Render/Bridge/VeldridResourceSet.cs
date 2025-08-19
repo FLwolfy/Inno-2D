@@ -1,16 +1,15 @@
 using InnoInternal.Render.Impl;
 
+using Veldrid;
+
 namespace InnoInternal.Render.Bridge;
 
-public class VeldridResourceSet : IResourceSet
+internal class VeldridResourceSet : IResourceSet
 {
-    public void BindUniformBuffer(int bindingIndex, IUniformBuffer uniform)
-    {
-        throw new NotImplementedException();
-    }
+    internal ResourceSet inner { get; }
 
-    public void BindTexture(int bindingIndex, ITexture texture)
+    public VeldridResourceSet(ResourceSet resourceSet)
     {
-        throw new NotImplementedException();
+        inner = resourceSet;
     }
 }

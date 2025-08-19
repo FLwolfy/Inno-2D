@@ -1,3 +1,5 @@
+using InnoBase;
+
 namespace InnoInternal.Render.Impl;
 
 public interface ICommandList : IDisposable
@@ -15,6 +17,5 @@ public interface ICommandList : IDisposable
     void Draw(uint vertexCount, uint startVertex = 0);
     void DrawIndexed(uint indexCount, uint startIndex = 0, int baseVertex = 0);
 
-    void ClearColor(float r, float g, float b, float a);
-    void ClearDepth(float depth);
+    void ClearColor(Color color);
 }

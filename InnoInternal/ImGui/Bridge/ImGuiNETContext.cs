@@ -1,6 +1,6 @@
 using InnoBase;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Resource.Impl;
+using InnoInternal.Render.Impl;
 
 namespace InnoInternal.ImGui.Bridge;
 

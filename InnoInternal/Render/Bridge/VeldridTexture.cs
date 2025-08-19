@@ -2,7 +2,7 @@ using InnoInternal.Render.Impl;
 
 namespace InnoInternal.Render.Bridge;
 
-public class VeldridTexture : ITexture
+internal class VeldridTexture : ITexture
 {
     public int width { get; }
     public int height { get; }

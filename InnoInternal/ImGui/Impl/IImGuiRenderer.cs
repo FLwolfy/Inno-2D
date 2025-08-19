@@ -1,6 +1,5 @@
 using InnoInternal.ImGui.Bridge;
 using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Impl;
 
 namespace InnoInternal.ImGui.Impl;
 
@@ -28,7 +27,7 @@ public interface IImGuiRenderer
     /// </summary>
     /// <param name="texture">The texture to bind.</param>
     /// <returns>An IntPtr handle used by ImGui to reference this texture.</returns>
-    IntPtr BindTexture(ITexture2D texture);
+    IntPtr BindTexture(ITexture texture);
     
     /// <summary>
     /// Gets the associated ImGui context abstraction.

@@ -1,15 +1,24 @@
+using InnoInternal.Render.Bridge;
+
 namespace InnoInternal.Render.Impl;
 
 public interface IGraphicsDevice : IDisposable
 {
-    IVertexBuffer CreateVertexBuffer<T>(T[] vertices, int sizeInBytes) where T : unmanaged;
-    IIndexBuffer CreateIndexBuffer<T>(T[] indices, int sizeInBytes) where T : unmanaged;
-    IUniformBuffer CreateUniformBuffer(int sizeInBytes);
+    IFrameBuffer swapChainFrameBuffer { get; }
+    
+    IVertexBuffer CreateVertexBuffer(uint sizeInBytes);
+    IIndexBuffer CreateIndexBuffer(uint sizeInBytes);
+    IUniformBuffer CreateUniformBuffer(uint sizeInBytes);
+    
     IFrameBuffer CreateFrameBuffer(FrameBufferDescription desc);
-    IShader CreateShader(string shaderCode, ShaderStage stage);
-    ITexture CreateTexture(int width, int height, byte[] pixelData);
+    IResourceSet CreateResourceSet(ResourceSetDescription desc);
+    IReadOnlyList<IShader> CreateVertexFragmentShaders(ShaderDescription vertexDesc, ShaderDescription fragmentDesc);
+    IShader CreateComputeShader(ShaderDescription desc);
+    ITexture CreateTexture(TextureDescription desc);
     IPipelineState CreatePipelineState(PipelineStateDescription desc);
+    
     ICommandList CreateCommandList();
     
     void Submit(ICommandList commandList);
+    void SwapBuffers();
 }

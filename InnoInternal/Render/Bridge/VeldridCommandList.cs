@@ -1,10 +1,14 @@
+using InnoBase;
 using InnoInternal.Render.Impl;
+
 using Veldrid;
 
 namespace InnoInternal.Render.Bridge;
 
 internal class VeldridCommandList : ICommandList
 {
+    private Framebuffer m_currentFrameBuffer;
+    
     internal CommandList inner { get; }
 
     public VeldridCommandList(CommandList commandList)
@@ -25,7 +29,10 @@ internal class VeldridCommandList : ICommandList
     public void SetFrameBuffer(IFrameBuffer frameBuffer)
     {
         if (frameBuffer is VeldridFrameBuffer veldridFB)
-            inner.SetFramebuffer(veldridFB.Framebuffer);
+        {
+            inner.SetFramebuffer(veldridFB.inner);
+            m_currentFrameBuffer = veldridFB.inner;
+        }
     }
 
     public void SetVertexBuffer(IVertexBuffer vertexBuffer)
@@ -43,33 +50,31 @@ internal class VeldridCommandList : ICommandList
     public void SetResourceSet(int setIndex, IResourceSet resourceSet)
     {
         if (resourceSet is VeldridResourceSet veldridRS)
-            inner.SetGraphicsResourceSet((uint)setIndex, veldridRS.ResourceSet);
+            inner.SetGraphicsResourceSet((uint)setIndex, veldridRS.inner);
     }
 
     public void SetPipelineState(IPipelineState pipelineState)
     {
         if (pipelineState is VeldridPipelineState veldridPS)
-            inner.SetPipeline(veldridPS.Pipeline);
+        {
+            veldridPS.SetFrameBufferOutputDescription(m_currentFrameBuffer.OutputDescription);
+            inner.SetPipeline(veldridPS.inner);
+        }
     }
 
     public void Draw(uint vertexCount, uint startVertex = 0)
     {
-        inner.Draw(vertexCount, startVertex);
+        inner.Draw(vertexCount, 1, startVertex, 0);
     }
 
     public void DrawIndexed(uint indexCount, uint startIndex = 0, int baseVertex = 0)
     {
-        inner.DrawIndexed(indexCount, startIndex, baseVertex);
+        inner.DrawIndexed(indexCount, 1, startIndex, baseVertex, 0);
     }
 
-    public void ClearColor(float r, float g, float b, float a)
+    public void ClearColor(Color color)
     {
-        inner.ClearColorTarget(0, RgbaFloat.FromBytes((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), (byte)(a * 255)));
-    }
-
-    public void ClearDepth(float depth)
-    {
-        inner.ClearDepthStencil(depth);
+        inner.ClearColorTarget(0, new RgbaFloat(color.r, color.g, color.b, color.a));
     }
 
     public void Dispose()
