@@ -19,10 +19,11 @@ internal class VeldridPipelineState : IPipelineState
         m_graphicsDevice = graphicsDevice;
 
         m_innerDescription = ToVeldridPSDesc(desc);
+        m_innerDescription.Outputs = graphicsDevice.SwapchainFramebuffer.OutputDescription;
         inner = m_graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ref m_innerDescription);
     }
     
-    public void SetFrameBufferOutputDescription(OutputDescription desc)
+    internal void SetFrameBufferOutputDescription(OutputDescription desc)
     {
         m_innerDescription.Outputs = desc;
     }
@@ -32,7 +33,7 @@ internal class VeldridPipelineState : IPipelineState
         inner.Dispose();
     }
 
-    private VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
+    private static VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
     {
         var vertexShader = ((VeldridShader)desc.vertexShader).inner;
         var fragmentShader = ((VeldridShader)desc.fragmentShader).inner;
@@ -46,11 +47,10 @@ internal class VeldridPipelineState : IPipelineState
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ResourceLayouts = [],
             ShaderSet = new ShaderSetDescription(vertexLayouts, [vertexShader, fragmentShader]),
-            Outputs = m_graphicsDevice.SwapchainFramebuffer.OutputDescription
         };
     }
     
-    private VertexLayoutDescription GenerateLayoutFromType(Type t)
+    private static VertexLayoutDescription GenerateLayoutFromType(Type t)
     {
         var fields = t.GetFields();
         var elements = fields.Select(f =>

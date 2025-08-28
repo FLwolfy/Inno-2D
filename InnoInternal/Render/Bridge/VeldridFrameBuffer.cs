@@ -10,10 +10,10 @@ internal class VeldridFrameBuffer : IFrameBuffer
     
     public int width { get; }
     public int height { get; }
-    
+
     internal Framebuffer inner { get; }
 
-    public VeldridFrameBuffer(GraphicsDevice graphicsDevice, Framebuffer frameBuffer)
+    internal VeldridFrameBuffer(GraphicsDevice graphicsDevice, Framebuffer frameBuffer)
     {
         m_graphicsDevice = graphicsDevice;
         inner = frameBuffer;
@@ -26,11 +26,26 @@ internal class VeldridFrameBuffer : IFrameBuffer
         // TODO
     }
     
-    public void Clear(Color color)
+    public ITexture GetAttachment(int index)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ITexture? GetDepthAttachment()
     {
         throw new NotImplementedException();
     }
     
+    public void Clear(Color color)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Resize(int width, int height)
+    {
+        throw new NotImplementedException();
+    }
+
     public void Dispose()
     {
         // TODO release managed resources here
