@@ -21,6 +21,11 @@ public interface IImGuiRenderer
     /// Ends the ImGui frame and finalizes draw data.
     /// </summary>
     void EndLayout();
+    
+    /// <summary>
+    /// Handles resizing of the window.
+    /// </summary>
+    void OnWindowResize(int width, int height);
 
     /// <summary>
     /// Binds a texture for use by ImGui and returns a texture ID handle.
@@ -28,6 +33,12 @@ public interface IImGuiRenderer
     /// <param name="texture">The texture to bind.</param>
     /// <returns>An IntPtr handle used by ImGui to reference this texture.</returns>
     IntPtr BindTexture(ITexture texture);
+    
+    /// <summary>
+    /// Unbinds a previously bound texture from ImGui.
+    /// </summary>
+    /// <param name="texture">The texture to unbind.</param>
+    void UnbindTexture(ITexture texture);
     
     /// <summary>
     /// Gets the associated ImGui context abstraction.

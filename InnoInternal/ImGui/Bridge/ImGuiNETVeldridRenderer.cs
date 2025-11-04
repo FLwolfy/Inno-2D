@@ -1,10 +1,10 @@
 using InnoInternal.ImGui.Impl;
+using InnoInternal.Render.Impl;
 
 using Veldrid;
 using Veldrid.Sdl2;
 
 using ImGuiNET;
-using InnoInternal.Render.Impl;
 using SYSVector4 = System.Numerics.Vector4;
 
 namespace InnoInternal.ImGui.Bridge;
@@ -15,7 +15,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     private GraphicsDevice m_graphicsDevice = null!;
     private CommandList m_commandList = null!;
     private Sdl2Window m_window = null!;
-    // private ImGuiRenderer m_renderer = null!;
+    private ImGuiNETVeldridBridge m_imGuiVeldridBridge = null!;
     
     // Properties
     public IImGuiContext context { get; private set; } = null!;
@@ -32,12 +32,13 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_graphicsDevice = device;
         m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
         m_window = window;
-        // m_renderer = new ImGuiRenderer(
-        //     m_graphicsDevice,
-        //     m_graphicsDevice.MainSwapchain.Framebuffer.OutputDescription,
-        //     m_window.Width,
-        //     m_window.Height
-        //     );
+        m_imGuiVeldridBridge = new ImGuiNETVeldridBridge(
+            m_graphicsDevice,
+            m_graphicsDevice.MainSwapchain.Framebuffer.OutputDescription,
+            m_window.Width,
+            m_window.Height,
+            ImGuiNETColorSpaceHandling.Legacy
+            );
         
         // Main Context
         mainMainContextPtr = ImGuiNET.ImGui.GetCurrentContext();
@@ -60,13 +61,13 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
-        // m_renderer.Update(deltaTime, m_window.PumpEvents());
+        m_imGuiVeldridBridge.Update(deltaTime, m_window.PumpEvents());
         
         // Docking
         ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
     }
 
-    public virtual void EndLayout()
+    public void EndLayout()
     {
         // Virtual Context
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
@@ -79,15 +80,26 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_commandList.Begin();
         m_commandList.SetFramebuffer(m_graphicsDevice.MainSwapchain.Framebuffer);
         m_commandList.ClearColorTarget(0, RgbaFloat.Black);
-        // m_renderer.Render(m_graphicsDevice, m_commandList);
+        m_imGuiVeldridBridge.Render(m_graphicsDevice, m_commandList);
         m_commandList.End();
         m_graphicsDevice.SubmitCommands(m_commandList);
         m_graphicsDevice.SwapBuffers(m_graphicsDevice.MainSwapchain);
     }
 
+    public void OnWindowResize(int width, int height)
+    {
+        m_imGuiVeldridBridge.WindowResized(width, height);
+    }
+
     public IntPtr BindTexture(ITexture texture)
     {
         // TODO: Implement texture binding for Veldrid
+        throw new NotImplementedException();
+    }
+    
+    public void UnbindTexture(ITexture texture)
+    {
+        // TODO: Implement texture unbinding for Veldrid
         throw new NotImplementedException();
     }
     
@@ -152,3 +164,4 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         style.GrabRounding = 3.0f;
     }
 }
+
