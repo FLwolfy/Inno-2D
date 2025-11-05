@@ -1,6 +1,7 @@
-﻿
+﻿using ImGuiNET;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Shell.Impl;
+using Veldrid;
 
 namespace Sandbox;
 
@@ -12,26 +13,40 @@ internal class ImGuiTest
         shell.SetWindowSize(1280, 720);
         shell.SetWindowResizable(true);
         
-        var imguiRenderer = IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid);
+        var imGuiRenderer = IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid);
         
         shell.SetOnResize((width, height) =>
         {
-            imguiRenderer.OnWindowResize(width, height);
+            imGuiRenderer.OnWindowResize(width, height);
         });
 
         shell.SetOnLoad(() =>
         {
-            imguiRenderer.Initialize(shell.GetGraphicsDevice(), shell.GetWindowHolder());
+            imGuiRenderer.Initialize(shell.GetGraphicsDevice(), shell.GetWindowHolder());
         });
         
         shell.SetOnDraw(deltaTime =>
         {
-            imguiRenderer.BeginLayout(deltaTime);
-        
-            // Demo GUI
-            ImGuiNET.ImGui.ShowDemoWindow();
+            imGuiRenderer.BeginLayout(deltaTime);
+
+            // Simple Window (Cannot be docked onto the main window)
+            {
+                ImGui.Text("Simple Window");
+            }
             
-            imguiRenderer.EndLayout();
+            // Normal Window (Can be docked onto the main window)
+            ImGui.Begin("Normal Window");
+            ImGui.Text("Hello from another window!");
+            ImGui.End();
+            
+            // Demo Window
+            ImGui.ShowDemoWindow();
+            
+            imGuiRenderer.EndLayout();
+            
+            // Swap Buffers
+            ((GraphicsDevice) shell.GetGraphicsDevice()).SwapBuffers();
+            imGuiRenderer.SwapExtraImGuiWindows();
         });
 
         shell.Run();

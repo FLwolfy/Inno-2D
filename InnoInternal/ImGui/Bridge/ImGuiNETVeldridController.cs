@@ -1,7 +1,11 @@
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 using ImGuiNET;
 using Veldrid;
+using Veldrid.Sdl2;
 
 namespace InnoInternal.ImGui.Bridge;
 
@@ -9,11 +13,14 @@ namespace InnoInternal.ImGui.Bridge;
 /// ImGui.NET Bridge Renderer for Veldrid.
 /// This is modified by the original ImGuiRenderer from Veldrid.ImGui.
 /// </summary>
-internal class ImGuiNETVeldridBridge : IDisposable
+internal class ImGuiNETVeldridController : IDisposable
 {
     private readonly GraphicsDevice m_graphicsDevice;
+    private readonly Sdl2Window m_window;
     private readonly Assembly m_assembly;
     private readonly ImGuiNETColorSpaceHandling m_colorSpaceHandling;
+    private int m_lastAssignedId = 100;
+    private bool m_frameBegun;
 
     // Device objects
     private DeviceBuffer? m_vertexBuffer;
@@ -29,17 +36,31 @@ internal class ImGuiNETVeldridBridge : IDisposable
     private ResourceSet? m_fontTextureResourceSet;
     private readonly IntPtr m_fontAtlasId = 1;
 
+    // Window info
+    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow;
+    private bool m_controlDown;
+    private bool m_shiftDown;
+    private bool m_altDown;
+    private bool m_winKeyDown;
     private int m_windowWidth;
     private int m_windowHeight;
     private readonly Vector2 m_scaleFactor = Vector2.One;
+    
+    // Window Platform Interface
+    private delegate void SdlRaiseWindowT(IntPtr sdl2Window);
+    private static SdlRaiseWindowT? m_pSdlRaiseWindow;
+    private unsafe delegate uint SdlGetGlobalMouseStateT(int* x, int* y);
+    private static SdlGetGlobalMouseStateT? m_pSdlGetGlobalMouseState;
+    private unsafe delegate int SdlGetDisplayUsableBoundsT(int displayIndex, Rectangle* rect);
+    private static SdlGetDisplayUsableBoundsT? m_pSdlGetDisplayUsableBoundsT;
+    private delegate int SdlGetNumVideoDisplaysT();
+    private static SdlGetNumVideoDisplaysT? m_pSdlGetNumVideoDisplays;
 
     // Image trackers
     private readonly Dictionary<TextureView, ResourceSetInfo> m_setsByView = new();
     private readonly Dictionary<Texture, TextureView> m_autoViewsByTexture = new();
     private readonly Dictionary<IntPtr, ResourceSetInfo> m_viewsById = new();
     private readonly List<IDisposable> m_ownedResources = new();
-    private int m_lastAssignedId = 100;
-    private bool m_frameBegun;
     
     
     // ============================================================
@@ -52,21 +73,65 @@ internal class ImGuiNETVeldridBridge : IDisposable
     /// Constructs a new ImGuiRenderer.
     /// </summary>
     /// <param name="gd">The GraphicsDevice used to create and update resources.</param>
+    /// <param name="window">The main window to render.</param>
     /// <param name="outputDescription">The output format.</param>
-    /// <param name="width">The initial width of the rendering target. Can be resized.</param>
-    /// <param name="height">The initial height of the rendering target. Can be resized.</param>
     /// <param name="colorSpaceHandling">Identifies how the renderer should treat vertex colors.</param>
-    public ImGuiNETVeldridBridge(GraphicsDevice gd, OutputDescription outputDescription, int width, int height, ImGuiNETColorSpaceHandling colorSpaceHandling)
+    public unsafe ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window window, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = gd;
-        m_assembly = typeof(ImGuiNETVeldridBridge).GetTypeInfo().Assembly;
+        m_assembly = typeof(ImGuiNETVeldridController).GetTypeInfo().Assembly;
         m_colorSpaceHandling = colorSpaceHandling;
-        m_windowWidth = width;
-        m_windowHeight = height;
+
+        m_window = window;
+        m_windowWidth = window.Width;
+        m_windowHeight = window.Height;
 
         IntPtr context = ImGuiNET.ImGui.CreateContext();
         ImGuiNET.ImGui.SetCurrentContext(context);
+        
+        // Config Flags
+        var io = ImGuiNET.ImGui.GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable; 
+        
+        // Window Platform Interface
+        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+        ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
+        mainViewport.PlatformHandle = window.Handle;
+        m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_window);
 
+        Platform_CreateWindow createWindow = CreateWindow;
+        Platform_DestroyWindow destroyWindow = DestroyWindow;
+        Platform_GetWindowPos getWindowPos = GetWindowPos;
+        Platform_ShowWindow showWindow = ShowWindow;
+        Platform_SetWindowPos setWindowPos = SetWindowPos;
+        Platform_SetWindowSize setWindowSize = SetWindowSize;
+        Platform_GetWindowSize getWindowSize = GetWindowSize;
+        Platform_SetWindowFocus setWindowFocus = SetWindowFocus;
+        Platform_GetWindowFocus getWindowFocus = GetWindowFocus;
+        Platform_GetWindowMinimized getWindowMinimized = GetWindowMinimized;
+        Platform_SetWindowTitle setWindowTitle = SetWindowTitle;
+
+        platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(createWindow);
+        platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(destroyWindow);
+        platformIo.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(showWindow);
+        platformIo.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(setWindowPos);
+        platformIo.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(setWindowSize);
+        platformIo.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(setWindowFocus);
+        platformIo.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(getWindowFocus);
+        platformIo.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(getWindowMinimized);
+        platformIo.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(setWindowTitle);
+
+        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowPos(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(getWindowPos));
+        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowSize(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(getWindowSize));
+
+        // Backend Flags
+        io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
+        io.BackendFlags |= ImGuiBackendFlags.HasSetMousePos;
+        io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports;
+        io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
+
+        // Fonts
         ImGuiNET.ImGui.GetIO().Fonts.AddFontDefault();
         ImGuiNET.ImGui.GetIO().Fonts.Flags |= ImFontAtlasFlags.NoBakedLines;
 
@@ -186,6 +251,123 @@ internal class ImGuiNETVeldridBridge : IDisposable
         byte[] ret = new byte[s.Length];
         s.ReadExactly(ret, 0, (int)s.Length);
         return ret;
+    }
+    
+    #endregion
+    
+    // ============================================================
+    // Window Platform Interface
+    // ===========================================================
+    
+    #region Window Platform
+    
+    private void CreateWindow(ImGuiViewportPtr vp)
+    {
+        _ = new ImGuiNETVeldridWindow(m_graphicsDevice, vp);
+    }
+
+    private void DestroyWindow(ImGuiViewportPtr vp)
+    {
+        if (vp.PlatformUserData != IntPtr.Zero)
+        {
+            ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+            window?.Dispose();
+
+            vp.PlatformUserData = IntPtr.Zero;
+        }
+    }
+
+    private void ShowWindow(ImGuiViewportPtr vp)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null) Sdl2Native.SDL_ShowWindow(window.window.SdlWindowHandle);
+    }
+
+    private unsafe void GetWindowPos(ImGuiViewportPtr vp, Vector2* outPos)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null) *outPos = new Vector2(window.window.Bounds.X, window.window.Bounds.Y);
+    }
+
+    private void SetWindowPos(ImGuiViewportPtr vp, Vector2 pos)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null)
+        {
+            window.window.X = (int)pos.X;
+            window.window.Y = (int)pos.Y;
+        }
+    }
+
+    private void SetWindowSize(ImGuiViewportPtr vp, Vector2 size)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null) Sdl2Native.SDL_SetWindowSize(window.window.SdlWindowHandle, (int)size.X, (int)size.Y);
+    }
+
+    private unsafe void GetWindowSize(ImGuiViewportPtr vp, Vector2* outSize)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null)
+        {
+            Rectangle bounds = window.window.Bounds;
+            *outSize = new Vector2(bounds.Width, bounds.Height);
+        }
+    }
+
+    private void SetWindowFocus(ImGuiViewportPtr vp)
+    {
+        if (m_pSdlRaiseWindow == null)
+        {
+            m_pSdlRaiseWindow = Sdl2Native.LoadFunction<SdlRaiseWindowT>("SDL_RaiseWindow");
+        }
+
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null) m_pSdlRaiseWindow(window.window.SdlWindowHandle);
+    }
+
+    private byte GetWindowFocus(ImGuiViewportPtr vp)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null)
+        {
+            SDL_WindowFlags flags = Sdl2Native.SDL_GetWindowFlags(window.window.SdlWindowHandle);
+            return (flags & SDL_WindowFlags.InputFocus) != 0 ? (byte)1 : (byte)0;
+        }
+        throw new Exception("Window not found");
+    }
+
+    private byte GetWindowMinimized(ImGuiViewportPtr vp)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        if (window != null)
+        {
+            SDL_WindowFlags flags = Sdl2Native.SDL_GetWindowFlags(window.window.SdlWindowHandle);
+            return (flags & SDL_WindowFlags.Minimized) != 0 ? (byte)1 : (byte)0;
+        }
+        throw new Exception("Window not found");
+    }
+
+    private unsafe void SetWindowTitle(ImGuiViewportPtr vp, IntPtr title)
+    {
+        ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+        byte* titlePtr = (byte*)title;
+        int count = 0;
+        while (titlePtr[count] != 0)
+        {
+            count += 1;
+        }
+
+        if (window != null) window.window.Title = System.Text.Encoding.ASCII.GetString(titlePtr, count);
+    }
+    
+    /// <summary>
+    /// Resize the renderer's output window.
+    /// </summary>
+    public void WindowResized(int width, int height)
+    {
+        m_windowWidth = width;
+        m_windowHeight = height;
     }
     
     #endregion
@@ -356,10 +538,27 @@ internal class ImGuiNETVeldridBridge : IDisposable
             m_frameBegun = false;
             ImGuiNET.ImGui.Render();
             RenderImDrawData(ImGuiNET.ImGui.GetDrawData(), gd, cl);
+            
+            // Update and Render additional Platform Windows
+            if ((ImGuiNET.ImGui.GetIO().ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
+            {
+                ImGuiNET.ImGui.UpdatePlatformWindows();
+                ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+                for (int i = 1; i < platformIo.Viewports.Size; i++)
+                {
+                    ImGuiViewportPtr vp = platformIo.Viewports[i];
+                    ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+                    if (window is { swapchain: not null })
+                    {
+                        cl.SetFramebuffer(window.swapchain.Framebuffer);
+                        RenderImDrawData(vp.DrawData, gd, cl);
+                    }
+                }
+            }
         }
     }
     
-        private unsafe void RenderImDrawData(ImDrawDataPtr drawData, GraphicsDevice gd, CommandList cl)
+    private void RenderImDrawData(ImDrawDataPtr drawData, GraphicsDevice gd, CommandList cl)
     {
         uint vertexOffsetInVertices = 0;
         uint indexOffsetInElements = 0;
@@ -369,31 +568,30 @@ internal class ImGuiNETVeldridBridge : IDisposable
             return;
         }
 
-        uint totalVbSize = (uint)(drawData.TotalVtxCount * sizeof(ImDrawVert));
+        uint totalVbSize = (uint)(drawData.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
         if (m_vertexBuffer != null && totalVbSize > m_vertexBuffer.SizeInBytes)
         {
-            m_vertexBuffer.Dispose();
+            gd.DisposeWhenIdle(m_vertexBuffer);
             m_vertexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalVbSize * 1.5f), BufferUsage.VertexBuffer | BufferUsage.Dynamic));
-            m_vertexBuffer.Name = $"ImGui.NET Vertex Buffer";
         }
 
         uint totalIbSize = (uint)(drawData.TotalIdxCount * sizeof(ushort));
         if (m_indexBuffer != null && totalIbSize > m_indexBuffer.SizeInBytes)
         {
-            m_indexBuffer.Dispose();
+            gd.DisposeWhenIdle(m_indexBuffer);
             m_indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIbSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
-            m_indexBuffer.Name = $"ImGui.NET Index Buffer";
         }
 
+        Vector2 pos = drawData.DisplayPos;
         for (int i = 0; i < drawData.CmdListsCount; i++)
         {
             ImDrawListPtr cmdList = drawData.CmdLists[i];
 
             cl.UpdateBuffer(
                 m_vertexBuffer,
-                vertexOffsetInVertices * (uint)sizeof(ImDrawVert),
+                vertexOffsetInVertices * (uint)Unsafe.SizeOf<ImDrawVert>(),
                 cmdList.VtxBuffer.Data,
-                (uint)(cmdList.VtxBuffer.Size * sizeof(ImDrawVert)));
+                (uint)(cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>()));
 
             cl.UpdateBuffer(
                 m_indexBuffer,
@@ -406,26 +604,23 @@ internal class ImGuiNETVeldridBridge : IDisposable
         }
 
         // Setup orthographic projection matrix into our constant buffer
-        {
-            var io = ImGuiNET.ImGui.GetIO();
+        ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
+        Matrix4x4 mvp = Matrix4x4.CreateOrthographicOffCenter(
+            pos.X,
+            pos.X + drawData.DisplaySize.X,
+            pos.Y + drawData.DisplaySize.Y,
+            pos.Y,
+            -1.0f,
+            1.0f);
 
-            Matrix4x4 mvp = Matrix4x4.CreateOrthographicOffCenter(
-                0f,
-                io.DisplaySize.X,
-                io.DisplaySize.Y,
-                0.0f,
-                -1.0f,
-                1.0f);
-
-            m_graphicsDevice.UpdateBuffer(m_projMatrixBuffer, 0, ref mvp);
-        }
+        cl.UpdateBuffer(m_projMatrixBuffer, 0, ref mvp);
 
         cl.SetVertexBuffer(0, m_vertexBuffer);
         cl.SetIndexBuffer(m_indexBuffer, IndexFormat.UInt16);
         cl.SetPipeline(m_pipeline);
         cl.SetGraphicsResourceSet(0, m_mainResourceSet);
 
-        drawData.ScaleClipRects(ImGuiNET.ImGui.GetIO().DisplayFramebufferScale);
+        drawData.ScaleClipRects(io.DisplayFramebufferScale);
 
         // Render command lists
         int vtxOffset = 0;
@@ -440,27 +635,43 @@ internal class ImGuiNETVeldridBridge : IDisposable
                 {
                     throw new NotImplementedException();
                 }
-
-                if (pcmd.TextureId != IntPtr.Zero)
+                else
                 {
-                    cl.SetGraphicsResourceSet(1,
-                        pcmd.TextureId == m_fontAtlasId
-                            ? m_fontTextureResourceSet
-                            : GetImageResourceSet(pcmd.TextureId));
+                    if (pcmd.TextureId != IntPtr.Zero)
+                    {
+                        if (pcmd.TextureId == m_fontAtlasId)
+                        {
+                            cl.SetGraphicsResourceSet(1, m_fontTextureResourceSet);
+                        }
+                        else
+                        {
+                            cl.SetGraphicsResourceSet(1, GetImageResourceSet(pcmd.TextureId));
+                        }
+                    }
+
+                    cl.SetScissorRect(
+                        0,
+                        (uint)(pcmd.ClipRect.X - pos.X),
+                        (uint)(pcmd.ClipRect.Y - pos.Y),
+                        (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X),
+                        (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
+
+                    cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idxOffset, (int)pcmd.VtxOffset + vtxOffset, 0);
                 }
-
-                cl.SetScissorRect(
-                    0,
-                    (uint)pcmd.ClipRect.X,
-                    (uint)pcmd.ClipRect.Y,
-                    (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X),
-                    (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
-
-                cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idxOffset, (int)(pcmd.VtxOffset + vtxOffset), 0);
             }
-
-            idxOffset += cmdList.IdxBuffer.Size;
             vtxOffset += cmdList.VtxBuffer.Size;
+            idxOffset += cmdList.IdxBuffer.Size;
+        }
+    }
+    
+    public void SwapExtraWindows(GraphicsDevice gd)
+    {
+        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+        for (int i = 1; i < platformIo.Viewports.Size; i++)
+        {
+            ImGuiViewportPtr vp = platformIo.Viewports[i];
+            ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+            if (window != null) gd.SwapBuffers(window.swapchain);
         }
     }
 
@@ -476,11 +687,34 @@ internal class ImGuiNETVeldridBridge : IDisposable
         }
         
         SetPerFrameImGuiData(deltaSeconds);
-        
         UpdateImGuiInput(snapshot);
+        UpdateMonitors();
         
         m_frameBegun = true;
         ImGuiNET.ImGui.NewFrame();
+    }
+    
+    private unsafe void UpdateMonitors()
+    {
+        m_pSdlGetNumVideoDisplays ??= Sdl2Native.LoadFunction<SdlGetNumVideoDisplaysT>("SDL_GetNumVideoDisplays");
+        m_pSdlGetDisplayUsableBoundsT ??= Sdl2Native.LoadFunction<SdlGetDisplayUsableBoundsT>("SDL_GetDisplayUsableBounds");
+
+        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+        Marshal.FreeHGlobal(platformIo.NativePtr->Monitors.Data);
+        int numMonitors = m_pSdlGetNumVideoDisplays();
+        IntPtr data = Marshal.AllocHGlobal(Unsafe.SizeOf<ImGuiPlatformMonitor>() * numMonitors);
+        platformIo.NativePtr->Monitors = new ImVector(numMonitors, numMonitors, data);
+        for (int i = 0; i < numMonitors; i++)
+        {
+            Rectangle r;
+            m_pSdlGetDisplayUsableBoundsT(i, &r);
+            ImGuiPlatformMonitorPtr monitor = platformIo.Monitors[i];
+            monitor.DpiScale = 1f;
+            monitor.MainPos = new Vector2(r.X, r.Y);
+            monitor.MainSize = new Vector2(r.Width, r.Height);
+            monitor.WorkPos = new Vector2(r.X, r.Y);
+            monitor.WorkSize = new Vector2(r.Width, r.Height);
+        }
     }
     
     private void SetPerFrameImGuiData(float deltaSeconds)
@@ -491,24 +725,18 @@ internal class ImGuiNETVeldridBridge : IDisposable
             m_windowHeight / m_scaleFactor.Y);
         io.DisplayFramebufferScale = m_scaleFactor;
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
+        
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new Vector2(m_window.X, m_window.Y);
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new Vector2(m_window.Width, m_window.Height);
     }
     
     #endregion
     
     // ============================================================
-    // Events
+    // Inputs
     // ============================================================
     
-    #region Events
-    
-    /// <summary>
-    /// Resize the renderer's output window.
-    /// </summary>
-    public void WindowResized(int width, int height)
-    {
-        m_windowWidth = width;
-        m_windowHeight = height;
-    }
+    #region Inputs
     
     private bool TryMapKey(Key key, out ImGuiKey result)
     {
@@ -672,29 +900,89 @@ internal class ImGuiNETVeldridBridge : IDisposable
                 }
         }
     }
-
+    
     private void UpdateImGuiInput(InputSnapshot snapshot)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
-        io.AddMousePosEvent(snapshot.MousePosition.X, snapshot.MousePosition.Y);
-        io.AddMouseButtonEvent(0, snapshot.IsMouseDown(MouseButton.Left));
-        io.AddMouseButtonEvent(1, snapshot.IsMouseDown(MouseButton.Right));
-        io.AddMouseButtonEvent(2, snapshot.IsMouseDown(MouseButton.Middle));
-        io.AddMouseButtonEvent(3, snapshot.IsMouseDown(MouseButton.Button1));
-        io.AddMouseButtonEvent(4, snapshot.IsMouseDown(MouseButton.Button2));
-        io.AddMouseWheelEvent(0f, snapshot.WheelDelta);
 
-        foreach (var t in snapshot.KeyCharPresses)
+        // Determine if any of the mouse buttons were pressed during this snapshot period, even if they are no longer held.
+        bool leftPressed = false;
+        bool middlePressed = false;
+        bool rightPressed = false;
+        foreach (MouseEvent me in snapshot.MouseEvents)
         {
-            io.AddInputCharacter(t);
+            if (me.Down)
+            {
+                switch (me.MouseButton)
+                {
+                    case MouseButton.Left:
+                        leftPressed = true;
+                        break;
+                    case MouseButton.Middle:
+                        middlePressed = true;
+                        break;
+                    case MouseButton.Right:
+                        rightPressed = true;
+                        break;
+                }
+            }
+        }
+
+        io.MouseDown[0] = leftPressed || snapshot.IsMouseDown(MouseButton.Left);
+        io.MouseDown[1] = middlePressed || snapshot.IsMouseDown(MouseButton.Right);
+        io.MouseDown[2] = rightPressed || snapshot.IsMouseDown(MouseButton.Middle);
+
+        if (m_pSdlGetGlobalMouseState == null)
+        {
+            m_pSdlGetGlobalMouseState = Sdl2Native.LoadFunction<SdlGetGlobalMouseStateT>("SDL_GetGlobalMouseState");
+        }
+
+        int x, y;
+        unsafe
+        {
+            uint buttons = m_pSdlGetGlobalMouseState(&x, &y);
+            io.MouseDown[0] = (buttons & 0b0001) != 0;
+            io.MouseDown[1] = (buttons & 0b0010) != 0;
+            io.MouseDown[2] = (buttons & 0b0100) != 0;
+        }
+
+        io.MousePos = new Vector2(x, y);
+        io.MouseWheel = snapshot.WheelDelta;
+
+        IReadOnlyList<char> keyCharPresses = snapshot.KeyCharPresses;
+        for (int i = 0; i < keyCharPresses.Count; i++)
+        {
+            char c = keyCharPresses[i];
+            io.AddInputCharacter(c);
         }
 
         foreach (var keyEvent in snapshot.KeyEvents)
         {
-            if (TryMapKey(keyEvent.Key, out ImGuiKey imguikey))
+            if (TryMapKey(keyEvent.Key, out ImGuiKey imGuiKey))
             {
-                io.AddKeyEvent(imguikey, keyEvent.Down);
+                io.AddKeyEvent(imGuiKey, keyEvent.Down);
             }
+
+            switch (keyEvent.Key)
+            {
+                case Key.ControlLeft: m_controlDown = keyEvent.Down; break;
+                case Key.ShiftLeft: m_shiftDown = keyEvent.Down; break;
+                case Key.AltLeft: m_altDown = keyEvent.Down; break;
+                case Key.WinLeft: m_winKeyDown = keyEvent.Down; break;
+            }
+        }
+
+        io.KeyCtrl = m_controlDown;
+        io.KeyAlt = m_altDown;
+        io.KeyShift = m_shiftDown;
+        io.KeySuper = m_winKeyDown;
+
+        ImVector<ImGuiViewportPtr> viewports = ImGuiNET.ImGui.GetPlatformIO().Viewports;
+        for (int i = 1; i < viewports.Size; i++)
+        {
+            ImGuiViewportPtr v = viewports[i];
+            ImGuiNETVeldridWindow? window = ((ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(v.PlatformUserData).Target);
+            window?.Update();
         }
     }
     

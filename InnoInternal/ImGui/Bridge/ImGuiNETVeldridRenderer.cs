@@ -15,7 +15,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     private GraphicsDevice m_graphicsDevice = null!;
     private CommandList m_commandList = null!;
     private Sdl2Window m_window = null!;
-    private ImGuiNETVeldridBridge m_imGuiVeldridBridge = null!;
+    private ImGuiNETVeldridController m_imGuiVeldridController = null!;
     
     // Properties
     public IImGuiContext context { get; private set; } = null!;
@@ -32,11 +32,10 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_graphicsDevice = device;
         m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
         m_window = window;
-        m_imGuiVeldridBridge = new ImGuiNETVeldridBridge(
+        m_imGuiVeldridController = new ImGuiNETVeldridController(
             m_graphicsDevice,
+            m_window,
             m_graphicsDevice.MainSwapchain.Framebuffer.OutputDescription,
-            m_window.Width,
-            m_window.Height,
             ImGuiNETColorSpaceHandling.Legacy
             );
         
@@ -48,8 +47,12 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         virtualContextPtr = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
         
         // Setups
-        SetupFlags();
         SetupThemes();
+    }
+
+    public void SwapExtraImGuiWindows()
+    {
+        m_imGuiVeldridController.SwapExtraWindows(m_graphicsDevice);
     }
 
     public void BeginLayout(float deltaTime)
@@ -61,7 +64,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
-        m_imGuiVeldridBridge.Update(deltaTime, m_window.PumpEvents());
+        m_imGuiVeldridController.Update(deltaTime, m_window.PumpEvents());
         
         // Docking
         ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
@@ -80,7 +83,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_commandList.Begin();
         m_commandList.SetFramebuffer(m_graphicsDevice.MainSwapchain.Framebuffer);
         m_commandList.ClearColorTarget(0, RgbaFloat.Black);
-        m_imGuiVeldridBridge.Render(m_graphicsDevice, m_commandList);
+        m_imGuiVeldridController.Render(m_graphicsDevice, m_commandList);
         m_commandList.End();
         m_graphicsDevice.SubmitCommands(m_commandList);
         m_graphicsDevice.SwapBuffers(m_graphicsDevice.MainSwapchain);
@@ -88,7 +91,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
 
     public void OnWindowResize(int width, int height)
     {
-        m_imGuiVeldridBridge.WindowResized(width, height);
+        m_imGuiVeldridController.WindowResized(width, height);
     }
 
     public IntPtr BindTexture(ITexture texture)
@@ -101,16 +104,6 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     {
         // TODO: Implement texture unbinding for Veldrid
         throw new NotImplementedException();
-    }
-    
-    private void SetupFlags()
-    {
-        var io = ImGuiNET.ImGui.GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
-        
-        // TODO: Support viewports in Veldrid
-        // io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable; 
     }
     
     private void SetupThemes()

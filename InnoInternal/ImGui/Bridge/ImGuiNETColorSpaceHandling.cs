@@ -1,7 +1,7 @@
 namespace InnoInternal.ImGui.Bridge;
 
 /// <summary>
-/// Identifies the kind of color space handling that an <see cref="ImGuiNETVeldridBridge"/> uses.
+/// Identifies the kind of color space handling that an <see cref="ImGuiNETVeldridController"/> uses.
 /// </summary>
 public enum ImGuiNETColorSpaceHandling
 {

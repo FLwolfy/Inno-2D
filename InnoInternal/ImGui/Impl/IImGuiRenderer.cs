@@ -11,6 +11,11 @@ namespace InnoInternal.ImGui.Impl;
 public interface IImGuiRenderer
 {
     void Initialize(object graphicsDevice, object windowHolder);
+
+    /// <summary>
+    /// Swaps extra windows between the main and virtual ImGui contexts.
+    /// </summary>
+    void SwapExtraImGuiWindows();
     
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
