@@ -1,7 +1,7 @@
 ﻿using ImGuiNET;
 using InnoInternal.ImGui.Impl;
+using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
-using Veldrid;
 
 namespace Sandbox;
 
@@ -28,7 +28,7 @@ internal class ImGuiTest
         shell.SetOnDraw(deltaTime =>
         {
             imGuiRenderer.BeginLayout(deltaTime);
-
+            
             // Simple Window (Cannot be docked onto the main window)
             {
                 ImGui.Text("Simple Window");
@@ -45,7 +45,7 @@ internal class ImGuiTest
             imGuiRenderer.EndLayout();
             
             // Swap Buffers
-            ((GraphicsDevice) shell.GetGraphicsDevice()).SwapBuffers();
+            shell.GetGraphicsDevice().SwapBuffers();
             imGuiRenderer.SwapExtraImGuiWindows();
         });
 

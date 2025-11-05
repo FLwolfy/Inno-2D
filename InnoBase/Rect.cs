@@ -25,6 +25,14 @@ public struct Rect
         if (top >= other.bottom) return false;
         return true;
     }
+
+    public bool Contains(Rect other)
+    {
+        return left <= other.left &&
+               top <= other.top &&
+               right >= other.right &&
+               bottom >= other.bottom;
+    }
     
     public override string ToString() => $"({x}, {y}, {width}, {height})";
 }

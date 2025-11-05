@@ -1,3 +1,4 @@
+using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Bridge;
 
 namespace InnoInternal.Shell.Impl;
@@ -30,6 +31,6 @@ public interface IGameShell
     void SetOnClose(Action onClose);
 
     // Provide handles for Editor
-    object GetGraphicsDevice();
+    IGraphicsDevice GetGraphicsDevice();
     object GetWindowHolder();
 }

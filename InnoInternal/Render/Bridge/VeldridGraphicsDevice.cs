@@ -15,7 +15,8 @@ public class VeldridGraphicsDevice : IGraphicsDevice
 {
     private readonly GraphicsDevice m_graphicsDevice;
     private readonly ResourceFactory m_factory;
-
+    
+    public GraphicsDevice inner => m_graphicsDevice;
     public IFrameBuffer swapChainFrameBuffer { get; }
 
     public VeldridGraphicsDevice(GraphicsDevice graphicsDevice)

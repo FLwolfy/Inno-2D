@@ -8,10 +8,10 @@ internal static class Program
         // RenderTest rt = new RenderTest();
         // rt.Run();
         
-        // ImGuiTest it = new ImGuiTest();
-        // it.Run();
+        ImGuiTest it = new ImGuiTest();
+        it.Run();
         
-        RuntimeTest runtimeTest = new RuntimeTest();
-        runtimeTest.Run();
+        // RuntimeTest runtimeTest = new RuntimeTest();
+        // runtimeTest.Run();
     }
 }

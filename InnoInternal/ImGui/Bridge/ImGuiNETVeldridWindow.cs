@@ -17,6 +17,9 @@ public class ImGuiNETVeldridWindow : IDisposable
     
     public Sdl2Window window => m_window;
     public Swapchain? swapchain => m_swapchain;
+    public ImGuiViewportPtr viewportPtr => m_viewportPtr;
+
+    public static ImGuiNETVeldridWindow? currentWindow;
 
     public ImGuiNETVeldridWindow(GraphicsDevice gd, ImGuiViewportPtr vp)
     {
@@ -50,8 +53,10 @@ public class ImGuiNETVeldridWindow : IDisposable
             flags,
             false);
         m_window.Resized += () => m_viewportPtr.PlatformRequestResize = true;
-        m_window.Moved += p => m_viewportPtr.PlatformRequestMove = true;
         m_window.Closed += () => m_viewportPtr.PlatformRequestClose = true;
+        m_window.Moved += p => m_viewportPtr.PlatformRequestMove = true;
+        m_window.FocusGained += () => currentWindow = this;
+        m_window.FocusLost += () => currentWindow = null;
 
         SwapchainSource scSource = VeldridStartup.GetSwapchainSource(m_window);
         SwapchainDescription scDesc = new SwapchainDescription(scSource, (uint)m_window.Width, (uint)m_window.Height, null, true, false);
@@ -77,6 +82,7 @@ public class ImGuiNETVeldridWindow : IDisposable
 
     public void Dispose()
     {
+        if (currentWindow == this) currentWindow = null;
         m_graphicsDevice.WaitForIdle(); // TODO: Shouldn't be necessary, but Vulkan backend trips a validation error (swapchain in use when disposed).
         m_swapchain?.Dispose();
         m_window.Close();

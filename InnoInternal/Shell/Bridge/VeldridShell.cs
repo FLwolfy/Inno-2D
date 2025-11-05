@@ -1,5 +1,6 @@
 using System.Diagnostics;
-
+using InnoInternal.Render.Bridge;
+using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
 
 using Veldrid;
@@ -20,6 +21,7 @@ internal class VeldridShell : IGameShell
 
     private readonly Sdl2Window m_window;
     private readonly GraphicsDevice m_graphicsDevice;
+    private readonly VeldridGraphicsDevice m_graphicsDeviceVeldrid;
     private readonly Stopwatch m_timer = new();
     
     private double m_lastTime;
@@ -48,6 +50,7 @@ internal class VeldridShell : IGameShell
         };
         
         VeldridStartup.CreateWindowAndGraphicsDevice(windowCi, out m_window, out m_graphicsDevice);
+        m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(m_graphicsDevice);
         
         m_window.Resized += () =>
         {
@@ -80,6 +83,6 @@ internal class VeldridShell : IGameShell
         m_graphicsDevice.Dispose();
     }
 
-    public object GetGraphicsDevice() => m_graphicsDevice;
+    public IGraphicsDevice GetGraphicsDevice() => m_graphicsDeviceVeldrid;
     public object GetWindowHolder() => m_window;
 }

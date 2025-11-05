@@ -10,7 +10,7 @@ namespace InnoInternal.ImGui.Impl;
 /// </summary>
 public interface IImGuiRenderer
 {
-    void Initialize(object graphicsDevice, object windowHolder);
+    void Initialize(IGraphicsDevice graphicsDevice, object windowHolder);
 
     /// <summary>
     /// Swaps extra windows between the main and virtual ImGui contexts.

@@ -4,8 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using ImGuiNET;
+using InnoBase;
 using Veldrid;
 using Veldrid.Sdl2;
+using Vector2 = System.Numerics.Vector2;
 
 namespace InnoInternal.ImGui.Bridge;
 
@@ -37,7 +39,7 @@ internal class ImGuiNETVeldridController : IDisposable
     private readonly IntPtr m_fontAtlasId = 1;
 
     // Window info
-    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow;
+    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow; // This should not be removed.
     private bool m_controlDown;
     private bool m_shiftDown;
     private bool m_altDown;
@@ -92,7 +94,7 @@ internal class ImGuiNETVeldridController : IDisposable
         // Config Flags
         var io = ImGuiNET.ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable; 
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
         
         // Window Platform Interface
         ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
@@ -667,14 +669,28 @@ internal class ImGuiNETVeldridController : IDisposable
     public void SwapExtraWindows(GraphicsDevice gd)
     {
         ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+        ImGuiNETVeldridWindow? focusWindow = ImGuiNETVeldridWindow.currentWindow;
+        if (focusWindow?.swapchain == null) return;
+        gd.SwapBuffers(focusWindow.swapchain);
+        
         for (int i = 1; i < platformIo.Viewports.Size; i++)
         {
             ImGuiViewportPtr vp = platformIo.Viewports[i];
-            ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-            if (window != null) gd.SwapBuffers(window.swapchain);
+            if (vp.ID == focusWindow.viewportPtr.ID) continue;
+
+            ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+            if (window?.swapchain == null) continue;
+            
+            Rect focusRect = new Rect(focusWindow.window.Bounds.X, focusWindow.window.Bounds.Y, focusWindow.window.Bounds.Width, focusWindow.window.Bounds.Height);
+            Rect rect = new Rect(window.window.Bounds.X, window.window.Bounds.Y, window.window.Bounds.Width, window.window.Bounds.Height);
+
+            if (focusRect.Contains(rect)) continue;
+            if (window.swapchain != null && window.window.Exists && window.window.Visible)
+            {
+                gd.SwapBuffers(window.swapchain);
+            }
         }
     }
-
 
     /// <summary>
     /// Updates ImGui input and IO configuration state.

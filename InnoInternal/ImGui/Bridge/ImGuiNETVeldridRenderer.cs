@@ -5,6 +5,7 @@ using Veldrid;
 using Veldrid.Sdl2;
 
 using ImGuiNET;
+using InnoInternal.Render.Bridge;
 using SYSVector4 = System.Numerics.Vector4;
 
 namespace InnoInternal.ImGui.Bridge;
@@ -22,14 +23,14 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     public IntPtr mainMainContextPtr { get; private set; }
     public IntPtr virtualContextPtr { get; private set; }
     
-    public unsafe void Initialize(object graphicsDevice, object windowHolder)
+    public unsafe void Initialize(IGraphicsDevice graphicsDevice, object windowHolder)
     {
-        if (graphicsDevice is not GraphicsDevice device)
+        if (graphicsDevice is not VeldridGraphicsDevice device)
             throw new ArgumentException("Expected a Veldrid GraphicsDevice.", nameof(graphicsDevice));
         if (windowHolder is not Sdl2Window window)
             throw new ArgumentException("Expected a Sdl2Window.", nameof(windowHolder));
         
-        m_graphicsDevice = device;
+        m_graphicsDevice = device.inner;
         m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
         m_window = window;
         m_imGuiVeldridController = new ImGuiNETVeldridController(
