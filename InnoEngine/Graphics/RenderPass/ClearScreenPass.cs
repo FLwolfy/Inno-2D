@@ -1,5 +1,4 @@
 using InnoBase;
-using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 
@@ -12,8 +11,8 @@ internal class ClearScreenPass : IRenderPass
     
     public RenderPassTag tag => RenderPassTag.ClearScreen;
 
-    public void Render(IRenderAPI api)
+    public void Render()
     {
-        api.renderer2D.Clear(CLEAR_COLOR);
+        // TODO: Make the clear color configurable
     }
 }

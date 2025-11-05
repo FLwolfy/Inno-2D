@@ -1,7 +1,3 @@
-using InnoBase;
-using InnoEngine.ECS;
-using InnoEngine.ECS.Component;
-using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 
@@ -12,7 +8,7 @@ internal class SpriteRenderPass : IRenderPass
 {
     public RenderPassTag tag => RenderPassTag.Sprite;
 
-    public void Render(IRenderAPI api)
+    public void Render()
     {
         // TODO
     }

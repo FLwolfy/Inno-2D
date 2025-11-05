@@ -16,11 +16,11 @@ internal class RenderPipeline
         m_passes.Sort((a, b) => a.tag.CompareTo(b.tag));
     }
 
-    public void Render(IRenderAPI api)
+    public void Render()
     {
         foreach (var pass in m_passes)
         {
-            pass.Render(api);
+            pass.Render();
         }
     }
 }

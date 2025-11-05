@@ -9,21 +9,19 @@ namespace InnoEngine.Graphics;
 internal class RenderSystem
 {
     private RenderPipeline m_renderPipeline = null!;
-    private IRenderAPI m_renderAPI = null!;
 
     public void Begin()
     {
-        m_renderAPI.renderer2D.BeginScene();
+        Renderer2D.BeginScene();
     }
     
     public void End()
     {
-        m_renderAPI.renderer2D.BeginScene();
+        Renderer2D.BeginScene();
     }
     
-    public void Initialize(IRenderAPI api)
+    public void Initialize()
     {
-        m_renderAPI = api;
         m_renderPipeline = new RenderPipeline();
     }
 
@@ -36,6 +34,6 @@ internal class RenderSystem
 
     public void RenderPasses()
     {
-        m_renderPipeline.Render(m_renderAPI);
+        m_renderPipeline.Render();
     }
 }

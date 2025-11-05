@@ -1,11 +1,6 @@
-using InnoEngine.ECS;
-using InnoEngine.Graphics;
+using InnoEngine.Core.Layer;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
-using InnoInternal.Render.Bridge;
-using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Bridge;
-using InnoInternal.Resource.Impl;
 using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
@@ -16,70 +11,54 @@ public abstract class EngineCore
     private static readonly int WINDOW_HEIGHT = 720;
     
     private readonly IGameShell m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
-    private readonly RenderSystem m_renderSystem = new();
-    
-    private IRenderAPI m_renderAPI => m_gameShell.GetRenderAPI();
+    private readonly LayerStack m_layerStack = new();
     
     protected EngineCore()
     {
         // Initialization Callbacks
         m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
         m_gameShell.SetWindowResizable(true);
-        m_gameShell.SetOnLoad(Load);
-        m_gameShell.SetOnSetup(() =>
-        {
-            Setup();
-            TypeCacheManager.Initialize();
-            SceneManager.BeginRuntime();
-        });
+        m_gameShell.SetOnLoad(OnLoad);
+        m_gameShell.SetOnSetup(OnSetup);
         
         // Update Callbacks
-        m_gameShell.SetOnStep(Step);
-        m_gameShell.SetOnDraw(Draw);
+        m_gameShell.SetOnStep(OnStep);
+        m_gameShell.SetOnDraw(OnDraw);
         
         // Close Callback
         m_gameShell.SetOnClose(AssetRegistry.SaveToDisk);
     }
     
-    private void Load()
+    private void OnLoad()
     {
         // Resource Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        AssetManager.RegisterLoader(m_renderAPI.renderAssetLoader);
-        
-        // Render Initialization
-        m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
-        m_renderSystem.Initialize(m_renderAPI);
-        m_renderSystem.LoadPasses();
     }
 
-    private void Step(float totalTime, float deltaTime)
+    private void OnSetup()
+    {
+        TypeCacheManager.Initialize();
+        Setup();
+        RegisterLayers(m_layerStack);
+    }
+
+    private void OnStep(float totalTime, float deltaTime)
     {
         // Time Update
         Time.Update(totalTime, deltaTime);
         
-        // Scene Update
-        SceneManager.GetActiveScene()?.Update();
+        // Layer Update
+        m_layerStack.OnUpdate();
     }
 
-    private void Draw(float deltaTime)
+    private void OnDraw(float deltaTime)
     {
         // Render Time Update
         Time.RenderUpdate(deltaTime);
         
-        // Get Scene and Camera
-        var scene = SceneManager.GetActiveScene();
-        if (scene == null) { return; }
-        var camera = scene.GetCameraManager().mainCamera;
-        if (camera == null) { return; }
-        
-        // Render Pipeline
-        m_renderAPI.renderContext.viewMatrix = camera.viewMatrix;
-        m_renderAPI.renderContext.projectionMatrix = camera.projectionMatrix;
-        m_renderSystem.Begin();
-        m_renderSystem.RenderPasses();
-        m_renderSystem.End();
+        // Layer Render
+        m_layerStack.OnRender();
     }
     
     /// <summary>
@@ -94,4 +73,9 @@ public abstract class EngineCore
     /// Sets up the engine core.
     /// </summary>
     protected abstract void Setup();
+
+    /// <summary>
+    /// Registers engine layers.
+    /// </summary>
+    protected abstract void RegisterLayers(LayerStack layerStack);
 }

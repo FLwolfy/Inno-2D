@@ -16,7 +16,7 @@ namespace InnoInternal.ImGui.Bridge;
 internal class ImGuiNETVeldridController : IDisposable
 {
     private readonly GraphicsDevice m_graphicsDevice;
-    private readonly Sdl2Window m_window;
+    private readonly Sdl2Window m_mainWindow;
     private readonly Assembly m_assembly;
     private readonly ImGuiNETColorSpaceHandling m_colorSpaceHandling;
     private int m_lastAssignedId = 100;
@@ -73,18 +73,18 @@ internal class ImGuiNETVeldridController : IDisposable
     /// Constructs a new ImGuiRenderer.
     /// </summary>
     /// <param name="gd">The GraphicsDevice used to create and update resources.</param>
-    /// <param name="window">The main window to render.</param>
+    /// <param name="mainWindow">The main window to render.</param>
     /// <param name="outputDescription">The output format.</param>
     /// <param name="colorSpaceHandling">Identifies how the renderer should treat vertex colors.</param>
-    public unsafe ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window window, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
+    public unsafe ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window mainWindow, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = gd;
         m_assembly = typeof(ImGuiNETVeldridController).GetTypeInfo().Assembly;
         m_colorSpaceHandling = colorSpaceHandling;
 
-        m_window = window;
-        m_windowWidth = window.Width;
-        m_windowHeight = window.Height;
+        m_mainWindow = mainWindow;
+        m_windowWidth = mainWindow.Width;
+        m_windowHeight = mainWindow.Height;
 
         IntPtr context = ImGuiNET.ImGui.CreateContext();
         ImGuiNET.ImGui.SetCurrentContext(context);
@@ -97,8 +97,8 @@ internal class ImGuiNETVeldridController : IDisposable
         // Window Platform Interface
         ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
         ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
-        mainViewport.PlatformHandle = window.Handle;
-        m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_window);
+        mainViewport.PlatformHandle = mainWindow.Handle;
+        m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_mainWindow);
 
         Platform_CreateWindow createWindow = CreateWindow;
         Platform_DestroyWindow destroyWindow = DestroyWindow;
@@ -726,8 +726,8 @@ internal class ImGuiNETVeldridController : IDisposable
         io.DisplayFramebufferScale = m_scaleFactor;
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
         
-        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new Vector2(m_window.X, m_window.Y);
-        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new Vector2(m_window.Width, m_window.Height);
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new Vector2(m_mainWindow.X, m_mainWindow.Y);
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new Vector2(m_mainWindow.Width, m_mainWindow.Height);
     }
     
     #endregion
