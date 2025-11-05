@@ -1,4 +1,6 @@
 
+using InnoEngine.Graphics;
+
 namespace InnoEngine.Core.Layer;
 
 public class LayerStack
@@ -44,11 +46,11 @@ public class LayerStack
         }
     }
 
-    public void OnRender()
+    public void OnRender(RenderContext ctx)
     {
         foreach (var layer in m_layers)
         {
-            layer.OnRender();
+            layer.OnRender(ctx);
         }
     }
 

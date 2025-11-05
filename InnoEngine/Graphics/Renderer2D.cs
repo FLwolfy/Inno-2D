@@ -3,71 +3,151 @@ using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 
-public static class Renderer2D
+public class Renderer2D : IDisposable
 {
-    private static IGraphicsDevice s_device = null!;
-    private static ICommandList s_commandList = null!;
-    private static IPipelineState s_pipeline = null!;
-    
+    private readonly IGraphicsDevice m_graphicsDevice;
+    private ICommandList m_commandList = null!;
+    private IVertexBuffer m_vertexBuffer = null!;
+    private IIndexBuffer m_indexBuffer = null!;
+    private IPipelineState m_pipeline = null!;
+    private IShader m_vertexShader = null!;
+    private IShader m_fragmentShader = null!;
+
     private struct VertexPositionColor(Vector2 position, Color color)
     {
-        public Vector2 position = position; // This is the position, in normalized device coordinates.
-        public Color color = color;      // This is the color of the vertex.
+        public Vector2 position = position;
+        public Color color = color;
     }
 
-    public static void Init(IGraphicsDevice device)
+    private const string VertexShaderCode = @"
+#version 450
+layout(location = 0) in vec2 Position;
+layout(location = 1) in vec4 Color;
+
+layout(location = 0) out vec4 fsin_Color;
+
+void main()
+{
+    gl_Position = vec4(Position, 0, 1);
+    fsin_Color = Color;
+}";
+
+    private const string FragmentShaderCode = @"
+#version 450
+layout(location = 0) in vec4 fsin_Color;
+layout(location = 0) out vec4 fsout_Color;
+
+void main()
+{
+    fsout_Color = fsin_Color;
+}";
+
+    public Renderer2D(IGraphicsDevice graphicsDevice)
     {
-        s_device = device;
-        s_commandList = device.CreateCommandList();
-            
-        // TODO: 创建默认 Pipeline (顶点 + fragment shader)
-        s_pipeline = BuildDefaultPipeline();
+        m_graphicsDevice = graphicsDevice;
     }
-
-    public static void BeginScene()
+    
+    public void LoadResources()
     {
-        s_commandList.Begin();
-        s_commandList.SetFrameBuffer(s_device.swapChainFrameBuffer);
-        s_commandList.ClearColor(Color.BLACK);
-        s_commandList.SetPipelineState(s_pipeline);
+        CreateResources();
     }
 
-    public static void DrawRect(Rect rect, Color color)
+    private void CreateResources()
+    {
+        VertexPositionColor[] quadVertices =
+        {
+            new VertexPositionColor(new Vector2(-0.5f, 0.5f), Color.WHITE),
+            new VertexPositionColor(new Vector2(0.5f, 0.5f), Color.WHITE),
+            new VertexPositionColor(new Vector2(-0.5f, -0.5f), Color.WHITE),
+            new VertexPositionColor(new Vector2(0.5f, -0.5f), Color.WHITE)
+        };
+
+        ushort[] quadIndices = { 0, 1, 2, 1, 3, 2 };
+        int vertexSize = sizeof(float) * 2 + sizeof(float) * 4;
+
+        m_vertexBuffer = m_graphicsDevice.CreateVertexBuffer((uint)(quadVertices.Length * vertexSize));
+        m_indexBuffer = m_graphicsDevice.CreateIndexBuffer((uint)(quadIndices.Length * sizeof(ushort)));
+
+        m_vertexBuffer.Update(quadVertices);
+        m_indexBuffer.Update(quadIndices);
+
+        // Shader
+        var vertexDesc = new ShaderDescription
+        {
+            stage = ShaderStage.Vertex,
+            entryPoint = "main",
+            sourceCode = VertexShaderCode
+        };
+        var fragmentDesc = new ShaderDescription
+        {
+            stage = ShaderStage.Fragment,
+            entryPoint = "main",
+            sourceCode = FragmentShaderCode
+        };
+
+        var shaders = m_graphicsDevice.CreateVertexFragmentShaders(vertexDesc, fragmentDesc);
+        m_vertexShader = shaders[0];
+        m_fragmentShader = shaders[1];
+
+        // Pipeline
+        var pipelineDesc = new PipelineStateDescription
+        {
+            vertexShader = m_vertexShader,
+            fragmentShader = m_fragmentShader,
+            vertexLayoutType = typeof(VertexPositionColor)
+        };
+        m_pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
+
+        // CommandList
+        m_commandList = m_graphicsDevice.CreateCommandList();
+    }
+    
+    public void DrawQuad(Vector2 position, Vector2 size, Color color)
     {
         VertexPositionColor[] vertices =
         {
-            new(new Vector2(rect.left, rect.top), color),
-            new(new Vector2(rect.right, rect.top), color),
-            new(new Vector2(rect.left, rect.bottom), color),
-            new(new Vector2(rect.right, rect.bottom), color)
+            new VertexPositionColor(position + new Vector2(-size.x, size.y) * 0.5f, color),
+            new VertexPositionColor(position + new Vector2(size.x, size.y) * 0.5f, color),
+            new VertexPositionColor(position + new Vector2(-size.x, -size.y) * 0.5f, color),
+            new VertexPositionColor(position + new Vector2(size.x, -size.y) * 0.5f, color)
         };
 
         ushort[] indices = { 0, 1, 2, 1, 3, 2 };
 
-        IVertexBuffer vb = s_device.CreateVertexBuffer((uint)(vertices.Length * 24));
-        vb.Update(vertices);
+        m_vertexBuffer.Update(vertices);
+        m_indexBuffer.Update(indices);
 
-        IIndexBuffer ib = s_device.CreateIndexBuffer((uint)(indices.Length * sizeof(ushort)));
-        ib.Update(indices);
-
-        s_commandList.SetVertexBuffer(vb);
-        s_commandList.SetIndexBuffer(ib);
-        s_commandList.DrawIndexed(6, 0);
-
-        vb.Dispose();
-        ib.Dispose();
+        m_commandList.SetPipelineState(m_pipeline);
+        m_commandList.SetVertexBuffer(m_vertexBuffer);
+        m_commandList.SetIndexBuffer(m_indexBuffer);
+        m_commandList.DrawIndexed(6, 0);
     }
 
-    public static void EndScene()
+    public void BeginFrame(IFrameBuffer target)
     {
-        s_commandList.End();
-        s_device.Submit(s_commandList);
-        s_device.SwapBuffers();
+        m_commandList.Begin();
+        m_commandList.SetFrameBuffer(target);
+        m_commandList.ClearColor(Color.BLACK); // TODO: Move to Clear
+    }
+    
+    public void BeginFrame()
+    {
+        BeginFrame(m_graphicsDevice.swapChainFrameBuffer);
     }
 
-    private static IPipelineState BuildDefaultPipeline()
+    public void EndFrame()
     {
-        // TODO: 构建顶点 + fragment shader pipeline
-        return null!;
+        m_commandList.End();
+        m_graphicsDevice.Submit(m_commandList);
+    }
+
+    public void Dispose()
+    {
+        m_pipeline.Dispose();
+        m_commandList.Dispose();
+        m_vertexBuffer.Dispose();
+        m_indexBuffer.Dispose();
+        m_vertexShader.Dispose();
+        m_fragmentShader.Dispose();
     }
 }

@@ -12,12 +12,12 @@ internal class RenderSystem
 
     public void Begin()
     {
-        Renderer2D.BeginScene();
+        // Renderer2D.BeginScene();
     }
     
     public void End()
     {
-        Renderer2D.BeginScene();
+        // Renderer2D.BeginScene();
     }
     
     public void Initialize()

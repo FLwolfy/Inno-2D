@@ -1,6 +1,5 @@
 ﻿using ImGuiNET;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
 
 namespace Sandbox;

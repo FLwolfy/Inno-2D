@@ -27,6 +27,7 @@ public interface IGameShell
     void SetOnLoad(Action onLoad);
     void SetOnSetup(Action onSetup);
     void SetOnStep(Action<float, float> onStep);
+    void SetOnEvent(Action<object> onEvent); // TODO: Define event type
     void SetOnDraw(Action<float> onDraw);
     void SetOnClose(Action onClose);
 

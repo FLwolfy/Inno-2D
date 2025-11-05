@@ -87,7 +87,6 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_imGuiVeldridController.Render(m_graphicsDevice, m_commandList);
         m_commandList.End();
         m_graphicsDevice.SubmitCommands(m_commandList);
-        m_graphicsDevice.SwapBuffers(m_graphicsDevice.MainSwapchain);
     }
 
     public void OnWindowResize(int width, int height)

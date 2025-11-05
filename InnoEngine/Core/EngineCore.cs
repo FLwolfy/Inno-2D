@@ -1,4 +1,5 @@
 using InnoEngine.Core.Layer;
+using InnoEngine.Graphics;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
 using InnoInternal.Shell.Impl;
@@ -7,14 +8,23 @@ namespace InnoEngine.Core;
 
 public abstract class EngineCore
 {
-    private static readonly int WINDOW_WIDTH = 1280;
-    private static readonly int WINDOW_HEIGHT = 720;
+    private static readonly int WINDOW_WIDTH = 1920;
+    private static readonly int WINDOW_HEIGHT = 1080;
     
-    private readonly IGameShell m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
-    private readonly LayerStack m_layerStack = new();
+    private readonly IGameShell m_gameShell;
+    private readonly LayerStack m_layerStack;
+    private readonly RenderContext m_renderContext;
     
     protected EngineCore()
     {
+        // Initialize members
+        m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
+        m_layerStack = new LayerStack();
+        m_renderContext = new RenderContext
+        (
+            new Renderer2D(m_gameShell.GetGraphicsDevice())
+        );
+        
         // Initialization Callbacks
         m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
         m_gameShell.SetWindowResizable(true);
@@ -23,6 +33,7 @@ public abstract class EngineCore
         
         // Update Callbacks
         m_gameShell.SetOnStep(OnStep);
+        m_gameShell.SetOnEvent(OnEvent);
         m_gameShell.SetOnDraw(OnDraw);
         
         // Close Callback
@@ -34,6 +45,9 @@ public abstract class EngineCore
         // Resource Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
+        
+        // Renderer Initialization
+        m_renderContext.renderer.LoadResources();
     }
 
     private void OnSetup()
@@ -52,13 +66,21 @@ public abstract class EngineCore
         m_layerStack.OnUpdate();
     }
 
+    private void OnEvent(object e)
+    {
+        m_layerStack.OnEvent(e);
+    }
+
     private void OnDraw(float deltaTime)
     {
         // Render Time Update
         Time.RenderUpdate(deltaTime);
         
         // Layer Render
-        m_layerStack.OnRender();
+        m_layerStack.OnRender(m_renderContext);
+        
+        // Swap Buffers
+        m_gameShell.GetGraphicsDevice().SwapBuffers();
     }
     
     /// <summary>

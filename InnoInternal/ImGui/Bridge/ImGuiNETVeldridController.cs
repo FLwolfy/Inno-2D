@@ -655,25 +655,23 @@ internal class ImGuiNETVeldridController : IDisposable
                 {
                     throw new NotImplementedException();
                 }
-                else
+
+                if (pcmd.TextureId != IntPtr.Zero)
                 {
-                    if (pcmd.TextureId != IntPtr.Zero)
-                    {
-                        cl.SetGraphicsResourceSet(1,
-                            pcmd.TextureId == m_fontAtlasId
-                                ? m_fontTextureResourceSet
-                                : GetImageResourceSet(pcmd.TextureId));
-                    }
-
-                    cl.SetScissorRect(
-                        0,
-                        (uint)(pcmd.ClipRect.X - pos.X),
-                        (uint)(pcmd.ClipRect.Y - pos.Y),
-                        (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X),
-                        (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
-
-                    cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idxOffset, (int)pcmd.VtxOffset + vtxOffset, 0);
+                    cl.SetGraphicsResourceSet(1,
+                        pcmd.TextureId == m_fontAtlasId
+                            ? m_fontTextureResourceSet
+                            : GetImageResourceSet(pcmd.TextureId));
                 }
+
+                cl.SetScissorRect(
+                    0,
+                    (uint)(pcmd.ClipRect.X - pos.X),
+                    (uint)(pcmd.ClipRect.Y - pos.Y),
+                    (uint)(pcmd.ClipRect.Z - pcmd.ClipRect.X),
+                    (uint)(pcmd.ClipRect.W - pcmd.ClipRect.Y));
+
+                cl.DrawIndexed(pcmd.ElemCount, 1, pcmd.IdxOffset + (uint)idxOffset, (int)pcmd.VtxOffset + vtxOffset, 0);
             }
             vtxOffset += cmdList.VtxBuffer.Size;
             idxOffset += cmdList.IdxBuffer.Size;
