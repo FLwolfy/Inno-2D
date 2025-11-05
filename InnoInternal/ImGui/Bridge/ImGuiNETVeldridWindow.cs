@@ -54,7 +54,7 @@ public class ImGuiNETVeldridWindow : IDisposable
             false);
         m_window.Resized += () => m_viewportPtr.PlatformRequestResize = true;
         m_window.Closed += () => m_viewportPtr.PlatformRequestClose = true;
-        m_window.Moved += p => m_viewportPtr.PlatformRequestMove = true;
+        m_window.Moved += _ => m_viewportPtr.PlatformRequestMove = true;
         m_window.FocusGained += () => currentWindow = this;
         m_window.FocusLost += () => currentWindow = null;
 

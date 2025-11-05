@@ -40,6 +40,7 @@ internal class ImGuiNETVeldridController : IDisposable
 
     // Window info
     private readonly ImGuiNETVeldridWindow m_mainImGuiWindow; // This should not be removed.
+    private readonly Dictionary<uint, ImGuiNETVeldridWindow> m_windowHolders = new();
     private bool m_controlDown;
     private bool m_shiftDown;
     private bool m_altDown;
@@ -47,6 +48,19 @@ internal class ImGuiNETVeldridController : IDisposable
     private int m_windowWidth;
     private int m_windowHeight;
     private readonly Vector2 m_scaleFactor = Vector2.One;
+    
+    // Window Delegate
+    private Platform_CreateWindow m_createWindow = null!;
+    private Platform_DestroyWindow m_destroyWindow = null!;
+    private Platform_GetWindowPos m_getWindowPos = null!;
+    private Platform_ShowWindow m_showWindow = null!;
+    private Platform_SetWindowPos m_setWindowPos = null!;
+    private Platform_GetWindowSize m_getWindowSize = null!;
+    private Platform_SetWindowSize m_setWindowSize = null!;
+    private Platform_GetWindowFocus m_getWindowFocus = null!;
+    private Platform_SetWindowFocus m_setWindowFocus = null!;
+    private Platform_GetWindowMinimized m_getWindowMinimized = null!;
+    private Platform_SetWindowTitle m_setWindowTitle = null!;
     
     // Window Platform Interface
     private delegate void SdlRaiseWindowT(IntPtr sdl2Window);
@@ -78,7 +92,7 @@ internal class ImGuiNETVeldridController : IDisposable
     /// <param name="mainWindow">The main window to render.</param>
     /// <param name="outputDescription">The output format.</param>
     /// <param name="colorSpaceHandling">Identifies how the renderer should treat vertex colors.</param>
-    public unsafe ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window mainWindow, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
+    public ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window mainWindow, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = gd;
         m_assembly = typeof(ImGuiNETVeldridController).GetTypeInfo().Assembly;
@@ -102,30 +116,8 @@ internal class ImGuiNETVeldridController : IDisposable
         mainViewport.PlatformHandle = mainWindow.Handle;
         m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_mainWindow);
 
-        Platform_CreateWindow createWindow = CreateWindow;
-        Platform_DestroyWindow destroyWindow = DestroyWindow;
-        Platform_GetWindowPos getWindowPos = GetWindowPos;
-        Platform_ShowWindow showWindow = ShowWindow;
-        Platform_SetWindowPos setWindowPos = SetWindowPos;
-        Platform_SetWindowSize setWindowSize = SetWindowSize;
-        Platform_GetWindowSize getWindowSize = GetWindowSize;
-        Platform_SetWindowFocus setWindowFocus = SetWindowFocus;
-        Platform_GetWindowFocus getWindowFocus = GetWindowFocus;
-        Platform_GetWindowMinimized getWindowMinimized = GetWindowMinimized;
-        Platform_SetWindowTitle setWindowTitle = SetWindowTitle;
-
-        platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(createWindow);
-        platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(destroyWindow);
-        platformIo.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(showWindow);
-        platformIo.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(setWindowPos);
-        platformIo.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(setWindowSize);
-        platformIo.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(setWindowFocus);
-        platformIo.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(getWindowFocus);
-        platformIo.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(getWindowMinimized);
-        platformIo.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(setWindowTitle);
-
-        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowPos(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(getWindowPos));
-        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowSize(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(getWindowSize));
+        // Setup Platform
+        SetupPlatformIO(platformIo);
 
         // Backend Flags
         io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors;
@@ -138,8 +130,36 @@ internal class ImGuiNETVeldridController : IDisposable
         ImGuiNET.ImGui.GetIO().Fonts.Flags |= ImFontAtlasFlags.NoBakedLines;
 
         CreateDeviceResources(outputDescription);
-
         SetPerFrameImGuiData(1f / 60f);
+    }
+    
+    private unsafe void SetupPlatformIO(ImGuiPlatformIOPtr platformIo)
+    {
+        m_createWindow = CreateWindow;
+        m_destroyWindow = DestroyWindow;
+        m_getWindowPos = GetWindowPos;
+        m_showWindow = ShowWindow;
+        m_setWindowPos = SetWindowPos;
+        m_setWindowSize = SetWindowSize;
+        m_getWindowSize = GetWindowSize;
+        m_setWindowFocus = SetWindowFocus;
+        m_getWindowFocus = GetWindowFocus;
+        m_getWindowMinimized = GetWindowMinimized;
+        m_setWindowTitle = SetWindowTitle;
+
+        platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(m_createWindow);
+        platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(m_destroyWindow);
+        platformIo.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(m_showWindow);
+        platformIo.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(m_setWindowPos);
+        platformIo.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(m_setWindowSize);
+        platformIo.Platform_GetWindowSize = Marshal.GetFunctionPointerForDelegate(m_getWindowSize);
+        platformIo.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(m_setWindowFocus);
+        platformIo.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(m_getWindowFocus);
+        platformIo.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(m_getWindowMinimized);
+        platformIo.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(m_setWindowTitle);
+        
+        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowPos(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(m_getWindowPos));
+        ImGuiNative.ImGuiPlatformIO_Set_Platform_GetWindowSize(platformIo.NativePtr, Marshal.GetFunctionPointerForDelegate(m_getWindowSize));
     }
     
     private void CreateDeviceResources(OutputDescription outputDescription)
@@ -265,7 +285,7 @@ internal class ImGuiNETVeldridController : IDisposable
     
     private void CreateWindow(ImGuiViewportPtr vp)
     {
-        _ = new ImGuiNETVeldridWindow(m_graphicsDevice, vp);
+        m_windowHolders[vp.ID] = new ImGuiNETVeldridWindow(m_graphicsDevice, vp);
     }
 
     private void DestroyWindow(ImGuiViewportPtr vp)
@@ -273,6 +293,7 @@ internal class ImGuiNETVeldridController : IDisposable
         if (vp.PlatformUserData != IntPtr.Zero)
         {
             ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
+            m_windowHolders.Remove(vp.ID);
             window?.Dispose();
 
             vp.PlatformUserData = IntPtr.Zero;
@@ -319,10 +340,7 @@ internal class ImGuiNETVeldridController : IDisposable
 
     private void SetWindowFocus(ImGuiViewportPtr vp)
     {
-        if (m_pSdlRaiseWindow == null)
-        {
-            m_pSdlRaiseWindow = Sdl2Native.LoadFunction<SdlRaiseWindowT>("SDL_RaiseWindow");
-        }
+        m_pSdlRaiseWindow ??= Sdl2Native.LoadFunction<SdlRaiseWindowT>("SDL_RaiseWindow");
 
         ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
         if (window != null) m_pSdlRaiseWindow(window.window.SdlWindowHandle);
@@ -450,7 +468,7 @@ internal class ImGuiNETVeldridController : IDisposable
     {
         if (!m_viewsById.TryGetValue(imGuiBinding, out ResourceSetInfo rsi))
         {
-            throw new InvalidOperationException("No registered ImGui binding with id " + imGuiBinding.ToString());
+            throw new InvalidOperationException("No registered ImGui binding with id " + imGuiBinding);
         }
 
         return rsi.resourceSet;
@@ -641,14 +659,10 @@ internal class ImGuiNETVeldridController : IDisposable
                 {
                     if (pcmd.TextureId != IntPtr.Zero)
                     {
-                        if (pcmd.TextureId == m_fontAtlasId)
-                        {
-                            cl.SetGraphicsResourceSet(1, m_fontTextureResourceSet);
-                        }
-                        else
-                        {
-                            cl.SetGraphicsResourceSet(1, GetImageResourceSet(pcmd.TextureId));
-                        }
+                        cl.SetGraphicsResourceSet(1,
+                            pcmd.TextureId == m_fontAtlasId
+                                ? m_fontTextureResourceSet
+                                : GetImageResourceSet(pcmd.TextureId));
                     }
 
                     cl.SetScissorRect(
@@ -685,7 +699,7 @@ internal class ImGuiNETVeldridController : IDisposable
             Rect rect = new Rect(window.window.Bounds.X, window.window.Bounds.Y, window.window.Bounds.Width, window.window.Bounds.Height);
 
             if (focusRect.Contains(rect)) continue;
-            if (window.swapchain != null && window.window.Exists && window.window.Visible)
+            if (window is { swapchain: not null, window: { Exists: true, Visible: true } })
             {
                 gd.SwapBuffers(window.swapchain);
             }
@@ -704,6 +718,7 @@ internal class ImGuiNETVeldridController : IDisposable
         
         SetPerFrameImGuiData(deltaSeconds);
         UpdateImGuiInput(snapshot);
+        UpdateMouseCursor();
         UpdateMonitors();
         
         m_frameBegun = true;
@@ -948,10 +963,8 @@ internal class ImGuiNETVeldridController : IDisposable
         io.MouseDown[1] = middlePressed || snapshot.IsMouseDown(MouseButton.Right);
         io.MouseDown[2] = rightPressed || snapshot.IsMouseDown(MouseButton.Middle);
 
-        if (m_pSdlGetGlobalMouseState == null)
-        {
-            m_pSdlGetGlobalMouseState = Sdl2Native.LoadFunction<SdlGetGlobalMouseStateT>("SDL_GetGlobalMouseState");
-        }
+        m_pSdlGetGlobalMouseState ??=
+            Sdl2Native.LoadFunction<SdlGetGlobalMouseStateT>("SDL_GetGlobalMouseState");
 
         int x, y;
         unsafe
@@ -966,9 +979,8 @@ internal class ImGuiNETVeldridController : IDisposable
         io.MouseWheel = snapshot.WheelDelta;
 
         IReadOnlyList<char> keyCharPresses = snapshot.KeyCharPresses;
-        for (int i = 0; i < keyCharPresses.Count; i++)
+        foreach (var c in keyCharPresses)
         {
-            char c = keyCharPresses[i];
             io.AddInputCharacter(c);
         }
 
@@ -1001,6 +1013,36 @@ internal class ImGuiNETVeldridController : IDisposable
             window?.Update();
         }
     }
+    
+    private void UpdateMouseCursor()
+    {
+        var io = ImGuiNET.ImGui.GetIO();
+        if (io.MouseDrawCursor) return;
+
+        ImGuiMouseCursor cursor = ImGuiNET.ImGui.GetMouseCursor();
+        if (cursor == ImGuiMouseCursor.None)
+        {
+            Sdl2Native.SDL_ShowCursor(0);
+        }
+        else
+        {
+            Sdl2Native.SDL_ShowCursor(1);
+            SDL_Cursor sdlCursor = cursor switch
+            {
+                ImGuiMouseCursor.Arrow => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.Arrow),
+                ImGuiMouseCursor.TextInput => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.IBeam),
+                ImGuiMouseCursor.ResizeAll => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.SizeAll),
+                ImGuiMouseCursor.ResizeNS => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.SizeNS),
+                ImGuiMouseCursor.ResizeEW => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.SizeWE),
+                ImGuiMouseCursor.ResizeNESW => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.SizeNESW),
+                ImGuiMouseCursor.ResizeNWSE => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.SizeNWSE),
+                ImGuiMouseCursor.Hand => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.Hand),
+                _ => Sdl2Native.SDL_CreateSystemCursor(SDL_SystemCursor.Arrow)
+            };
+            Sdl2Native.SDL_SetCursor(sdlCursor);
+        }
+    }
+
     
     /// <summary>
     /// Frees all graphics resources used by the renderer.
