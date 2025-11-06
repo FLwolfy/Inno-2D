@@ -1,9 +1,10 @@
 ﻿using InnoBase;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
-
+using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
+using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 
 namespace Sandbox;
 
@@ -15,39 +16,58 @@ internal class RenderTest
     private ICommandList m_commandList = null!;
     private IVertexBuffer m_vertexBuffer = null!;
     private IIndexBuffer m_indexBuffer = null!;
+    private IUniformBuffer m_transformBuffer = null!;
     private IPipelineState m_pipeline = null!;
+    private IResourceSet m_resourceSet = null!;
 
     private const string C_VERTEX_CODE = @"
-#version 450
+#version 330 core
 
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec4 Color;
+in vec2 position;
+in vec4 color;
 
-layout(location = 0) out vec4 fsin_Color;
+layout(std140) uniform Transform
+{
+    mat4 uPosition;
+    mat4 uRotation;
+    mat4 uScale;
+} transform;
+
+out vec4 FragmentColor;
 
 void main()
 {
-    gl_Position = vec4(Position, 0, 1);
-    fsin_Color = Color;
-}";
+    mat4 model = transform.uPosition * transform.uRotation * transform.uScale;
+    gl_Position = model * vec4(position, 0, 1);
+    FragmentColor = color;
+}
+";
 
     private const string C_FRAGMENT_CODE = @"
-#version 450
+#version 330 core
 
-layout(location = 0) in vec4 fsin_Color;
-layout(location = 0) out vec4 fsout_Color;
+in vec4 FragmentColor;
+out vec4 Color;
 
 void main()
 {
-    fsout_Color = fsin_Color;
-}";
+    Color = FragmentColor;
+}
+";
     
     private struct VertexPositionColor(Vector2 position, Color color)
     {
-        public Vector2 position = position; // This is the position, in normalized device coordinates.
-        public Color color = color;      // This is the color of the vertex.
+        public Vector2 position = position;
+        public Color color = color;
     }
-
+    
+    private struct TransformBuffer(Matrix uPosition, Matrix uRotation, Matrix uScale)
+    {
+        public Matrix uPosition = uPosition;
+        public Matrix uRotation = uRotation;
+        public Matrix uScale = uScale;
+    }
+    
     public RenderTest()
     { 
         WindowCreateInfo windowCi = new WindowCreateInfo()
@@ -59,7 +79,7 @@ void main()
             WindowTitle = "Render Example"
         }; 
         m_window = VeldridStartup.CreateWindow(ref windowCi);
-        m_graphicsDevice = new VeldridGraphicsDevice(VeldridStartup.CreateGraphicsDevice(m_window));
+        m_graphicsDevice = new VeldridGraphicsDevice(VeldridStartup.CreateGraphicsDevice(m_window, GraphicsBackend.OpenGL));
     }
 
     public void Run()
@@ -83,6 +103,7 @@ void main()
         m_commandList.SetPipelineState(m_pipeline);
         m_commandList.SetVertexBuffer(m_vertexBuffer);
         m_commandList.SetIndexBuffer(m_indexBuffer);
+        m_commandList.SetResourceSet(0, m_resourceSet);
         m_commandList.DrawIndexed(6, 0);
         m_commandList.End();
 
@@ -99,16 +120,27 @@ void main()
             new(new Vector2(-0.75f, -0.75f), Color.BLUE),
             new(new Vector2(0.75f, -0.75f), Color.YELLOW)
         };
+        
         ushort[] quadIndices = { 0, 1, 2, 1, 3, 2 };
+
+        TransformBuffer transform = new(
+            Matrix.CreateTranslation(new Vector3(0, 0, 0)),
+            Matrix.CreateRotationZ(45),
+            Matrix.CreateScale(0.5f)
+        );
+
         uint vertexSize = (uint)(4 * sizeof(VertexPositionColor));
         uint indexSize = 6 * sizeof(ushort);
+        uint transformSize = (uint)sizeof(TransformBuffer);
 
         m_vertexBuffer = m_graphicsDevice.CreateVertexBuffer(vertexSize);
         m_indexBuffer = m_graphicsDevice.CreateIndexBuffer(indexSize);
+        m_transformBuffer = m_graphicsDevice.CreateUniformBuffer(transformSize, "Transform");
 
         m_vertexBuffer.Update(quadVertices);
         m_indexBuffer.Update(quadIndices);
-
+        m_transformBuffer.Update(ref transform);
+        
         ShaderDescription vertexShaderDesc = new ShaderDescription();
         vertexShaderDesc.stage = ShaderStage.Vertex;
         vertexShaderDesc.entryPoint = "main";
@@ -119,17 +151,25 @@ void main()
         fragmentShaderDesc.entryPoint = "main";
         fragmentShaderDesc.sourceCode = C_FRAGMENT_CODE;
             
-        var shaders = m_graphicsDevice.CreateVertexFragmentShaders(vertexShaderDesc, fragmentShaderDesc);
-        IShader vertexShader = shaders[0];
-        IShader fragmentShader = shaders[1];
+        IShader vertexShader = m_graphicsDevice.CreateShader(vertexShaderDesc);
+        IShader fragmentShader = m_graphicsDevice.CreateShader(fragmentShaderDesc);
+        
+        ResourceSetBinding resourceSetBinding = new ResourceSetBinding
+        {
+            shaderStages = ShaderStage.Vertex,
+            uniformBuffers = [m_transformBuffer]
+        };
+        
+        PipelineStateDescription pipelineDesc = new PipelineStateDescription
+        {
+            vertexShader = vertexShader,
+            fragmentShader = fragmentShader,
+            vertexLayoutType = typeof(VertexPositionColor),
+            resourceSetBindings = [resourceSetBinding]
+        };
 
-        PipelineStateDescription pipelineDesc = new PipelineStateDescription();
-        pipelineDesc.vertexShader = vertexShader;
-        pipelineDesc.fragmentShader = fragmentShader;
-        pipelineDesc.vertexLayoutType = typeof(VertexPositionColor);
-            
+        m_resourceSet = m_graphicsDevice.CreateResourceSet(resourceSetBinding);
         m_pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
-
         m_commandList = m_graphicsDevice.CreateCommandList();
     }
         

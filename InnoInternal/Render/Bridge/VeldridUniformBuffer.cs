@@ -1,4 +1,3 @@
-using InnoBase;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
@@ -7,63 +6,26 @@ namespace InnoInternal.Render.Bridge;
 
 internal class VeldridUniformBuffer : IUniformBuffer
 {
-    private int m_cursor;
-    
-    internal byte[] localData { get; private set; }
+    private readonly GraphicsDevice m_graphicsDevice;
     internal DeviceBuffer inner { get; }
+    
+    public string bufferName { get; }
 
-    public VeldridUniformBuffer(DeviceBuffer buffer)
+    public VeldridUniformBuffer(GraphicsDevice graphicsDevice, DeviceBuffer indexBuffer, String name)
     {
-        inner = buffer;
-        localData = new byte[inner.SizeInBytes];
-        m_cursor = 0;
+        m_graphicsDevice = graphicsDevice;
+        inner = indexBuffer;
+        bufferName = name;
     }
     
-    public void SetFloat(float value)
+    public void Update<T>(ref T data) where T : unmanaged
     {
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor), value);
-        m_cursor += 4;
-    }
-
-    public void SetFloat2(Vector2 value)
-    {
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor), value.x);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 4), value.y);
-        m_cursor += 8;
-    }
-
-    public void SetFloat3(Vector3 value)
-    {
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor), value.x);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 4), value.y);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 8), value.z);
-        m_cursor += 12;
-    }
-
-    public void SetFloat4(Vector4 value)
-    {
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor), value.x);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 4), value.y);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 8), value.z);
-        BitConverter.TryWriteBytes(localData.AsSpan(m_cursor + 12), value.w);
-        m_cursor += 16;
-    }
-
-    public void SetMatrix(Matrix value)
-    {
-        var floats = new float[]
-        {
-            value.m11, value.m12, value.m13, value.m14,
-            value.m21, value.m22, value.m23, value.m24,
-            value.m31, value.m32, value.m33, value.m34,
-            value.m41, value.m42, value.m43, value.m44,
-        };
-        Buffer.BlockCopy(floats, 0, localData, m_cursor, 64);
-        m_cursor += 64;
+        m_graphicsDevice.UpdateBuffer(inner, 0, ref data);
     }
 
     public void Dispose()
     {
         inner.Dispose();
     }
+    
 }

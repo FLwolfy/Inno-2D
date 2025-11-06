@@ -3,7 +3,6 @@ using InnoInternal.Render.Impl;
 using Veldrid;
 
 using InnoFBDescription = InnoInternal.Render.Impl.FrameBufferDescription;
-using InnoRSDescription = InnoInternal.Render.Impl.ResourceSetDescription;
 using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 using TextureDescription = InnoInternal.Render.Impl.TextureDescription;
 
@@ -16,7 +15,7 @@ public class VeldridGraphicsDevice : IGraphicsDevice
     private readonly GraphicsDevice m_graphicsDevice;
     private readonly ResourceFactory m_factory;
     
-    public GraphicsDevice inner => m_graphicsDevice;
+    internal GraphicsDevice inner => m_graphicsDevice;
     public IFrameBuffer swapChainFrameBuffer { get; }
 
     public VeldridGraphicsDevice(GraphicsDevice graphicsDevice)
@@ -39,10 +38,10 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         return new VeldridIndexBuffer(m_graphicsDevice, ib);
     }
 
-    public IUniformBuffer CreateUniformBuffer(uint sizeInBytes)
+    public IUniformBuffer CreateUniformBuffer(uint sizeInBytes, String name)
     {
         var ub = m_factory.CreateBuffer(new BufferDescription(sizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-        return new VeldridUniformBuffer(ub);
+        return new VeldridUniformBuffer(m_graphicsDevice, ub, name);
     }
 
     public IFrameBuffer CreateFrameBuffer(InnoFBDescription desc)
@@ -50,19 +49,14 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         throw new NotImplementedException();
     }
 
-    public IResourceSet CreateResourceSet(InnoRSDescription desc)
+    public IResourceSet CreateResourceSet(ResourceSetBinding binding)
     {
-        throw new NotImplementedException();
+        return new VeldridResourceSet(m_graphicsDevice, binding);
     }
-
-    public IReadOnlyList<IShader> CreateVertexFragmentShaders(ShaderDescription vertexDesc, ShaderDescription fragmentDesc)
+    
+    public IShader CreateShader(ShaderDescription desc)
     {
-        return VeldridShader.CreateVertexFragment(m_graphicsDevice, vertexDesc, fragmentDesc);
-    }
-
-    public IShader CreateComputeShader(ShaderDescription desc)
-    {
-        return VeldridShader.CreateCompute(m_graphicsDevice, desc);
+        return VeldridShader.CreateShader(m_graphicsDevice, desc);
     }
 
     public ITexture CreateTexture(TextureDescription desc)

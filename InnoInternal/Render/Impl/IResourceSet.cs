@@ -1,10 +1,11 @@
 namespace InnoInternal.Render.Impl;
 
-public struct ResourceSetDescription
+public struct ResourceSetBinding
 {
-    public IUniformBuffer uniformBuffer;
-    public ITexture texture;
-    public IShader shader;
+    public ShaderStage shaderStages;
+    
+    public IUniformBuffer[] uniformBuffers;
+    // public ITexture[] textures;
 }
 
 public interface IResourceSet;

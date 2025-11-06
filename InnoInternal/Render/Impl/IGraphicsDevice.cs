@@ -8,12 +8,11 @@ public interface IGraphicsDevice : IDisposable
     
     IVertexBuffer CreateVertexBuffer(uint sizeInBytes);
     IIndexBuffer CreateIndexBuffer(uint sizeInBytes);
-    IUniformBuffer CreateUniformBuffer(uint sizeInBytes);
+    IUniformBuffer CreateUniformBuffer(uint sizeInBytes, string name);
     
     IFrameBuffer CreateFrameBuffer(FrameBufferDescription desc);
-    IResourceSet CreateResourceSet(ResourceSetDescription desc);
-    IReadOnlyList<IShader> CreateVertexFragmentShaders(ShaderDescription vertexDesc, ShaderDescription fragmentDesc);
-    IShader CreateComputeShader(ShaderDescription desc);
+    IResourceSet CreateResourceSet(ResourceSetBinding binding);
+    IShader CreateShader(ShaderDescription desc);
     ITexture CreateTexture(TextureDescription desc);
     IPipelineState CreatePipelineState(PipelineStateDescription desc);
     

@@ -1,3 +1,4 @@
+using System.Reflection;
 using InnoBase;
 using InnoInternal.Render.Impl;
 using Veldrid;
@@ -14,12 +15,11 @@ internal class VeldridPipelineState : IPipelineState
 
     internal Pipeline inner { get; }
 
-    public VeldridPipelineState(GraphicsDevice graphicsDevice, PipelineStateDescription desc)
+    public VeldridPipelineState(GraphicsDevice graphicsDevice, InnoPSDescription desc)
     {
         m_graphicsDevice = graphicsDevice;
 
         m_innerDescription = ToVeldridPSDesc(desc);
-        m_innerDescription.Outputs = graphicsDevice.SwapchainFramebuffer.OutputDescription;
         inner = m_graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ref m_innerDescription);
     }
     
@@ -33,11 +33,16 @@ internal class VeldridPipelineState : IPipelineState
         inner.Dispose();
     }
 
-    private static VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
+    private VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
     {
         var vertexShader = ((VeldridShader)desc.vertexShader).inner;
         var fragmentShader = ((VeldridShader)desc.fragmentShader).inner;
-        var vertexLayouts = new[] { GenerateLayoutFromType(desc.vertexLayoutType) };
+        var vertexLayoutDescPair = new[] { GenerateVertexLayoutFromType(desc.vertexLayoutType) };
+        var resourceLayouts = desc.resourceSetBindings.Length > 0 
+            ? desc.resourceSetBindings
+                .Select(t => m_graphicsDevice.ResourceFactory.CreateResourceLayout(VeldridResourceSet.GenerateResourceLayoutFromBinding(t)))
+                .ToArray() 
+            : [];
 
         return new GraphicsPipelineDescription
         {
@@ -45,14 +50,16 @@ internal class VeldridPipelineState : IPipelineState
             DepthStencilState = new DepthStencilStateDescription(false, false, ComparisonKind.Always),
             RasterizerState = RasterizerStateDescription.CullNone,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
-            ResourceLayouts = [],
-            ShaderSet = new ShaderSetDescription(vertexLayouts, [vertexShader, fragmentShader]),
+            ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),
+            ResourceLayouts = resourceLayouts,
+            Outputs = m_graphicsDevice.SwapchainFramebuffer.OutputDescription
         };
     }
     
-    private static VertexLayoutDescription GenerateLayoutFromType(Type t)
+    private static VertexLayoutDescription GenerateVertexLayoutFromType(Type t)
     {
-        var fields = t.GetFields();
+        var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+            .OrderBy(f => f.MetadataToken);
         var elements = fields.Select(f =>
         {
             if (f.FieldType == typeof(Vector2))

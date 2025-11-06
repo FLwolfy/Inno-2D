@@ -85,9 +85,8 @@ void main()
             sourceCode = FragmentShaderCode
         };
 
-        var shaders = m_graphicsDevice.CreateVertexFragmentShaders(vertexDesc, fragmentDesc);
-        m_vertexShader = shaders[0];
-        m_fragmentShader = shaders[1];
+        m_vertexShader = m_graphicsDevice.CreateShader(vertexDesc);
+        m_fragmentShader = m_graphicsDevice.CreateShader(fragmentDesc);
 
         // Pipeline
         var pipelineDesc = new PipelineStateDescription
