@@ -17,11 +17,6 @@ internal class VeldridUniformBuffer : IUniformBuffer
         inner = indexBuffer;
         bufferName = name;
     }
-    
-    public void Update<T>(ref T data) where T : unmanaged
-    {
-        m_graphicsDevice.UpdateBuffer(inner, 0, ref data);
-    }
 
     public void Dispose()
     {

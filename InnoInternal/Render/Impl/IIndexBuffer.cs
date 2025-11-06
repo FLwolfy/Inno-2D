@@ -2,5 +2,5 @@ namespace InnoInternal.Render.Impl;
 
 public interface IIndexBuffer : IDisposable
 {
-    void Update<T>(T[] data) where T : unmanaged;
+    void Set<T>(T[] data) where T : unmanaged;
 }

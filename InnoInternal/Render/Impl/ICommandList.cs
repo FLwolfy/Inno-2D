@@ -13,7 +13,8 @@ public interface ICommandList : IDisposable
     void SetResourceSet(int setIndex, IResourceSet resourceSet);
     void SetPipelineState(IPipelineState pipelineState);
     
-
+    void UpdateUniform<T>(IUniformBuffer uniformBuffer, ref T data) where T : unmanaged;
+    
     void Draw(uint vertexCount, uint startVertex = 0);
     void DrawIndexed(uint indexCount, uint startIndex = 0, int baseVertex = 0);
 

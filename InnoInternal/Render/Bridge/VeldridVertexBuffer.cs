@@ -15,7 +15,7 @@ internal class VeldridVertexBuffer : IVertexBuffer
         inner = vertexBuffer;
     }
 
-    public void Update<T>(T[] data) where T : unmanaged
+    public void Set<T>(T[] data) where T : unmanaged
     {
         m_graphicsDevice.UpdateBuffer(inner, 0, data);
     }

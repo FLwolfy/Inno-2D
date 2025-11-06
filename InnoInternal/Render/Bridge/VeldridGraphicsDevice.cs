@@ -38,9 +38,9 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         return new VeldridIndexBuffer(m_graphicsDevice, ib);
     }
 
-    public IUniformBuffer CreateUniformBuffer(uint sizeInBytes, String name)
+    public unsafe IUniformBuffer CreateUniformBuffer<T>(String name) where T: unmanaged
     {
-        var ub = m_factory.CreateBuffer(new BufferDescription(sizeInBytes, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        var ub = m_factory.CreateBuffer(new BufferDescription((uint)sizeof(T), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         return new VeldridUniformBuffer(m_graphicsDevice, ub, name);
     }
 

@@ -8,7 +8,7 @@ public interface IGraphicsDevice : IDisposable
     
     IVertexBuffer CreateVertexBuffer(uint sizeInBytes);
     IIndexBuffer CreateIndexBuffer(uint sizeInBytes);
-    IUniformBuffer CreateUniformBuffer(uint sizeInBytes, string name);
+    IUniformBuffer CreateUniformBuffer<T>(string name) where T: unmanaged;
     
     IFrameBuffer CreateFrameBuffer(FrameBufferDescription desc);
     IResourceSet CreateResourceSet(ResourceSetBinding binding);

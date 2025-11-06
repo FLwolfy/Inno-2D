@@ -62,6 +62,14 @@ internal class VeldridCommandList : ICommandList
         }
     }
 
+    public void UpdateUniform<T>(IUniformBuffer uniformBuffer, ref T data) where T : unmanaged
+    {
+        if (uniformBuffer is VeldridUniformBuffer veldridUB)
+        {
+            inner.UpdateBuffer(veldridUB.inner, 0, data);
+        }
+    }
+
     public void Draw(uint vertexCount, uint startVertex = 0)
     {
         inner.Draw(vertexCount, 1, startVertex, 0);

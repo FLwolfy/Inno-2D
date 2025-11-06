@@ -68,8 +68,8 @@ void main()
         m_vertexBuffer = m_graphicsDevice.CreateVertexBuffer((uint)(quadVertices.Length * vertexSize));
         m_indexBuffer = m_graphicsDevice.CreateIndexBuffer((uint)(quadIndices.Length * sizeof(ushort)));
 
-        m_vertexBuffer.Update(quadVertices);
-        m_indexBuffer.Update(quadIndices);
+        m_vertexBuffer.Set(quadVertices);
+        m_indexBuffer.Set(quadIndices);
 
         // Shader
         var vertexDesc = new ShaderDescription
@@ -113,8 +113,8 @@ void main()
 
         ushort[] indices = { 0, 1, 2, 1, 3, 2 };
 
-        m_vertexBuffer.Update(vertices);
-        m_indexBuffer.Update(indices);
+        m_vertexBuffer.Set(vertices);
+        m_indexBuffer.Set(indices);
 
         m_commandList.SetPipelineState(m_pipeline);
         m_commandList.SetVertexBuffer(m_vertexBuffer);
