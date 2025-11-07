@@ -75,18 +75,15 @@ void main()
         var vertexDesc = new ShaderDescription
         {
             stage = ShaderStage.Vertex,
-            entryPoint = "main",
             sourceCode = VertexShaderCode
         };
         var fragmentDesc = new ShaderDescription
         {
             stage = ShaderStage.Fragment,
-            entryPoint = "main",
             sourceCode = FragmentShaderCode
         };
 
-        m_vertexShader = m_graphicsDevice.CreateShader(vertexDesc);
-        m_fragmentShader = m_graphicsDevice.CreateShader(fragmentDesc);
+        (m_vertexShader, m_fragmentShader) = m_graphicsDevice.CreateVertexFragmentShader(vertexDesc, fragmentDesc);
 
         // Pipeline
         var pipelineDesc = new PipelineStateDescription

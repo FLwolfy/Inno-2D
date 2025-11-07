@@ -12,7 +12,9 @@ public interface IGraphicsDevice : IDisposable
     
     IFrameBuffer CreateFrameBuffer(FrameBufferDescription desc);
     IResourceSet CreateResourceSet(ResourceSetBinding binding);
-    IShader CreateShader(ShaderDescription desc);
+    (IShader, IShader) CreateVertexFragmentShader(ShaderDescription vertDesc, ShaderDescription fragDesc);
+    IShader CreateComputeShader(ShaderDescription desc);
+    
     ITexture CreateTexture(TextureDescription desc);
     IPipelineState CreatePipelineState(PipelineStateDescription desc);
     

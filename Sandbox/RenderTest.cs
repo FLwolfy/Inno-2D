@@ -1,4 +1,5 @@
-﻿using InnoBase;
+﻿using System.Reflection;
+using InnoBase;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using Veldrid;
@@ -21,67 +22,7 @@ internal class RenderTest
     private IResourceSet m_resourceSet = null!;
     
     private TransformBuffer m_transform;
-    private float m_rotationAngle;
-    
-    private const string C_VERTEX_CODE = @"
-#include <metal_stdlib>
-using namespace metal;
-
-// === 与 GLSL layout(std140) uniform 对应 ===
-struct TransformBuffer
-{
-    float4x4 uPosition;
-    float4x4 uRotation;
-    float4x4 uScale;
-};
-
-// === 顶点输入结构，对应 GLSL 的 in ===
-struct VertexInput
-{
-    float2 position [[attribute(0)]];
-    float4 color    [[attribute(1)]];
-};
-
-// === 顶点输出结构，对应 GLSL 的 out ===
-struct VertexOutput
-{
-    float4 position [[position]];
-    float4 color;
-};
-
-// === 顶点主函数 ===
-vertex VertexOutput main_vertex(
-    VertexInput in                [[stage_in]],
-    constant TransformBuffer& transform [[buffer(1)]]
-)
-{
-    VertexOutput out;
-    float4 worldPos = float4(in.position, 0.0, 1.0);
-    float4x4 model = transform.uPosition * transform.uRotation * transform.uScale;
-    out.position = model * worldPos;
-    out.color = in.color;
-    return out;
-}
-";
-
-    private const string C_FRAGMENT_CODE = @"
-#include <metal_stdlib>
-using namespace metal;
-
-// === 片段输入结构 ===
-struct VertexOutput
-{
-    float4 position [[position]];
-    float4 color;
-};
-
-// === 主函数 ===
-fragment float4 main_fragment(VertexOutput in [[stage_in]])
-{
-    return in.color;
-}
-
-";
+    private float m_rotationAngle = 0.0f;
     
     private struct VertexPositionColor(Vector2 position, Color color)
     {
@@ -128,7 +69,7 @@ fragment float4 main_fragment(VertexOutput in [[stage_in]])
         m_commandList.Begin();
         
         // Rotation test
-        m_rotationAngle += 0.0010f; 
+        m_rotationAngle += 0.010f; 
         m_transform.uRotation = Matrix.CreateRotationZ(m_rotationAngle);
 
         m_commandList.UpdateUniform(m_transformBuffer, ref m_transform);
@@ -177,16 +118,13 @@ fragment float4 main_fragment(VertexOutput in [[stage_in]])
         
         ShaderDescription vertexShaderDesc = new ShaderDescription();
         vertexShaderDesc.stage = ShaderStage.Vertex;
-        vertexShaderDesc.entryPoint = "main_vertex";
-        vertexShaderDesc.sourceCode = C_VERTEX_CODE;
+        vertexShaderDesc.sourceCode = GetEmbeddedResourceString("Vertex.vert");
             
         ShaderDescription fragmentShaderDesc = new ShaderDescription();
         fragmentShaderDesc.stage = ShaderStage.Fragment;
-        fragmentShaderDesc.entryPoint = "main_fragment";
-        fragmentShaderDesc.sourceCode = C_FRAGMENT_CODE;
-            
-        IShader vertexShader = m_graphicsDevice.CreateShader(vertexShaderDesc);
-        IShader fragmentShader = m_graphicsDevice.CreateShader(fragmentShaderDesc);
+        fragmentShaderDesc.sourceCode = GetEmbeddedResourceString("Fragment.frag");
+        
+        (IShader vertexShader, IShader fragmentShader) = m_graphicsDevice.CreateVertexFragmentShader(vertexShaderDesc, fragmentShaderDesc);
         
         ResourceSetBinding resourceSetBinding = new ResourceSetBinding
         {
@@ -214,5 +152,18 @@ fragment float4 main_fragment(VertexOutput in [[stage_in]])
         m_vertexBuffer.Dispose();
         m_indexBuffer.Dispose();
         m_graphicsDevice.Dispose();
+    }
+    
+    private string GetEmbeddedResourceString(string shortName)
+    {
+        var assembly = typeof(RenderTest).GetTypeInfo().Assembly;
+        var resources = assembly.GetManifestResourceNames();
+        var match = resources.FirstOrDefault(r => r.EndsWith(shortName, StringComparison.OrdinalIgnoreCase));
+        if (match == null) throw new FileNotFoundException($"Embedded resource '{shortName}' not found.");
+
+        using Stream s = assembly.GetManifestResourceStream(match)!;
+        using StreamReader reader = new StreamReader(s);
+        
+        return reader.ReadToEnd();
     }
 }

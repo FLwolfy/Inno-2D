@@ -1,7 +1,7 @@
 using InnoInternal.Render.Impl;
 
 using Veldrid;
-
+using Veldrid.SPIRV;
 using InnoFBDescription = InnoInternal.Render.Impl.FrameBufferDescription;
 using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 using TextureDescription = InnoInternal.Render.Impl.TextureDescription;
@@ -54,9 +54,14 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         return new VeldridResourceSet(m_graphicsDevice, binding);
     }
     
-    public IShader CreateShader(ShaderDescription desc)
+    public (IShader, IShader) CreateVertexFragmentShader(ShaderDescription vertDesc, ShaderDescription fragDesc)
     {
-        return VeldridShader.CreateShader(m_graphicsDevice, desc);
+        return VeldridShader.CreateVertexFragment(m_graphicsDevice, vertDesc, fragDesc);
+    }
+
+    public IShader CreateComputeShader(ShaderDescription desc)
+    {
+        return VeldridShader.CreateCompute(m_graphicsDevice, desc);
     }
 
     public ITexture CreateTexture(TextureDescription desc)

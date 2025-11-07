@@ -1,7 +1,8 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using InnoInternal.Render.Impl;
 using Veldrid;
-
+using Veldrid.SPIRV;
 using InnoShaderStage = InnoInternal.Render.Impl.ShaderStage;
 using InnoSDescription = InnoInternal.Render.Impl.ShaderDescription;
 using VeldridShaderStage = Veldrid.ShaderStages;
@@ -29,20 +30,127 @@ internal class VeldridShader : IShader
     {
         throw new NotImplementedException();
     }
-    
-    public static VeldridShader CreateShader(GraphicsDevice graphicsDevice, InnoSDescription desc)
+
+    public static (VeldridShader, VeldridShader) CreateVertexFragment(
+        GraphicsDevice graphicsDevice,
+        InnoSDescription vertDesc,
+        InnoSDescription fragDesc)
     {
-        var shader = graphicsDevice.ResourceFactory.CreateShader(ToVeldridSDesc(desc));
-        return new VeldridShader(graphicsDevice, shader, desc.stage);
+        var vertResult = SpirvCompilation.CompileGlslToSpirv( vertDesc.sourceCode, null, ToVeldridShaderStage(vertDesc.stage), new GlslCompileOptions(true)); 
+        var fragResult = SpirvCompilation.CompileGlslToSpirv( fragDesc.sourceCode, null, ToVeldridShaderStage(fragDesc.stage), new GlslCompileOptions(true));
+        
+        var vertexFragmentCode = CrossCompileSpirv(
+            graphicsDevice.BackendType,
+            ShaderStages.Vertex,
+            vertResult.SpirvBytes,
+            fragResult.SpirvBytes
+        );
+
+        var veldridVertDesc = new VeldridSDescription(
+            ToVeldridShaderStage(vertDesc.stage),
+            Encoding.UTF8.GetBytes(vertexFragmentCode[0]),
+            graphicsDevice.BackendType == GraphicsBackend.Metal ? "main0" : "main"
+        );
+        var veldridFragDesc = new VeldridSDescription(
+            ToVeldridShaderStage(fragDesc.stage),
+            Encoding.UTF8.GetBytes(vertexFragmentCode[1]),
+            graphicsDevice.BackendType == GraphicsBackend.Metal ? "main0" : "main"
+        );
+
+        var vertexShader = graphicsDevice.ResourceFactory.CreateShader(veldridVertDesc);
+        var fragmentShader = graphicsDevice.ResourceFactory.CreateShader(veldridFragDesc);
+
+        return (
+            new VeldridShader(graphicsDevice, vertexShader, vertDesc.stage),
+            new VeldridShader(graphicsDevice, fragmentShader, fragDesc.stage)
+        );
+    }
+
+    public static VeldridShader CreateCompute(GraphicsDevice graphicsDevice, InnoSDescription desc)
+    {
+        var computeResult = SpirvCompilation.CompileGlslToSpirv( desc.sourceCode, null, ToVeldridShaderStage(desc.stage), new GlslCompileOptions(true)); 
+
+        var computeCode = CrossCompileSpirv(
+            graphicsDevice.BackendType,
+            ShaderStages.Compute,
+            computeResult.SpirvBytes
+        )[0];
+
+        var veldridDesc = new VeldridSDescription(
+            ShaderStages.Compute,
+            Encoding.UTF8.GetBytes(computeCode),
+            graphicsDevice.BackendType == GraphicsBackend.Metal ? "main0" : "main"
+        );
+
+        var shader = graphicsDevice.ResourceFactory.CreateShader(veldridDesc);
+        return new VeldridShader(graphicsDevice, shader, ShaderStage.Compute);
     }
     
-    private static VeldridSDescription ToVeldridSDesc(InnoSDescription desc)
+    private static string[] CrossCompileSpirv(GraphicsBackend backend, ShaderStages stage, params byte[][] spirvBytes)
     {
-        return new VeldridSDescription(
-            ToVeldridShaderStage(desc.stage),
-            Encoding.UTF8.GetBytes(desc.sourceCode),
-            desc.entryPoint
-        );
+        if (backend == GraphicsBackend.Vulkan)
+        {
+            return
+            [
+                Encoding.UTF8.GetString(spirvBytes[0]),
+                Encoding.UTF8.GetString(spirvBytes[1])
+            ];
+        }
+        
+        CrossCompileTarget target = backend switch
+        {
+            GraphicsBackend.Direct3D11 => CrossCompileTarget.HLSL,
+            GraphicsBackend.Metal => CrossCompileTarget.MSL,
+            GraphicsBackend.OpenGL => CrossCompileTarget.GLSL,
+            GraphicsBackend.OpenGLES => CrossCompileTarget.ESSL,
+            _ => throw new NotSupportedException($"Unsupported backend: {backend}")
+        };
+
+        if (stage == ShaderStages.Compute)
+        {
+            var result = SpirvCompilation.CompileCompute(spirvBytes[0], target, new CrossCompileOptions());
+            return [result.ComputeShader];
+        }
+        if ((stage & (ShaderStages.Vertex | ShaderStages.Fragment)) != 0)
+        {
+            var result = SpirvCompilation.CompileVertexFragment(
+                spirvBytes[0],
+                spirvBytes[1],
+                target
+            );
+
+            if (backend == GraphicsBackend.Metal)
+            {
+                return [
+                    AdjustMetalBindings(result.VertexShader, 1), 
+                    AdjustMetalBindings(result.FragmentShader, 1)
+                ];
+            }
+
+            return [
+                result.VertexShader,
+                result.FragmentShader
+            ];
+        }
+        
+        throw new NotSupportedException($"Unsupported shader stage: {stage}");
+    }
+    
+    
+    private static string AdjustMetalBindings(string shaderCode, int offset = 1)
+    {
+        // NOTE: I have no idea why the resource binding buffer index always starts at 1 in Metal in Veldrid.
+        //       So we just offset all binding indices by 1.
+        //   By: Hsuan-Kai Liao
+        
+        string pattern = @"\[\[\s*(buffer|texture|sampler)\((\d+)\)\s*\]\]";
+        string result = Regex.Replace(shaderCode, pattern, match =>
+        {
+            string type = match.Groups[1].Value;
+            int index = int.Parse(match.Groups[2].Value);
+            return $"[[{type}({index + offset})]]";
+        });
+        return result;
     }
     
     internal static VeldridShaderStage ToVeldridShaderStage(InnoShaderStage stage)
