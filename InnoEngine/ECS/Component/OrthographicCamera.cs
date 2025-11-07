@@ -10,7 +10,7 @@ public class OrthographicCamera : GameCamera
     private const float C_NEAR = -1f;
     private const float C_FAR = 1f;
 
-    private float m_size = 10f;
+    private float m_size = 720f;
     private float m_aspectRatio = 1.7777f;
 
     /// <summary>
@@ -21,7 +21,7 @@ public class OrthographicCamera : GameCamera
         get => m_size;
         set
         {
-            if (m_size != value)
+            if (MathF.Abs(m_size - value) > 0.0001f)
             {
                 m_size = value;
                 MarkDirty();
@@ -47,7 +47,7 @@ public class OrthographicCamera : GameCamera
         }
     }
 
-    protected override void RebuildMatrix(out Matrix view, out Matrix projection, out Rect viewRect)
+    protected override void RebuildMatrix(out Matrix view, out Matrix projection, out Rect visibleRect)
     {
         Vector2 cameraPos = new Vector2(
             transform.worldPosition.x, 
@@ -57,7 +57,7 @@ public class OrthographicCamera : GameCamera
 
         projection = CalculateProjectionMatrix();
         view = CalculateViewMatrix(cameraPos, rotationZ);
-        viewRect = CalculateViewRect(cameraPos, rotationZ);
+        visibleRect = CalculateViewRect(cameraPos, rotationZ);
     }
 
     private Matrix CalculateProjectionMatrix()
@@ -85,13 +85,13 @@ public class OrthographicCamera : GameCamera
         float halfHeight = m_size * 0.5f;
         float halfWidth = halfHeight * m_aspectRatio;
 
-        Vector2[] corners = new Vector2[]
-        {
-            new Vector2(-halfWidth, -halfHeight),
-            new Vector2(halfWidth, -halfHeight),
-            new Vector2(halfWidth, halfHeight),
-            new Vector2(-halfWidth, halfHeight)
-        };
+        Vector2[] corners =
+        [
+            new(-halfWidth, -halfHeight),
+            new(halfWidth, -halfHeight),
+            new(halfWidth, halfHeight),
+            new(-halfWidth, halfHeight)
+        ];
 
         float cos = MathF.Cos(rotationZ);
         float sin = MathF.Sin(rotationZ);

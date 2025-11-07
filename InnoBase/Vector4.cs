@@ -82,6 +82,16 @@ public struct Vector4 : IEquatable<Vector4>
         new(v.x * s, v.y * s, v.z * s, v.w * s);
 
     public static Vector4 operator *(float s, Vector4 v) => v * s;
+    
+    public static Vector4 operator *(Matrix m, Vector4 v)
+    {
+        return new Vector4(
+            m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w,
+            m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w,
+            m.m31 * v.x + m.m32 * v.y + m.m33 * v.z + m.m34 * v.w,
+            m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44 * v.w
+        );
+    }
 
     public static Vector4 operator /(Vector4 v, float s) =>
         new(v.x / s, v.y / s, v.z / s, v.w / s);

@@ -18,7 +18,7 @@ public abstract class EditorCore
     private const int C_WINDOW_HEIGHT = 720;
     
     private readonly IGameShell m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
-    private readonly RenderSystem m_renderSystem = new();
+    private readonly RenderPassController m_renderPassController = new();
     
     private IRenderAPI m_renderAPI => m_gameShell.GetRenderAPI();
 
@@ -50,8 +50,8 @@ public abstract class EditorCore
         AssetManager.RegisterLoader(m_renderAPI.renderAssetLoader);
 
         // Render Init
-        m_renderSystem.Initialize(m_gameShell.GetRenderAPI());
-        m_renderSystem.LoadPasses();
+        m_renderPassController.Initialize(m_gameShell.GetRenderAPI());
+        m_renderPassController.LoadPasses();
     }
 
     private void Step(float totalTime, float deltaTime)
@@ -89,9 +89,9 @@ public abstract class EditorCore
         m_renderAPI.renderContext.viewMatrix = viewMatrix;
         m_renderAPI.renderContext.projectionMatrix = projectionMatrix;
         
-        m_renderSystem.Begin();
-        m_renderSystem.RenderPasses();
-        m_renderSystem.End();
+        m_renderPassController.Begin();
+        m_renderPassController.RenderPasses();
+        m_renderPassController.End();
         
         return true;
     }

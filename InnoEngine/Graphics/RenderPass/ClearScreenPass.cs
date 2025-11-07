@@ -11,8 +11,8 @@ internal class ClearScreenPass : IRenderPass
     
     public RenderPassTag tag => RenderPassTag.ClearScreen;
 
-    public void Render()
+    public void Render(RenderContext ctx)
     {
-        // TODO: Make the clear color configurable
+        ctx.renderer.ClearColor(CLEAR_COLOR);
     }
 }

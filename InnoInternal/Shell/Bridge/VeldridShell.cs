@@ -52,7 +52,7 @@ internal class VeldridShell : IGameShell
         
         var deviceOptions = new GraphicsDeviceOptions(
             debug: false,
-            swapchainDepthFormat: null,
+            swapchainDepthFormat: PixelFormat.R32_Float,
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,

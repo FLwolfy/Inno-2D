@@ -13,5 +13,5 @@ internal interface IRenderPass
     /// <summary>
     /// This method is used for each concrete renderPass class to render details based on the given RenderContext.
     /// </summary>
-    void Render();
+    void Render(RenderContext ctx);
 }

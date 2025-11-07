@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoEngine.Graphics.RenderObject;
 using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
@@ -6,131 +7,115 @@ namespace InnoEngine.Graphics;
 public class Renderer2D : IDisposable
 {
     private readonly IGraphicsDevice m_graphicsDevice;
-    private ICommandList m_commandList = null!;
-    private IVertexBuffer m_vertexBuffer = null!;
-    private IIndexBuffer m_indexBuffer = null!;
-    private IPipelineState m_pipeline = null!;
-    private IShader m_vertexShader = null!;
-    private IShader m_fragmentShader = null!;
+    private readonly ICommandList m_commandList;
+    
+    // World info
+    public Matrix viewProjection { get; private set; }
 
-    private struct VertexPositionColor(Vector2 position, Color color)
-    {
-        public Vector2 position = position;
-        public Color color = color;
-    }
-
-    private const string VertexShaderCode = @"
-#version 450
-layout(location = 0) in vec2 Position;
-layout(location = 1) in vec4 Color;
-
-layout(location = 0) out vec4 fsin_Color;
-
-void main()
-{
-    gl_Position = vec4(Position, 0, 1);
-    fsin_Color = Color;
-}";
-
-    private const string FragmentShaderCode = @"
-#version 450
-layout(location = 0) in vec4 fsin_Color;
-layout(location = 0) out vec4 fsout_Color;
-
-void main()
-{
-    fsout_Color = fsin_Color;
-}";
+    // Quad Resources
+    private Mesh m_quadMesh = null!;
+    private Material m_quadMaterial = null!;
+    private IResourceSet m_quadResources = null!;
 
     public Renderer2D(IGraphicsDevice graphicsDevice)
     {
         m_graphicsDevice = graphicsDevice;
+        m_commandList = graphicsDevice.CreateCommandList();
     }
     
     public void LoadResources()
     {
-        CreateResources();
+        CreateQuadResources();
     }
 
-    private void CreateResources()
+    private void CreateQuadResources()
     {
-        VertexPositionColor[] quadVertices =
-        {
-            new VertexPositionColor(new Vector2(-0.5f, 0.5f), Color.WHITE),
-            new VertexPositionColor(new Vector2(0.5f, 0.5f), Color.WHITE),
-            new VertexPositionColor(new Vector2(-0.5f, -0.5f), Color.WHITE),
-            new VertexPositionColor(new Vector2(0.5f, -0.5f), Color.WHITE)
-        };
+        // Buffers
+        RenderVertexLayout.VertexPosition[] quadVertices =
+        [
+            new(new Vector3(-1.0f, 1.0f, 0f)),
+            new(new Vector3(1.0f, 1.0f, 0f)),
+            new(new Vector3(-1.0f, -1.0f, 0f)),
+            new(new Vector3(1.0f, -1.0f, 0f))
+        ];
 
-        ushort[] quadIndices = { 0, 1, 2, 1, 3, 2 };
-        int vertexSize = sizeof(float) * 2 + sizeof(float) * 4;
+        var quadIndices = new short[] { 0, 1, 2, 1, 3, 2 };
+        var vertexSize = sizeof(float) * 3;
 
-        m_vertexBuffer = m_graphicsDevice.CreateVertexBuffer((uint)(quadVertices.Length * vertexSize));
-        m_indexBuffer = m_graphicsDevice.CreateIndexBuffer((uint)(quadIndices.Length * sizeof(ushort)));
+        var vb = m_graphicsDevice.CreateVertexBuffer((uint)(quadVertices.Length * vertexSize));
+        var ib = m_graphicsDevice.CreateIndexBuffer((uint)(quadIndices.Length * sizeof(ushort)));
+        
+        var mvpBuffer = m_graphicsDevice.CreateUniformBuffer<Matrix>("MVP");
+        var colorBuffer = m_graphicsDevice.CreateUniformBuffer<Color>("Color");
 
-        m_vertexBuffer.Set(quadVertices);
-        m_indexBuffer.Set(quadIndices);
+        vb.Set(quadVertices);
+        ib.Set(quadIndices);
 
-        // Shader
+        // Shaders
         var vertexDesc = new ShaderDescription
         {
             stage = ShaderStage.Vertex,
-            sourceCode = VertexShaderCode
+            sourceCode = RenderShaderLibrary.GetEmbeddedShaderCode("SolidQuad.vert")
         };
         var fragmentDesc = new ShaderDescription
         {
             stage = ShaderStage.Fragment,
-            sourceCode = FragmentShaderCode
+            sourceCode = RenderShaderLibrary.GetEmbeddedShaderCode("SolidQuad.frag")
         };
 
-        (m_vertexShader, m_fragmentShader) = m_graphicsDevice.CreateVertexFragmentShader(vertexDesc, fragmentDesc);
+        var (vertexShader, fragmentShader) = m_graphicsDevice.CreateVertexFragmentShader(vertexDesc, fragmentDesc);
+        
+        // Resource
+        var resourceSetBinding = new ResourceSetBinding
+        {
+            shaderStages = ShaderStage.Vertex,
+            uniformBuffers = [mvpBuffer, colorBuffer]
+        };
+        m_quadResources = m_graphicsDevice.CreateResourceSet(resourceSetBinding);
 
         // Pipeline
         var pipelineDesc = new PipelineStateDescription
         {
-            vertexShader = m_vertexShader,
-            fragmentShader = m_fragmentShader,
-            vertexLayoutType = typeof(VertexPositionColor),
-            resourceSetBindings = []
+            vertexShader = vertexShader,
+            fragmentShader = fragmentShader,
+            vertexLayoutType = typeof(RenderVertexLayout.VertexPosition),
+            resourceSetBindings = [resourceSetBinding]
         };
-        m_pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
+        var pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
 
-        // CommandList
-        m_commandList = m_graphicsDevice.CreateCommandList();
+        // Mesh and Material
+        m_quadMesh = new Mesh(vb, ib);
+        m_quadMaterial = new Material(vertexShader, fragmentShader, pipeline, [mvpBuffer, colorBuffer]);
     }
     
-    public void DrawQuad(Vector2 position, Vector2 size, Color color)
+    public void DrawQuad(Matrix transform, Color color)
     {
-        VertexPositionColor[] vertices =
-        {
-            new VertexPositionColor(position + new Vector2(-size.x, size.y) * 0.5f, color),
-            new VertexPositionColor(position + new Vector2(size.x, size.y) * 0.5f, color),
-            new VertexPositionColor(position + new Vector2(-size.x, -size.y) * 0.5f, color),
-            new VertexPositionColor(position + new Vector2(size.x, -size.y) * 0.5f, color)
-        };
-
-        ushort[] indices = { 0, 1, 2, 1, 3, 2 };
-
-        m_vertexBuffer.Set(vertices);
-        m_indexBuffer.Set(indices);
-
-        m_commandList.SetPipelineState(m_pipeline);
-        m_commandList.SetVertexBuffer(m_vertexBuffer);
-        m_commandList.SetIndexBuffer(m_indexBuffer);
-        m_commandList.DrawIndexed(6, 0);
+        var mvp = transform * viewProjection;
+        
+        m_commandList.UpdateUniform(m_quadMaterial.uniformBuffers["MVP"], ref mvp);
+        m_commandList.UpdateUniform(m_quadMaterial.uniformBuffers["Color"], ref color);
+        
+        m_commandList.SetPipelineState(m_quadMaterial.pipeline);
+        m_commandList.SetVertexBuffer(m_quadMesh.vertexBuffer);
+        m_commandList.SetIndexBuffer(m_quadMesh.indexBuffer);
+        m_commandList.SetResourceSet(0, m_quadResources);
+        m_commandList.DrawIndexed(6);
+    }
+    
+    public void ClearColor(Color color)
+    {
+        m_commandList.ClearColor(color);
     }
 
-    public void BeginFrame(IFrameBuffer target)
+    public void BeginFrame(Matrix viewProjectionMatrix, IFrameBuffer target)
     {
+        viewProjection = viewProjectionMatrix;
+        
         m_commandList.Begin();
         m_commandList.SetFrameBuffer(target);
-        m_commandList.ClearColor(Color.BLACK); // TODO: Move to Clear
     }
     
-    public void BeginFrame()
-    {
-        BeginFrame(m_graphicsDevice.swapChainFrameBuffer);
-    }
+    public void BeginFrame(Matrix viewProjectionMatrix) => BeginFrame(viewProjectionMatrix, m_graphicsDevice.swapChainFrameBuffer);
 
     public void EndFrame()
     {
@@ -140,11 +125,11 @@ void main()
 
     public void Dispose()
     {
-        m_pipeline.Dispose();
         m_commandList.Dispose();
-        m_vertexBuffer.Dispose();
-        m_indexBuffer.Dispose();
-        m_vertexShader.Dispose();
-        m_fragmentShader.Dispose();
+        
+        // Quad
+        m_quadMesh.Dispose();
+        m_quadMaterial.Dispose();
+        m_quadResources.Dispose();
     }
 }

@@ -8,4 +8,4 @@ public struct ResourceSetBinding
     // public ITexture[] textures;
 }
 
-public interface IResourceSet;
+public interface IResourceSet : IDisposable;

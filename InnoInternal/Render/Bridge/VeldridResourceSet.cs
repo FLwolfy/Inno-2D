@@ -8,7 +8,6 @@ namespace InnoInternal.Render.Bridge;
 internal class VeldridResourceSet : IResourceSet
 {
     private readonly GraphicsDevice m_graphicsDevice;
-    private VeldridRSDescription m_innerDescription;
 
     internal ResourceSet inner { get; }
 
@@ -16,8 +15,8 @@ internal class VeldridResourceSet : IResourceSet
     {
         m_graphicsDevice = graphicsDevice;
 
-        m_innerDescription = ToVeldridRSDesc(binding);
-        inner = m_graphicsDevice.ResourceFactory.CreateResourceSet(ref m_innerDescription);
+        var innerDescription = ToVeldridRSDesc(binding);
+        inner = m_graphicsDevice.ResourceFactory.CreateResourceSet(ref innerDescription);
     }
     
     private VeldridRSDescription ToVeldridRSDesc(ResourceSetBinding binding)
@@ -58,5 +57,10 @@ internal class VeldridResourceSet : IResourceSet
         // TODO: Add support for other resource types (e.g., textures, samplers) here.
 
         return new ResourceLayoutDescription(elements.ToArray());
+    }
+    
+    public void Dispose()
+    {
+        inner.Dispose();
     }
 }

@@ -18,7 +18,7 @@ internal class VeldridShader : IShader
     public ShaderStage stage { get; }
     
     
-    public VeldridShader(GraphicsDevice graphicsDevice, Shader inner, ShaderStage stage)
+    private VeldridShader(GraphicsDevice graphicsDevice, Shader inner, ShaderStage stage)
     {
         m_graphicsDevice = graphicsDevice;
         

@@ -22,7 +22,8 @@ public abstract class EngineCore
         m_layerStack = new LayerStack();
         m_renderContext = new RenderContext
         (
-            new Renderer2D(m_gameShell.GetGraphicsDevice())
+            new Renderer2D(m_gameShell.GetGraphicsDevice()),
+            new RenderPassController()
         );
         
         // Initialization Callbacks
@@ -48,6 +49,7 @@ public abstract class EngineCore
         
         // Renderer Initialization
         m_renderContext.renderer.LoadResources();
+        m_renderContext.passController.LoadPasses();
     }
 
     private void OnSetup()

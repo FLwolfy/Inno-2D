@@ -1,6 +1,6 @@
 namespace InnoEngine.Graphics.RenderObject;
 
-public class Texture2D
+public class Texture
 {
     private int m_width;
     private int m_height;

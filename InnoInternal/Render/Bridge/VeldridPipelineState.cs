@@ -28,17 +28,12 @@ internal class VeldridPipelineState : IPipelineState
         m_innerDescription.Outputs = desc;
     }
 
-    public void Dispose()
-    {
-        inner.Dispose();
-    }
-
     private VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
     {
         var vertexShader = ((VeldridShader)desc.vertexShader).inner;
         var fragmentShader = ((VeldridShader)desc.fragmentShader).inner;
         var vertexLayoutDescPair = new[] { GenerateVertexLayoutFromType(desc.vertexLayoutType) };
-        var resourceLayouts = desc.resourceSetBindings.Length > 0 
+        var resourceLayouts = desc.resourceSetBindings?.Length > 0 
             ? desc.resourceSetBindings
                 .Select(t => m_graphicsDevice.ResourceFactory.CreateResourceLayout(VeldridResourceSet.GenerateResourceLayoutFromBinding(t)))
                 .ToArray() 
@@ -47,7 +42,7 @@ internal class VeldridPipelineState : IPipelineState
         return new GraphicsPipelineDescription
         {
             BlendState = BlendStateDescription.SingleAlphaBlend,
-            DepthStencilState = new DepthStencilStateDescription(false, false, ComparisonKind.Always),
+            DepthStencilState = new DepthStencilStateDescription(true, true, ComparisonKind.LessEqual),
             RasterizerState = RasterizerStateDescription.CullNone,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),
@@ -75,5 +70,10 @@ internal class VeldridPipelineState : IPipelineState
         }).ToArray();
 
         return new VertexLayoutDescription(elements);
+    }
+    
+    public void Dispose()
+    {
+        inner.Dispose();
     }
 }

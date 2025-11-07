@@ -11,5 +11,11 @@
         <ProjectReference Include="..\InnoBase\InnoBase.csproj" />
         <ProjectReference Include="..\InnoInternal\InnoInternal.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="**\Assets\**\*.*">
+            <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
     
 </Project>
