@@ -90,7 +90,8 @@ void main()
         {
             vertexShader = m_vertexShader,
             fragmentShader = m_fragmentShader,
-            vertexLayoutType = typeof(VertexPositionColor)
+            vertexLayoutType = typeof(VertexPositionColor),
+            resourceSetBindings = []
         };
         m_pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
 

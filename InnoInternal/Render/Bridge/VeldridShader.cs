@@ -119,14 +119,6 @@ internal class VeldridShader : IShader
                 target
             );
 
-            if (backend == GraphicsBackend.Metal)
-            {
-                return [
-                    AdjustMetalBindings(result.VertexShader, 1), 
-                    AdjustMetalBindings(result.FragmentShader, 1)
-                ];
-            }
-
             return [
                 result.VertexShader,
                 result.FragmentShader
@@ -134,23 +126,6 @@ internal class VeldridShader : IShader
         }
         
         throw new NotSupportedException($"Unsupported shader stage: {stage}");
-    }
-    
-    
-    private static string AdjustMetalBindings(string shaderCode, int offset = 1)
-    {
-        // NOTE: I have no idea why the resource binding buffer index always starts at 1 in Metal in Veldrid.
-        //       So we just offset all binding indices by 1.
-        //   By: Hsuan-Kai Liao
-        
-        string pattern = @"\[\[\s*(buffer|texture|sampler)\((\d+)\)\s*\]\]";
-        string result = Regex.Replace(shaderCode, pattern, match =>
-        {
-            string type = match.Groups[1].Value;
-            int index = int.Parse(match.Groups[2].Value);
-            return $"[[{type}({index + offset})]]";
-        });
-        return result;
     }
     
     internal static VeldridShaderStage ToVeldridShaderStage(InnoShaderStage stage)

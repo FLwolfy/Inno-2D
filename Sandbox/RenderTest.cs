@@ -48,13 +48,29 @@ internal class RenderTest
             WindowTitle = "Render Example"
         }; 
         m_window = VeldridStartup.CreateWindow(ref windowCi);
-        m_graphicsDevice = new VeldridGraphicsDevice(VeldridStartup.CreateGraphicsDevice(m_window, GraphicsBackend.Metal));
+        
+        var options = new GraphicsDeviceOptions(
+            debug: true,
+            swapchainDepthFormat: null,
+            syncToVerticalBlank: false,
+            resourceBindingModel: ResourceBindingModel.Improved,
+            preferDepthRangeZeroToOne: true,
+            preferStandardClipSpaceYDirection: true
+        );
+        
+        var innerGraphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window, options);
+        m_graphicsDevice = new VeldridGraphicsDevice(innerGraphicsDevice);
+
+        m_window.Resized += () =>
+        {
+            innerGraphicsDevice.MainSwapchain.Resize((uint)m_window.Width, (uint)m_window.Height);
+        };
     }
 
     public void Run()
     {
         CreateResources();
-        
+
         while (m_window.Exists)
         {
             m_window.PumpEvents();

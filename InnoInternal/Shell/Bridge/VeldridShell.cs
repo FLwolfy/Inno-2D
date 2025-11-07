@@ -44,12 +44,22 @@ internal class VeldridShell : IGameShell
         {
             WindowWidth = 1280,
             WindowHeight = 720,
-            WindowTitle = "ImGui Test",
+            WindowTitle = "InnoEngine",
             WindowInitialState = WindowState.Normal
         };
         
         m_window = VeldridStartup.CreateWindow(ref windowCi);
-        m_graphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window);
+        
+        var deviceOptions = new GraphicsDeviceOptions(
+            debug: false,
+            swapchainDepthFormat: null,
+            syncToVerticalBlank: false,
+            resourceBindingModel: ResourceBindingModel.Improved,
+            preferDepthRangeZeroToOne: true,
+            preferStandardClipSpaceYDirection: true
+        );
+        
+        m_graphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window, deviceOptions);
         m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(m_graphicsDevice);
         
         m_window.Resized += () =>
