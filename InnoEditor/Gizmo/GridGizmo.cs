@@ -50,7 +50,7 @@ public class GridGizmo : EditorGizmo
         
             if (showCoords)
             {
-                string label = $"{startCoords.y + yIndex * coordsIncrement.y:0.##}";
+                string label = $"{-(startCoords.y + yIndex * coordsIncrement.y):0.##}";
                 context.DrawText(new Vector2(startPos.x + 2, j + 2), label, color);
             }
         }

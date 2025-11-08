@@ -46,7 +46,7 @@ public class VeldridGraphicsDevice : IGraphicsDevice
 
     public IFrameBuffer CreateFrameBuffer(InnoFBDescription desc)
     {
-        throw new NotImplementedException();
+        return new VeldridFrameBuffer(m_graphicsDevice, desc);
     }
 
     public IResourceSet CreateResourceSet(ResourceSetBinding binding)
@@ -66,7 +66,7 @@ public class VeldridGraphicsDevice : IGraphicsDevice
 
     public ITexture CreateTexture(TextureDescription desc)
     {
-        throw new NotImplementedException();
+        return VeldridTexture.Create(m_graphicsDevice, desc);
     }
 
     public IPipelineState CreatePipelineState(PipelineStateDescription desc)

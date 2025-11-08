@@ -24,6 +24,7 @@ public abstract class EngineCore
         m_layerStack = new LayerStack();
         m_renderContext = new RenderContext
         (
+            m_gameShell.GetGraphicsDevice(),
             new Renderer2D(m_gameShell.GetGraphicsDevice()),
             IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid),
             new RenderPassController()

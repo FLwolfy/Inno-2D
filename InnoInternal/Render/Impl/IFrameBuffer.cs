@@ -4,10 +4,8 @@ namespace InnoInternal.Render.Impl;
 
 public struct FrameBufferDescription
 {
-    public int width;
-    public int height;
-    public int attachmentCount;
-    public bool hasDepth;
+    public ITexture? depthAttachment;
+    public ITexture[] colorAttachments;
 }
 
 
@@ -18,7 +16,4 @@ public interface IFrameBuffer : IDisposable
 
     ITexture GetAttachment(int index);
     ITexture? GetDepthAttachment();
-    
-    void Clear(Color clearColor);
-    void Resize(int width, int height);
 }

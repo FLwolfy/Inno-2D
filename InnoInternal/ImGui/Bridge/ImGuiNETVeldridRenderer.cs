@@ -99,14 +99,18 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
 
     public IntPtr BindTexture(ITexture texture)
     {
-        // TODO: Implement texture binding for Veldrid
-        throw new NotImplementedException();
+        if (texture is not VeldridTexture veldridTexture)
+            throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));
+        
+        return m_imGuiVeldridController.GetOrCreateImGuiBinding(m_graphicsDevice.ResourceFactory, veldridTexture.inner);
     }
     
     public void UnbindTexture(ITexture texture)
     {
-        // TODO: Implement texture unbinding for Veldrid
-        throw new NotImplementedException();
+        if (texture is not VeldridTexture veldridTexture)
+            throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));
+        
+        m_imGuiVeldridController.RemoveImGuiBinding(veldridTexture.inner);
     }
     
     private void SetupThemes()

@@ -11,7 +11,6 @@ public class Renderer2D : IDisposable
     private readonly ICommandList m_commandList;
     
     // Render Context 
-    private GameCamera m_currentCamera;
     private IFrameBuffer m_currentFrameBuffer;
 
     // Quad Resources
@@ -111,49 +110,50 @@ public class Renderer2D : IDisposable
         m_commandList.ClearColor(color);
     }
 
-    public void BeginFrame(GameCamera camera, IFrameBuffer target)
+    public void BeginFrame(Matrix viewProjectionMatrix, float? aspectRatio, IFrameBuffer? target)
     {
-        m_currentCamera = camera;
-        m_currentFrameBuffer = target;
-        
-        viewProjection = camera.viewMatrix * camera.projectionMatrix;
+        m_currentFrameBuffer = target ?? m_graphicsDevice.swapChainFrameBuffer;
+        viewProjection = viewProjectionMatrix;
         
         m_commandList.Begin();
-        m_commandList.SetFrameBuffer(target);
+        m_commandList.SetFrameBuffer(m_currentFrameBuffer);
         m_commandList.ClearColor(Color.BLACK);
 
-        float targetWidth = target.width;
-        float targetHeight = target.height;
-
-        float screenAspect = targetWidth / targetHeight;
-        float cameraAspect = camera.aspectRatio;
-
-        Rect viewportRect;
-
-        // Left Right
-        if (screenAspect > cameraAspect)
+        if (aspectRatio.HasValue)
         {
-            float newWidth = targetHeight * cameraAspect;
-            float xOffset = (targetWidth - newWidth) / 2f;
-            viewportRect = new Rect((int)xOffset, 0, (int)newWidth, (int)targetHeight);
-        }
+            float targetWidth = m_currentFrameBuffer.width;
+            float targetHeight = m_currentFrameBuffer.height;
+
+            float screenAspect = targetWidth / targetHeight;
+            float sourceAspect = aspectRatio.Value;
+
+            Rect viewportRect;
+
+            // Left Right
+            if (screenAspect > sourceAspect)
+            {
+                float newWidth = targetHeight * sourceAspect;
+                float xOffset = (targetWidth - newWidth) / 2f;
+                viewportRect = new Rect((int)xOffset, 0, (int)newWidth, (int)targetHeight);
+            }
         
-        // Top Bottom
-        else
-        {
-            float newHeight = targetWidth / cameraAspect;
-            float yOffset = (targetHeight - newHeight) / 2f;
-            viewportRect = new Rect(0, (int)yOffset, (int)targetWidth, (int)newHeight);
+            // Top Bottom
+            else
+            {
+                float newHeight = targetWidth / sourceAspect;
+                float yOffset = (targetHeight - newHeight) / 2f;
+                viewportRect = new Rect(0, (int)yOffset, (int)targetWidth, (int)newHeight);
+            }
+
+            m_commandList.SetViewPort(0, viewportRect);
+            m_commandList.SetScissorRect(0, viewportRect);
         }
 
-        m_commandList.SetViewPort(0, viewportRect);
-        m_commandList.SetScissorRect(0, viewportRect);
-        
-        m_commandList.ClearDepth(1.0f);
+        if (m_currentFrameBuffer.GetDepthAttachment() != null)
+        {
+            m_commandList.ClearDepth(1.0f);
+        }
     }
-
-    
-    public void BeginFrame(GameCamera camera) => BeginFrame(camera, m_graphicsDevice.swapChainFrameBuffer);
 
     public void EndFrame()
     {

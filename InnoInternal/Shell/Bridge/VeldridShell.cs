@@ -7,6 +7,8 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 
+using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
+using PixelFormat = Veldrid.PixelFormat;
 
 namespace InnoInternal.Shell.Bridge;
 
@@ -52,7 +54,7 @@ internal class VeldridShell : IGameShell
         
         var deviceOptions = new GraphicsDeviceOptions(
             debug: true,
-            swapchainDepthFormat: PixelFormat.R32_Float,
+            swapchainDepthFormat: VeldridTexture.ToVeldridPixelFormat(InnoPixelFormat.D32FloatS8UInt),
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,

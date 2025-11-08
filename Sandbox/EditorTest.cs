@@ -46,16 +46,16 @@ public class EditorTest
         
             // Object 1
             GameObject testObject = new GameObject("Test Object 1");
-            testObject.transform.worldPosition = new Vector3(320, 180, 0);
-            testObject.transform.worldScale = new Vector3(1f, 2f, 1f);
+            testObject.transform.worldPosition = new Vector3(250, 250, 0);
+            testObject.transform.worldScale = new Vector3(3f, 3f, 1f);
             testObject.AddComponent<SpriteRenderer>();
         
             // Object 2 - 5
             for (int i = 2; i <= 5; i++)
             {
                 GameObject to = new GameObject("Test Object" + i);
-                to.transform.worldPosition = new Vector3(150 * (i - 2), 0, 5);
-                to.transform.worldScale = new Vector3(10f, 10f, 1f);
+                to.transform.worldPosition = new Vector3(150 * (i - 2), 0, 0);
+                to.transform.worldScale = new Vector3(5f, 5f, 1f);
                 SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
                 sr.color = Color.BLACK;
             

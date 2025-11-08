@@ -7,7 +7,8 @@ using ImGuiNET;
 using InnoBase;
 using Veldrid;
 using Veldrid.Sdl2;
-using Vector2 = System.Numerics.Vector2;
+
+using SYSVector2 = System.Numerics.Vector2;
 
 namespace InnoInternal.ImGui.Bridge;
 
@@ -47,7 +48,7 @@ internal class ImGuiNETVeldridController : IDisposable
     private bool m_winKeyDown;
     private int m_windowWidth;
     private int m_windowHeight;
-    private readonly Vector2 m_scaleFactor = Vector2.One;
+    private readonly SYSVector2 m_scaleFactor = SYSVector2.One;
     
     // Window Delegate
     private Platform_CreateWindow m_createWindow = null!;
@@ -306,13 +307,13 @@ internal class ImGuiNETVeldridController : IDisposable
         if (window != null) Sdl2Native.SDL_ShowWindow(window.window.SdlWindowHandle);
     }
 
-    private unsafe void GetWindowPos(ImGuiViewportPtr vp, Vector2* outPos)
+    private unsafe void GetWindowPos(ImGuiViewportPtr vp, SYSVector2* outPos)
     {
         ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-        if (window != null) *outPos = new Vector2(window.window.Bounds.X, window.window.Bounds.Y);
+        if (window != null) *outPos = new SYSVector2(window.window.Bounds.X, window.window.Bounds.Y);
     }
 
-    private void SetWindowPos(ImGuiViewportPtr vp, Vector2 pos)
+    private void SetWindowPos(ImGuiViewportPtr vp, SYSVector2 pos)
     {
         ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
         if (window != null)
@@ -322,19 +323,19 @@ internal class ImGuiNETVeldridController : IDisposable
         }
     }
 
-    private void SetWindowSize(ImGuiViewportPtr vp, Vector2 size)
+    private void SetWindowSize(ImGuiViewportPtr vp, SYSVector2 size)
     {
         ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
         if (window != null) Sdl2Native.SDL_SetWindowSize(window.window.SdlWindowHandle, (int)size.X, (int)size.Y);
     }
 
-    private unsafe void GetWindowSize(ImGuiViewportPtr vp, Vector2* outSize)
+    private unsafe void GetWindowSize(ImGuiViewportPtr vp, SYSVector2* outSize)
     {
         ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
         if (window != null)
         {
             Rectangle bounds = window.window.Bounds;
-            *outSize = new Vector2(bounds.Width, bounds.Height);
+            *outSize = new SYSVector2(bounds.Width, bounds.Height);
         }
     }
 
@@ -602,7 +603,7 @@ internal class ImGuiNETVeldridController : IDisposable
             m_indexBuffer = gd.ResourceFactory.CreateBuffer(new BufferDescription((uint)(totalIbSize * 1.5f), BufferUsage.IndexBuffer | BufferUsage.Dynamic));
         }
 
-        Vector2 pos = drawData.DisplayPos;
+        SYSVector2 pos = drawData.DisplayPos;
         for (int i = 0; i < drawData.CmdListsCount; i++)
         {
             ImDrawListPtr cmdList = drawData.CmdLists[i];
@@ -739,24 +740,24 @@ internal class ImGuiNETVeldridController : IDisposable
             m_pSdlGetDisplayUsableBoundsT(i, &r);
             ImGuiPlatformMonitorPtr monitor = platformIo.Monitors[i];
             monitor.DpiScale = 1f;
-            monitor.MainPos = new Vector2(r.X, r.Y);
-            monitor.MainSize = new Vector2(r.Width, r.Height);
-            monitor.WorkPos = new Vector2(r.X, r.Y);
-            monitor.WorkSize = new Vector2(r.Width, r.Height);
+            monitor.MainPos = new SYSVector2(r.X, r.Y);
+            monitor.MainSize = new SYSVector2(r.Width, r.Height);
+            monitor.WorkPos = new SYSVector2(r.X, r.Y);
+            monitor.WorkSize = new SYSVector2(r.Width, r.Height);
         }
     }
     
     private void SetPerFrameImGuiData(float deltaSeconds)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
-        io.DisplaySize = new Vector2(
+        io.DisplaySize = new SYSVector2(
             m_windowWidth / m_scaleFactor.X,
             m_windowHeight / m_scaleFactor.Y);
         io.DisplayFramebufferScale = m_scaleFactor;
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
         
-        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new Vector2(m_mainWindow.X, m_mainWindow.Y);
-        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new Vector2(m_mainWindow.Width, m_mainWindow.Height);
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new SYSVector2(m_mainWindow.X, m_mainWindow.Y);
+        ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new SYSVector2(m_mainWindow.Width, m_mainWindow.Height);
     }
     
     #endregion
@@ -973,7 +974,7 @@ internal class ImGuiNETVeldridController : IDisposable
             io.MouseDown[2] = (buttons & 0b0100) != 0;
         }
 
-        io.MousePos = new Vector2(x, y);
+        io.MousePos = new SYSVector2(x, y);
         io.MouseWheel = snapshot.WheelDelta;
 
         IReadOnlyList<char> keyCharPresses = snapshot.KeyCharPresses;
