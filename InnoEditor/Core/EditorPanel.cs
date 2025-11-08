@@ -1,5 +1,5 @@
+using InnoEngine.Graphics;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Core;
 
@@ -11,5 +11,5 @@ public abstract class EditorPanel
     public virtual void OnClose() { }
     
     public abstract string title { get; }
-    internal abstract void OnGUI(IImGuiContext context, IRenderAPI renderAPI);
+    internal abstract void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext);
 }

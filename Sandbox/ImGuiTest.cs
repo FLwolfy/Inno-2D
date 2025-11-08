@@ -42,7 +42,7 @@ internal class ImGuiTest
             ImGui.ShowDemoWindow();
             
             imGuiRenderer.EndLayout();
-            
+
             // Swap Buffers
             shell.GetGraphicsDevice().SwapBuffers();
             imGuiRenderer.SwapExtraImGuiWindows();

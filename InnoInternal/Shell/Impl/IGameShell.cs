@@ -20,7 +20,7 @@ public interface IGameShell
     void Run();
     void SetWindowSize(int width, int height);
     void SetWindowResizable(bool resizable);
-    void SetOnResize(Action<int, int> onResize);
+    void SetOnResize(Action<int, int> onResize); // TODO: This should be replaced by OnEvent
     
 
     // Core lifecycle hooks

@@ -2,9 +2,9 @@ using InnoBase;
 using InnoEditor.Core;
 using InnoEditor.Gizmo;
 using InnoEditor.Utility;
+using InnoEngine.Graphics;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Impl;
 
 namespace InnoEditor.Panel;
 
@@ -17,48 +17,44 @@ public class SceneViewPanel : EditorPanel
     private static readonly int AXIS_INTERVAL = 100;
     private static readonly float AXIS_INTERVAL_SCALE_RATE = 0.5f;
     private static readonly Input.MouseButton MOUSE_BUTTON_PAN = Input.MouseButton.Left;
-    internal delegate bool SceneRenderPredicate(Matrix view, Matrix projection);
-    private readonly SceneRenderPredicate m_onSceneRender;
+    
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
     
-    private IRenderTarget? m_renderTarget;
-    private ITexture2D? m_renderTexture;
+    private IFrameBuffer? m_renderTarget;
     
     private int m_width = 0;
     private int m_height = 0;
     
-    internal SceneViewPanel(SceneRenderPredicate onSceneRender)
+    internal SceneViewPanel()
     {
-        m_onSceneRender = onSceneRender;
-        
         m_gridGizmo.showCoords = true;
         m_gridGizmo.color = AXIS_COLOR;
         m_gridGizmo.lineThickness = AXIS_THICKNESS;
     }
     
-    internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
+    internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
     {
         // Check if region changed
-        CheckRegionChange(context, renderAPI);
+        CheckRegionChange(imGuiContext, renderContext);
 
         // Handle editorCamera action
-        HandlePanZoom(context);
+        HandlePanZoom(imGuiContext);
 
         // render and display scene on new render target
-        RenderSceneToBuffer(renderAPI);
+        RenderSceneToBuffer(renderContext);
 
         // display on scene view
-        DrawScene(context);
+        DrawScene(imGuiContext);
         
         // Draw axis gizmo
-        DrawAxisGizmo(context);
+        DrawAxisGizmo(imGuiContext);
     }
 
-    private void CheckRegionChange(IImGuiContext context, IRenderAPI renderAPI)
+    private void CheckRegionChange(IImGuiContext imGuiContext, RenderContext renderContext)
     {
         // Get Available region
-        var available = context.GetContentRegionAvail();
+        var available = imGuiContext.GetContentRegionAvail();
         int newWidth = (int)Math.Max(available.x, 1);
         int newHeight = (int)Math.Max(available.y, 1);
         
@@ -70,54 +66,54 @@ public class SceneViewPanel : EditorPanel
             m_editorCamera2D.SetViewportSize(m_width, m_height);
 
             m_renderTarget?.Dispose();
-            m_renderTarget = renderAPI.renderContext.CreateRenderTarget((uint)m_width, (uint)m_height);
-            m_renderTexture = m_renderTarget.GetColorTexture();
+            // m_renderTarget = renderContext.renderContext.CreateRenderTarget((uint)m_width, (uint)m_height);
+            // m_renderTexture = m_renderTarget.GetColorTexture();
         }
     }
 
-    private void RenderSceneToBuffer(IRenderAPI renderAPI)
+    private void RenderSceneToBuffer(RenderContext renderContext)
     {
         if (m_renderTarget != null)
         {
-            renderAPI.renderContext.SetRenderTarget(m_renderTarget);
-            
-            m_onSceneRender.Invoke(m_editorCamera2D.viewMatrix, m_editorCamera2D.projectionMatrix);
-            
-            renderAPI.renderContext.SetRenderTarget(null);
+            // renderContext.renderContext.SetRenderTarget(m_renderTarget);
+            //
+            // m_onSceneRender.Invoke(m_editorCamera2D.viewMatrix, m_editorCamera2D.projectionMatrix);
+            //
+            // renderContext.renderContext.SetRenderTarget(null);
         }
     }
     
-    private void HandlePanZoom(IImGuiContext context)
+    private void HandlePanZoom(IImGuiContext imGuiContext)
     {
         Vector2 panDelta = Vector2.ZERO;
-        float zoomDelta = context.GetMouseWheel();
+        float zoomDelta = imGuiContext.GetMouseWheel();
 
-        if (context.IsWindowHovered() && (context.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f))
+        if (imGuiContext.IsWindowHovered() && (imGuiContext.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f))
         {
-            if (context.IsWindowFocused()) { panDelta = context.GetMouseDelta(); }
-            else { context.SetWindowFocus(); }
+            if (imGuiContext.IsWindowFocused()) { panDelta = imGuiContext.GetMouseDelta(); }
+            else { imGuiContext.SetWindowFocus(); }
         }
 
-        Vector2 windowPos = context.GetWindowPos();
-        Vector2 screenPos = context.GetCursorStartPos();
-        Vector2 mousePos = context.GetMousePosition();
+        Vector2 windowPos = imGuiContext.GetWindowPos();
+        Vector2 screenPos = imGuiContext.GetCursorStartPos();
+        Vector2 mousePos = imGuiContext.GetMousePosition();
         Vector2 localMousePos = mousePos - screenPos - windowPos;
 
-        if (context.IsWindowFocused())
+        if (imGuiContext.IsWindowFocused())
         {
             m_editorCamera2D.Update(panDelta, zoomDelta, localMousePos);
         }
     }
 
-    private void DrawScene(IImGuiContext context)
+    private void DrawScene(IImGuiContext imGuiContext)
     {
-        if (m_renderTexture != null)
-        {
-            context.Image(m_renderTexture, m_width, m_height);
-        }
+        // if (m_renderTexture != null)
+        // {
+        //     imGuiContext.Image(m_renderTexture, m_width, m_height);
+        // }
     }
     
-    private void DrawAxisGizmo(IImGuiContext context)
+    private void DrawAxisGizmo(IImGuiContext imGuiContext)
     {
         Vector2 axisOriginWorld = Vector2.Transform(Vector2.ZERO, m_editorCamera2D.GetScreenToWorldMatrix());
         float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;;
@@ -140,14 +136,14 @@ public class SceneViewPanel : EditorPanel
         Vector2 offsetWorld = new Vector2(offsetXWorld, offsetYWorld);
         Vector2 offset = Vector2.Transform(offsetWorld, m_editorCamera2D.GetWorldToScreenMatrix());
         
-        m_gridGizmo.startPos = context.GetWindowPos() + context.GetCursorStartPos();
+        m_gridGizmo.startPos = imGuiContext.GetWindowPos() + imGuiContext.GetCursorStartPos();
         m_gridGizmo.size = new Vector2(m_width, m_height);
         m_gridGizmo.offset = offset;
         m_gridGizmo.spacing = spacing;
         m_gridGizmo.startCoords = offsetWorld;
         m_gridGizmo.coordsIncrement = new Vector2(newAxisInterval, newAxisInterval);
         
-        m_gridGizmo.Draw(context);
+        m_gridGizmo.Draw(imGuiContext);
     }
 
 }

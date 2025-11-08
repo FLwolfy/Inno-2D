@@ -59,7 +59,15 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_window.FocusLost += () => currentWindow = null;
 
         SwapchainSource scSource = VeldridStartup.GetSwapchainSource(m_window);
-        SwapchainDescription scDesc = new SwapchainDescription(scSource, (uint)m_window.Width, (uint)m_window.Height, null, true, false);
+        SwapchainDescription scDesc = new SwapchainDescription(
+            scSource, 
+            (uint)m_window.Width, 
+            (uint)m_window.Height, 
+            m_graphicsDevice.SwapchainFramebuffer.OutputDescription.DepthAttachment?.Format,
+            true, 
+            false
+        );
+        
         m_swapchain = m_graphicsDevice.ResourceFactory.CreateSwapchain(scDesc);
         m_window.Resized += () => m_swapchain.Resize((uint)m_window.Width, (uint)m_window.Height);
 

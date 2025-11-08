@@ -1,33 +1,32 @@
 using InnoEditor.Utility;
+using InnoEngine.Graphics;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Core;
 
 public static class EditorManager
 {
-    private static readonly Dictionary<string, EditorPanel> WINDOWS = new();
+    private static readonly Dictionary<string, EditorPanel> PANELS = new();
     private static readonly EditorSelection SELECTION = new();
     
     // Manager Properties
-    public static EditorSelection selection => SELECTION;
+    public static EditorSelection selection => SELECTION; // TODO: Make this more robust later
 
-    public static void RegisterWindow(EditorPanel panel)
+    public static void RegisterPanel(EditorPanel panel)
     {
-        if (!WINDOWS.ContainsKey(panel.title))
-            WINDOWS.Add(panel.title, panel);
-        else throw new Exception("Window already registered");
+        if (!PANELS.TryAdd(panel.title, panel))
+            throw new Exception("Panel already registered");
     }
     
-    internal static void DrawPanels(IImGuiContext context, IRenderAPI renderAPI)
+    internal static void DrawPanels(IImGuiContext imGuiContext, RenderContext renderContext)
     {
-        foreach (var window in WINDOWS.Values)
+        foreach (var panel in PANELS.Values)
         {
-            if (!window.isOpen) continue;
+            if (!panel.isOpen) continue;
 
-            context.BeginWindow(window.title);
-            window.OnGUI(context, renderAPI);
-            context.EndWindow();
+            imGuiContext.BeginWindow(panel.title);
+            panel.OnGUI(imGuiContext, renderContext);
+            imGuiContext.EndWindow();
         }
     }
 }

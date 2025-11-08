@@ -1,7 +1,7 @@
 using InnoEditor.Core;
 using InnoEditor.GUI.InspectorGUI;
+using InnoEngine.Graphics;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Panel
 {
@@ -11,7 +11,7 @@ namespace InnoEditor.Panel
 
         internal InspectorPanel() {}
 
-        internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
+        internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
         {
             // TODO: Change this to any type that needs to show Inspector View.
             var selectedObject = EditorManager.selection.selectedObject;

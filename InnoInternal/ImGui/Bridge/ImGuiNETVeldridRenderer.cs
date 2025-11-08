@@ -38,7 +38,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
             m_window,
             m_graphicsDevice.MainSwapchain.Framebuffer.OutputDescription,
             ImGuiNETColorSpaceHandling.Legacy
-            );
+        );
         
         // Main Context
         mainMainContextPtr = ImGuiNET.ImGui.GetCurrentContext();
@@ -46,6 +46,9 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         // Virtual Context
         virtualContextPtr = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
+        
+        // ImGui Context Wrapper
+        context = new ImGuiNETContext(this);
         
         // Setups
         SetupThemes();

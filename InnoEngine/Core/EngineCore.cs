@@ -2,6 +2,7 @@ using InnoEngine.Core.Layer;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
+using InnoInternal.ImGui.Impl;
 using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
@@ -24,6 +25,7 @@ public abstract class EngineCore
         m_renderContext = new RenderContext
         (
             new Renderer2D(m_gameShell.GetGraphicsDevice()),
+            IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid),
             new RenderPassController()
         );
         
@@ -38,26 +40,30 @@ public abstract class EngineCore
         m_gameShell.SetOnEvent(OnEvent);
         m_gameShell.SetOnDraw(OnDraw);
         
-        // Close Callback
+        // Window Callback
+        m_gameShell.SetOnResize(m_renderContext.imGuiRenderer.OnWindowResize);
         m_gameShell.SetOnClose(AssetRegistry.SaveToDisk);
     }
     
     private void OnLoad()
     {
-        // Resource Initialization
+        // Asset Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
         
-        // Renderer Initialization
+        // Renderer Resource Load
         m_renderContext.renderer.LoadResources();
+        m_renderContext.imGuiRenderer.Initialize(m_gameShell.GetGraphicsDevice(), m_gameShell.GetWindowHolder());
         m_renderContext.passController.LoadPasses();
     }
 
     private void OnSetup()
     {
-        TypeCacheManager.Initialize();
         Setup(m_gameShell);
         RegisterLayers(m_layerStack);
+        
+        // Type Cache Initialization
+        TypeCacheManager.Initialize();
     }
 
     private void OnStep(float totalTime, float deltaTime)
@@ -84,6 +90,7 @@ public abstract class EngineCore
         
         // Swap Buffers
         m_gameShell.GetGraphicsDevice().SwapBuffers();
+        m_renderContext.imGuiRenderer.SwapExtraImGuiWindows();
     }
     
     /// <summary>
