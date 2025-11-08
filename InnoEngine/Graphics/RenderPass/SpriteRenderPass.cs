@@ -31,7 +31,6 @@ internal class SpriteRenderPass : IRenderPass
                     spriteRenderer.transform.worldPosition.x,
                     spriteRenderer.transform.worldPosition.y,
                     spriteRenderer.transform.worldPosition.z
-                    // spriteRenderer.renderDepth
                 ));
                 
                 var transform = scale * rotation * translation;

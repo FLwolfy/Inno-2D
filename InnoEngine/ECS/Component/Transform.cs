@@ -79,7 +79,7 @@ public class Transform : GameComponent
         get => m_localRotationZ;
         set
         {
-            if (m_localRotationZ != value)
+            if (Math.Abs(m_localRotationZ - value) > 0.0001f)
             {
                 m_localRotationZ = value;
                 m_localRotation = Quaternion.FromEulerAnglesXYZDegrees(new Vector3(0, 0, m_localRotationZ));
@@ -195,17 +195,17 @@ public class Transform : GameComponent
     /// Sets the parent transform.
     /// If worldPositionStays is true, keeps the world transform unchanged after reparenting.
     /// </summary>
-    public void SetParent(Transform? newParent, bool worldPositionStays = true)
+    public void SetParent(Transform? newParent, bool worldTransformStays = true)
     {
         if (parent == newParent)
             return;
 
         if (newParent != null && m_children.Contains(newParent))
             newParent.SetParent(parent);
-
+        
         UpdateIfDirty(); // Ensure current world transform is up to date
 
-        if (worldPositionStays)
+        if (worldTransformStays)
         {
             // Calculate new local transform to keep world transform same after reparent
             var currentWorldPos = worldPosition;

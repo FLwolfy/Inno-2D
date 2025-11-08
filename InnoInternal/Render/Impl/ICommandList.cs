@@ -19,4 +19,5 @@ public interface ICommandList : IDisposable
     void DrawIndexed(uint indexCount, uint startIndex = 0, int baseVertex = 0);
 
     void ClearColor(Color color);
+    void ClearDepth(float depth);
 }

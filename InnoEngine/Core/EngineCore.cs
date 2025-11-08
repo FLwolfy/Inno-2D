@@ -28,7 +28,7 @@ public abstract class EngineCore
         
         // Initialization Callbacks
         m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
-        m_gameShell.SetWindowResizable(true);
+        m_gameShell.SetWindowResizable(false);
         m_gameShell.SetOnLoad(OnLoad);
         m_gameShell.SetOnSetup(OnSetup);
         

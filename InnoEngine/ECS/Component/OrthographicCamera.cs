@@ -7,7 +7,7 @@ namespace InnoEngine.ECS.Component;
 /// </summary>
 public class OrthographicCamera : GameCamera
 {
-    private const float C_NEAR = -1f;
+    private const float C_NEAR = 0f;
     private const float C_FAR = 1f;
 
     private float m_size = 720f;

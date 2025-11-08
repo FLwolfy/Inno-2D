@@ -85,6 +85,11 @@ internal class VeldridCommandList : ICommandList
         inner.ClearColorTarget(0, new RgbaFloat(color.r, color.g, color.b, color.a));
     }
 
+    public void ClearDepth(float depth)
+    {
+        inner.ClearDepthStencil(depth);
+    }
+
     public void Dispose()
     {
         inner.Dispose();

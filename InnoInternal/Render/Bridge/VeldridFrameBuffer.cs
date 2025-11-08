@@ -8,8 +8,8 @@ internal class VeldridFrameBuffer : IFrameBuffer
 {
     private readonly GraphicsDevice m_graphicsDevice;
     
-    public int width { get; }
-    public int height { get; }
+    public int width => (int)inner.Width;
+    public int height => (int)inner.Height;
 
     internal Framebuffer inner { get; }
 

@@ -113,6 +113,7 @@ public class Renderer2D : IDisposable
         
         m_commandList.Begin();
         m_commandList.SetFrameBuffer(target);
+        m_commandList.ClearDepth(1.0f);
     }
     
     public void BeginFrame(Matrix viewProjectionMatrix) => BeginFrame(viewProjectionMatrix, m_graphicsDevice.swapChainFrameBuffer);

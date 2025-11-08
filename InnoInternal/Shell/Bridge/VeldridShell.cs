@@ -51,8 +51,8 @@ internal class VeldridShell : IGameShell
         m_window = VeldridStartup.CreateWindow(ref windowCi);
         
         var deviceOptions = new GraphicsDeviceOptions(
-            debug: false,
-            swapchainDepthFormat: PixelFormat.R32_Float,
+            debug: true,
+            swapchainDepthFormat: PixelFormat.R16_UNorm,
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,

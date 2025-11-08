@@ -42,7 +42,7 @@ internal class VeldridPipelineState : IPipelineState
         return new GraphicsPipelineDescription
         {
             BlendState = BlendStateDescription.SingleAlphaBlend,
-            DepthStencilState = new DepthStencilStateDescription(true, true, ComparisonKind.LessEqual),
+            DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
             RasterizerState = RasterizerStateDescription.CullNone,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),

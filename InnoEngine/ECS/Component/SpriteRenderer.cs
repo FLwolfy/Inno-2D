@@ -15,7 +15,21 @@ public class SpriteRenderer : GameBehavior
     private int m_layerDepth = 0;
     
     public override ComponentTag orderTag => ComponentTag.Render;
-    
+
+    protected override int Compare(GameComponent other)
+    {
+        if (other is SpriteRenderer sr)
+        {
+            var depth = (m_layerDepth + (float)((Math.Tanh(transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0)) / (MAX_LAYER_DEPTH + 1);
+            var otherDepth = (sr.m_layerDepth + (float)((Math.Tanh(sr.transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0)) / (MAX_LAYER_DEPTH + 1);
+            
+            // Higher depth renders on top, so we invert the comparison
+            return otherDepth.CompareTo(depth);
+        }
+        
+        return base.Compare(other);
+    }
+
     /// <summary>
     /// The sprite to render.
     /// </summary>
@@ -48,14 +62,7 @@ public class SpriteRenderer : GameBehavior
         {
             if (m_layerDepth == value) return;
             m_layerDepth = Mathematics.Clamp(value, 0, MAX_LAYER_DEPTH);
+            gameObject.scene.GetComponentManager().MarkSortDirty(this);
         }
     }
-
-    /// <summary>
-    /// Depth value used for rendering, calculated from layerDepth and worldPosition.z.
-    /// </summary>
-    internal float renderDepth =>
-        (m_layerDepth +
-         (float)((Math.Tanh(transform.worldPosition.z / MAX_LAYER_DEPTH) + 1.0) / 2.0)) /
-        (MAX_LAYER_DEPTH + 1);
 }
