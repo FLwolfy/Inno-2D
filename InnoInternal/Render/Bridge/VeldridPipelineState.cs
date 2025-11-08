@@ -39,16 +39,26 @@ internal class VeldridPipelineState : IPipelineState
                 .ToArray() 
             : [];
 
+        var rasterizerState = new RasterizerStateDescription(
+            FaceCullMode.None,
+            PolygonFillMode.Solid,
+            FrontFace.Clockwise,
+            depthClipEnabled: true,
+            scissorTestEnabled: true
+        );
+
         return new GraphicsPipelineDescription
         {
             BlendState = BlendStateDescription.SingleAlphaBlend,
             DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
-            RasterizerState = RasterizerStateDescription.CullNone,
+            RasterizerState = rasterizerState,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),
             ResourceLayouts = resourceLayouts,
             Outputs = m_graphicsDevice.SwapchainFramebuffer.OutputDescription
         };
+        
+        // TODO: Handle customized DepthStencilState and RasterizerState
     }
     
     private static VertexLayoutDescription GenerateVertexLayoutFromType(Type t)

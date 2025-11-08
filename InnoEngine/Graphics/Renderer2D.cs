@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoEngine.ECS;
 using InnoEngine.Graphics.RenderObject;
 using InnoInternal.Render.Impl;
 
@@ -9,13 +10,16 @@ public class Renderer2D : IDisposable
     private readonly IGraphicsDevice m_graphicsDevice;
     private readonly ICommandList m_commandList;
     
-    // World info
-    public Matrix viewProjection { get; private set; }
+    // Render Context 
+    private GameCamera m_currentCamera;
+    private IFrameBuffer m_currentFrameBuffer;
 
     // Quad Resources
     private Mesh m_quadMesh = null!;
     private Material m_quadMaterial = null!;
     private IResourceSet m_quadResources = null!;
+    
+    public Matrix viewProjection { get; private set; }
 
     public Renderer2D(IGraphicsDevice graphicsDevice)
     {
@@ -107,16 +111,49 @@ public class Renderer2D : IDisposable
         m_commandList.ClearColor(color);
     }
 
-    public void BeginFrame(Matrix viewProjectionMatrix, IFrameBuffer target)
+    public void BeginFrame(GameCamera camera, IFrameBuffer target)
     {
-        viewProjection = viewProjectionMatrix;
+        m_currentCamera = camera;
+        m_currentFrameBuffer = target;
+        
+        viewProjection = camera.viewMatrix * camera.projectionMatrix;
         
         m_commandList.Begin();
         m_commandList.SetFrameBuffer(target);
+        m_commandList.ClearColor(Color.BLACK);
+
+        float targetWidth = target.width;
+        float targetHeight = target.height;
+
+        float screenAspect = targetWidth / targetHeight;
+        float cameraAspect = camera.aspectRatio;
+
+        Rect viewportRect;
+
+        // Left Right
+        if (screenAspect > cameraAspect)
+        {
+            float newWidth = targetHeight * cameraAspect;
+            float xOffset = (targetWidth - newWidth) / 2f;
+            viewportRect = new Rect((int)xOffset, 0, (int)newWidth, (int)targetHeight);
+        }
+        
+        // Top Bottom
+        else
+        {
+            float newHeight = targetWidth / cameraAspect;
+            float yOffset = (targetHeight - newHeight) / 2f;
+            viewportRect = new Rect(0, (int)yOffset, (int)targetWidth, (int)newHeight);
+        }
+
+        m_commandList.SetViewPort(0, viewportRect);
+        m_commandList.SetScissorRect(0, viewportRect);
+        
         m_commandList.ClearDepth(1.0f);
     }
+
     
-    public void BeginFrame(Matrix viewProjectionMatrix) => BeginFrame(viewProjectionMatrix, m_graphicsDevice.swapChainFrameBuffer);
+    public void BeginFrame(GameCamera camera) => BeginFrame(camera, m_graphicsDevice.swapChainFrameBuffer);
 
     public void EndFrame()
     {

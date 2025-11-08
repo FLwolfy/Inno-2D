@@ -4,6 +4,7 @@ using InnoEngine.Core.Layer;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 using InnoEngine.Utility;
+using InnoInternal.Shell.Impl;
 
 namespace Sandbox;
 
@@ -19,9 +20,12 @@ public class RuntimeTest
     {
         private TestGameLayer m_gameLayer = null!;
         
-        protected override void Setup()
+        protected override void Setup(IGameShell gameShell)
         {
             m_gameLayer = new TestGameLayer();
+            
+            gameShell.SetWindowSize(1280, 720);
+            gameShell.SetWindowResizable(true);
         }
         protected override void RegisterLayers(LayerStack layerStack)
         {
@@ -55,7 +59,7 @@ public class RuntimeTest
         
             // Object 1
             m_testParentObject = new GameObject("Test Parent Object 1");
-            m_testParentObject.transform.worldPosition = new Vector3(100, 100, 1f);
+            m_testParentObject.transform.worldPosition = new Vector3(300, 100, 1f);
             m_testParentObject.transform.worldScale = new Vector3(1f, 1f, 1f);
             m_testParentObject.transform.localRotationZ = 45f;
             m_testParentObject.AddComponent<SpriteRenderer>();

@@ -8,6 +8,8 @@ public interface ICommandList : IDisposable
     void End();
 
     void SetFrameBuffer(IFrameBuffer frameBuffer);
+    void SetViewPort(uint frameBufferIndex, Rect viewPortArea);
+    void SetScissorRect(uint frameBufferIndex, Rect scissorRect);
     void SetVertexBuffer(IVertexBuffer vertexBuffer);
     void SetIndexBuffer(IIndexBuffer indexBuffer);
     void SetResourceSet(int setIndex, IResourceSet resourceSet);

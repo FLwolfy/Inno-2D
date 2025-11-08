@@ -34,6 +34,17 @@ internal class VeldridCommandList : ICommandList
             m_currentFrameBuffer = veldridFB.inner;
         }
     }
+    
+    public void SetViewPort(uint frameBufferIndex, Rect viewPortArea)
+    {
+        inner.SetViewport(frameBufferIndex, new Viewport(viewPortArea.x, viewPortArea.y, viewPortArea.width, viewPortArea.height, 0f, 1f));
+    }
+
+    public void SetScissorRect(uint frameBufferIndex, Rect scissorRect)
+    {
+        inner.SetScissorRect(frameBufferIndex, (uint)scissorRect.x, (uint)scissorRect.y, (uint)scissorRect.width, (uint)scissorRect.height);
+    }
+    
 
     public void SetVertexBuffer(IVertexBuffer vertexBuffer)
     {

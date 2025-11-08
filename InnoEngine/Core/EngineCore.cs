@@ -8,8 +8,9 @@ namespace InnoEngine.Core;
 
 public abstract class EngineCore
 {
-    private static readonly int WINDOW_WIDTH = 1920;
-    private static readonly int WINDOW_HEIGHT = 1080;
+    private static readonly int DEFAULT_WINDOW_WIDTH = 1920;
+    private static readonly int DEFAULT_WINDOW_HEIGHT = 1080;
+    private static readonly bool DEFAULT_WINDOW_RESIZABLE = false;
     
     private readonly IGameShell m_gameShell;
     private readonly LayerStack m_layerStack;
@@ -27,8 +28,8 @@ public abstract class EngineCore
         );
         
         // Initialization Callbacks
-        m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
-        m_gameShell.SetWindowResizable(false);
+        m_gameShell.SetWindowSize(DEFAULT_WINDOW_WIDTH,  DEFAULT_WINDOW_HEIGHT);
+        m_gameShell.SetWindowResizable(DEFAULT_WINDOW_RESIZABLE);
         m_gameShell.SetOnLoad(OnLoad);
         m_gameShell.SetOnSetup(OnSetup);
         
@@ -55,7 +56,7 @@ public abstract class EngineCore
     private void OnSetup()
     {
         TypeCacheManager.Initialize();
-        Setup();
+        Setup(m_gameShell);
         RegisterLayers(m_layerStack);
     }
 
@@ -96,7 +97,7 @@ public abstract class EngineCore
     /// <summary>
     /// Sets up the engine core.
     /// </summary>
-    protected abstract void Setup();
+    protected abstract void Setup(IGameShell gameShell);
 
     /// <summary>
     /// Registers engine layers.

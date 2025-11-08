@@ -3,10 +3,8 @@ using InnoEngine.Graphics;
 
 namespace InnoEngine.Core.Layer;
 
-public class GameLayer : Layer
+public class GameLayer() : Layer("GameLayer")
 {
-    public GameLayer() : base("GameLayer") { }
-
     public override void OnAttach()
     {
         // Start Scene Runtime
@@ -20,14 +18,12 @@ public class GameLayer : Layer
 
     public override void OnRender(RenderContext ctx)
     {
-        // Get Scene and Camera
-        var scene = SceneManager.GetActiveScene();
-        if (scene == null) { return; }
-        var camera = scene.GetCameraManager().mainCamera;
+        // Get Camera
+        var camera = SceneManager.GetActiveScene()?.GetCameraManager().mainCamera;
         if (camera == null) { return; }
         
         // Render Pipeline
-        ctx.renderer.BeginFrame(camera.viewMatrix * camera.projectionMatrix);
+        ctx.renderer.BeginFrame(camera);
         ctx.passController.RenderPasses(ctx);
         ctx.renderer.EndFrame();
     }

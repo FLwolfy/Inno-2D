@@ -1,5 +1,14 @@
 namespace InnoInternal.Render.Impl;
 
+public enum DepthStencilState
+{
+    Disabled,
+    DepthOnlyLessEqual,
+    DepthOnlyGreaterEqual,
+    DepthReadOnlyLessEqual,
+    DepthReadOnlyGreaterEqual
+}
+
 public struct PipelineStateDescription
 {
     public IShader vertexShader;
