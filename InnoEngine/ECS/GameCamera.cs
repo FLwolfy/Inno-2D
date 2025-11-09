@@ -11,6 +11,8 @@ public abstract class GameCamera : GameComponent
     private Matrix m_cachedViewMatrix;
     private Matrix m_cachedProjectionMatrix;
     private Rect m_cachedViewRect;
+    private float m_aspectRatio = 1.7777f;
+    
 
     /// <summary>
     /// Sets or gets whether this camera is the main camera in the scene.
@@ -19,6 +21,24 @@ public abstract class GameCamera : GameComponent
     {
         get => gameObject.scene.GetCameraManager().mainCamera == this;
         set { gameObject.scene.GetCameraManager().SetMainCamera(value ? this : null); }
+    }
+    
+    /// <summary>
+    /// The aspect ratio of the camera's view (width / height).
+    /// Default is 16:9 (1.7777).
+    /// This affects how the camera's view is rendered, especially in different screen resolutions.
+    /// </summary>
+    public float aspectRatio
+    {
+        get => m_aspectRatio;
+        set
+        {
+            if (MathF.Abs(m_aspectRatio - value) > 0.0001f)
+            {
+                m_aspectRatio = value;
+                MarkDirty();
+            }
+        }
     }
 
     /// <summary>
@@ -74,7 +94,7 @@ public abstract class GameCamera : GameComponent
         }
     }
 
-    protected abstract void RebuildMatrix(out Matrix view, out Matrix projection, out Rect viewRect);
+    protected abstract void RebuildMatrix(out Matrix view, out Matrix projection, out Rect visibleRect);
 
     public override void Awake()
     {

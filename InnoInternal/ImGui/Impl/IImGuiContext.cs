@@ -1,12 +1,12 @@
 using InnoBase;
-using InnoInternal.Resource.Impl;
+using InnoInternal.Render.Impl;
 
 namespace InnoInternal.ImGui.Impl;
 
 /// <summary>
 /// A encapsulated immeadiate-mode GUI interface
 /// </summary>
-internal interface IImGuiContext
+public interface IImGuiContext
 {
     // Menu
     bool BeginMainMenuBar();
@@ -101,7 +101,7 @@ internal interface IImGuiContext
     // Widget
     void Text(string text);
     void BulletText(string text);
-    void Image(ITexture2D texture, float width, float height);
+    void Image(ITexture texture, float width, float height);
     bool Selectable(string text);
     bool Button(string label);
     bool Checkbox(string label, ref bool value);

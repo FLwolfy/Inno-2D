@@ -113,17 +113,31 @@ public struct Matrix : IEquatable<Matrix>
             0,          0, (2 * far * near) * nf,     0);
     }
 
+    /// <summary>
+    /// Creates an orthographic projection matrix with the given width, height, near, and far planes.
+    /// This matrix maps the X and Y coordinates linearly to [-1, 1] (NDC),
+    /// and maps the Z coordinate linearly from [near, far] to [0, 1] (depth buffer range).
+    /// 
+    /// This is suitable for APIs like Veldrid/Direct3D/Vulkan where the depth buffer expects 0-1.
+    /// </summary>
+    /// <param name="width">The width of the orthographic view.</param>
+    /// <param name="height">The height of the orthographic view.</param>
+    /// <param name="near">The near plane in camera space.</param>
+    /// <param name="far">The far plane in camera space.</param>
+    /// <returns>A Matrix representing the orthographic projection.</returns>
     public static Matrix CreateOrthographic(float width, float height, float near, float far)
     {
-        float rl = 1f / width;
-        float tb = 1f / height;
-        float fn = 1f / (far - near);
+        float m00 = 2f / width;
+        float m11 = 2f / height;
+        float m22 = 1f / (far - near);
+        float m32 = -near / (far - near);
 
         return new Matrix(
-            2 * rl, 0,      0,              0,
-            0,      2 * tb, 0,              0,
-            0,      0,     -2 * fn,         0,
-           -0,     -0,     -(far + near) * fn, 1);
+            m00, 0,   0, 0,
+            0,   m11, 0, 0,
+            0,   0,   m22, 0,
+            0,   0,   m32, 1
+        );
     }
 
     public static Matrix CreateLookAt(Vector3 eye, Vector3 target, Vector3 up)

@@ -2,6 +2,24 @@ using InnoBase;
 
 namespace InnoEditor.Utility;
 
+/// <summary>
+/// Represents a 2D editor camera.
+/// </summary>
+/// <p>
+/// Notes:
+/// <list type="bullet">
+///   <item><description>The editor uses ImGui with a left-handed coordinate system for rendering:
+///       <list type="bullet">
+///           <item><description>Origin is at the top-left corner of the screen.</description></item>
+///           <item><description>X increases to the right.</description></item>
+///           <item><description>Y increases downward.</description></item>
+///       </list>
+///   </description></item>
+///   <item><description>This camera handles world-to-screen and screen-to-world conversions,
+///       including panning and zooming, and accounts for the Y-axis inversion between world and screen coordinates.</description></item>
+///   <item><description>World coordinates are typically Y-up, so conversions may invert Y to match ImGui.</description></item>
+/// </list>
+/// </p>
 public class EditorCamera2D
 {
     private float m_height;

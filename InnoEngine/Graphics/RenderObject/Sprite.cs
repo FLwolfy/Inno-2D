@@ -1,50 +1,40 @@
 using InnoBase;
-using InnoEngine.Resource;
-using InnoEngine.Resource.AssetType;
 
 namespace InnoEngine.Graphics.RenderObject;
 
-/// <summary>
-/// Stores texture and sprite-specific render data.
-/// </summary>
 public sealed class Sprite
 {
-    /// <summary>
-    /// The underlying 2D texture.
-    /// </summary>
-    public Texture2D texture { get; }
+    public Texture? texture { get; }
+    public Vector4 uv;
+    public Vector2 pivot;
+    
+    public Vector2 size;
 
-    /// <summary>
-    /// Optional rectangle defining the source region within the texture.
-    /// If null, the full texture is used.
-    /// </summary>
-    public Rect? sourceRect { get; }
-
-    /// <summary>
-    /// The pivot/origin point used when rendering this sprite.
-    /// </summary>
-    public Vector2 origin { get; }
-
-    /// <summary>
-    /// The width of the rendered sprite.
-    /// </summary>
-    public int width => sourceRect?.width ?? texture.width;
-
-    /// <summary>
-    /// The height of the rendered sprite.
-    /// </summary>
-    public int height => sourceRect?.height ?? texture.height;
-
-    /// <summary>
-    /// Initializes a new sprite with optional source region and origin.
-    /// </summary>
-    public Sprite(Texture2D? texture = null, Rect? sourceRect = null, Vector2? origin = null)
+    private Sprite(Texture? texture, Vector4 uv, Vector2 pivot, Vector2 size)
     {
-        this.texture = texture ?? AssetManager.Create<Texture2D>();
-        this.sourceRect = sourceRect;
-        this.origin = origin ?? new Vector2(width / 2f, height / 2f);
+        this.texture = texture;
+        this.uv = uv;
+        this.pivot = pivot;
+        this.size = size;
     }
 
-    public override string ToString() =>
-        $"Sprite({width}x{height}, Origin={origin}, SourceRect={(sourceRect?.ToString() ?? "Full")})";
+    public static Sprite FromTexture(Texture texture)
+    {
+        return new Sprite(
+            texture,
+            new Vector4(0, 0, 1, 1),
+            new Vector2(0.5f, 0.5f),
+            new Vector2(texture.width, texture.height)
+        );
+    }
+
+    public static Sprite SolidColor(Vector2 size)
+    {
+        return new Sprite(
+            null,
+            new Vector4(0, 0, 1, 1),
+            new Vector2(0.5f, 0.5f),
+            size
+        );
+    }
 }

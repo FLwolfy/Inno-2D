@@ -14,8 +14,8 @@ public abstract class GameComponent : Serializable, IComparable<GameComponent>
     public bool isActive { get; protected set; } = true;
     public bool hasAwakened { get; internal set; }
     public bool hasStarted { get; internal set; }
-    
-    public int CompareTo(GameComponent? other) => other == null ? 1 : orderTag.CompareTo(other.orderTag);
+
+    public int CompareTo(GameComponent? other) => other == null ? 1 : Compare(other);
     
     /// <summary>
     /// Initialize the gameComponent to bind it with its entity.

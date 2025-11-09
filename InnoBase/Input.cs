@@ -2,8 +2,7 @@ namespace InnoBase;
 
 public static class Input
 {
-    // 鼠标按键
-    public enum MouseButton : int
+    public enum MouseButton
     {
         Left = 0,
         Right = 1,
@@ -12,10 +11,8 @@ public static class Input
         XButton2 = 4
     }
 
-    // 常用键盘按键，参考Windows虚拟键码或者MonoGame Keys枚举
-    public enum KeyCode : int
+    public enum KeyCode
     {
-        // 字母
         A = 65,
         B = 66,
         C = 67,
@@ -43,7 +40,6 @@ public static class Input
         Y = 89,
         Z = 90,
 
-        // 数字键（主键盘区）
         D0 = 48,
         D1 = 49,
         D2 = 50,
@@ -55,20 +51,17 @@ public static class Input
         D8 = 56,
         D9 = 57,
 
-        // 功能键
         Escape = 27,
         Space = 32,
         Enter = 13,
         Tab = 9,
         Backspace = 8,
 
-        // 箭头键
         LeftArrow = 37,
         UpArrow = 38,
         RightArrow = 39,
         DownArrow = 40,
 
-        // 修饰键
         LeftShift = 160,
         RightShift = 161,
         LeftCtrl = 162,
@@ -76,7 +69,6 @@ public static class Input
         LeftAlt = 164,
         RightAlt = 165,
 
-        // 其他常用键
         CapsLock = 20,
         Insert = 45,
         Delete = 46,
@@ -85,7 +77,6 @@ public static class Input
         PageUp = 33,
         PageDown = 34,
 
-        // 小键盘数字键
         NumPad0 = 96,
         NumPad1 = 97,
         NumPad2 = 98,
@@ -100,7 +91,6 @@ public static class Input
         NumLock = 144,
         ScrollLock = 145,
 
-        // 功能键F1-F12
         F1 = 112,
         F2 = 113,
         F3 = 114,
@@ -114,18 +104,17 @@ public static class Input
         F11 = 122,
         F12 = 123,
 
-        // 其他符号键
         Plus = 187,          // '+' key
-        Minus = 189,         // '-' key
-        Equals = 187,        // '=' key
         Comma = 188,         // ',' key
+        Minus = 189,         // '-' key
         Period = 190,        // '.' key
         Slash = 191,         // '/' key
+        Tilde = 192,         // '`' key
         Backslash = 220,     // '\' key
         Semicolon = 186,     // ';' key
         Quote = 222,         // ''' key
         LeftBracket = 219,   // '[' key
-        RightBracket = 221,  // ']' key
-        Tilde = 192          // '`' key
+        RightBracket = 221   // ']' key
     }
+
 }

@@ -1,86 +1,97 @@
-using InnoEngine.ECS;
+using InnoBase;
+using InnoEngine.Core.Layer;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
-using InnoInternal.Render.Bridge;
-using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Bridge;
-using InnoInternal.Resource.Impl;
-using InnoInternal.Shell.Bridge;
+using InnoInternal.ImGui.Impl;
 using InnoInternal.Shell.Impl;
 
 namespace InnoEngine.Core;
 
 public abstract class EngineCore
 {
-    private static readonly int WINDOW_WIDTH = 1280;
-    private static readonly int WINDOW_HEIGHT = 720;
+    private static readonly int DEFAULT_WINDOW_WIDTH = 1920;
+    private static readonly int DEFAULT_WINDOW_HEIGHT = 1080;
+    private static readonly bool DEFAULT_WINDOW_RESIZABLE = false;
     
-    private readonly IGameShell m_gameShell = new MonoGameShell();
-    private readonly IRenderAPI m_renderAPI = new MonoGameRenderAPI();
-    private readonly IAssetLoader m_assetLoader = new MonoGameAssetLoader();
-    private readonly RenderSystem m_renderSystem = new();
+    private readonly IGameShell m_gameShell;
+    private readonly LayerStack m_layerStack;
+    private readonly RenderContext m_renderContext;
     
     protected EngineCore()
     {
+        // Initialize members
+        m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
+        m_layerStack = new LayerStack();
+        m_renderContext = new RenderContext
+        (
+            m_gameShell.GetGraphicsDevice(),
+            new Renderer2D(m_gameShell.GetGraphicsDevice()),
+            IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid),
+            new RenderPassController()
+        );
+        
         // Initialization Callbacks
-        m_gameShell.SetWindowSize(WINDOW_WIDTH,  WINDOW_HEIGHT);
-        m_gameShell.SetWindowResizable(true);
-        m_gameShell.SetOnLoad(Load);
-        m_gameShell.SetOnSetup(() =>
-        {
-            Setup();
-            TypeCacheManager.Initialize();
-            SceneManager.BeginRuntime();
-        });
+        m_gameShell.SetWindowSize(DEFAULT_WINDOW_WIDTH,  DEFAULT_WINDOW_HEIGHT);
+        m_gameShell.SetWindowResizable(DEFAULT_WINDOW_RESIZABLE);
+        m_gameShell.SetOnLoad(OnLoad);
+        m_gameShell.SetOnSetup(OnSetup);
         
         // Update Callbacks
-        m_gameShell.SetOnStep(Step);
-        m_gameShell.SetOnDraw(Draw);
+        m_gameShell.SetOnStep(OnStep);
+        m_gameShell.SetOnEvent(OnEvent);
+        m_gameShell.SetOnDraw(OnDraw);
         
-        // Close Callback
+        // Window Callback
         m_gameShell.SetOnClose(AssetRegistry.SaveToDisk);
     }
     
-    private void Load()
+    private void OnLoad()
     {
-        // Resource Initialization
+        // Asset Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        AssetManager.RegisterLoader(m_assetLoader);
         
-        // Render Initialization
-        m_renderAPI.Initialize(m_gameShell.GetGraphicsDevice());
-        m_renderSystem.Initialize(m_renderAPI);
-        m_renderSystem.LoadPasses();
+        // Renderer Resource Load
+        m_renderContext.renderer.LoadResources();
+        m_renderContext.imGuiRenderer.Initialize(m_gameShell.GetGraphicsDevice(), m_gameShell.GetWindow());
+        m_renderContext.passController.LoadPasses();
     }
 
-    private void Step(float totalTime, float deltaTime)
+    private void OnSetup()
+    {
+        Setup(m_gameShell);
+        RegisterLayers(m_layerStack);
+        
+        // Type Cache Initialization
+        TypeCacheManager.Initialize();
+    }
+
+    private void OnStep(float totalTime, float deltaTime)
     {
         // Time Update
         Time.Update(totalTime, deltaTime);
         
-        // Scene Update
-        SceneManager.GetActiveScene()?.Update();
+        // Layer Update
+        m_layerStack.OnUpdate();
     }
 
-    private void Draw(float deltaTime)
+    private void OnEvent(Event e)
+    {
+        m_layerStack.OnEvent(e);
+    }
+
+    private void OnDraw(float deltaTime)
     {
         // Render Time Update
         Time.RenderUpdate(deltaTime);
         
-        // Get Scene and Camera
-        var scene = SceneManager.GetActiveScene();
-        if (scene == null) { return; }
-        var camera = scene.GetCameraManager().mainCamera;
-        if (camera == null) { return; }
+        // Layer Render
+        m_layerStack.OnRender(m_renderContext);
         
-        // Render Pipeline
-        m_renderAPI.context.viewMatrix = camera.viewMatrix;
-        m_renderAPI.context.projectionMatrix = camera.projectionMatrix;
-        m_renderSystem.Begin();
-        m_renderSystem.RenderPasses();
-        m_renderSystem.End();
+        // Swap Buffers
+        m_gameShell.GetGraphicsDevice().SwapBuffers();
+        m_renderContext.imGuiRenderer.SwapExtraImGuiWindows();
     }
     
     /// <summary>
@@ -94,5 +105,10 @@ public abstract class EngineCore
     /// <summary>
     /// Sets up the engine core.
     /// </summary>
-    protected abstract void Setup();
+    protected abstract void Setup(IGameShell gameShell);
+
+    /// <summary>
+    /// Registers engine layers.
+    /// </summary>
+    protected abstract void RegisterLayers(LayerStack layerStack);
 }

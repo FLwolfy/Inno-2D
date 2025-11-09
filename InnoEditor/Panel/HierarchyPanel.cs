@@ -1,6 +1,7 @@
 using InnoBase;
 using InnoEditor.Core;
 using InnoEngine.ECS;
+using InnoEngine.Graphics;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
@@ -15,19 +16,19 @@ public class HierarchyPanel : EditorPanel
     
     internal HierarchyPanel() {}
 
-    internal override void OnGUI(IImGuiContext context, IRenderAPI renderAPI)
+    internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
     {
         // Draw Scene root
-        DrawSceneObjectRoot(context);
+        DrawSceneObjectRoot(imGuiContext);
 
         // Draw root GameObjects
         foreach (var obj in SceneManager.GetActiveScene()!.GetAllRootGameObjects())
         {
-            DrawRootGameObject(context, obj);
+            DrawRootGameObject(imGuiContext, obj);
         }
         
         // Handle Menu Events
-        HandleMenu(context);
+        HandleMenu(imGuiContext);
 
         // Apply delayed actions
         while (m_pendingGUIUpdateAction.Count > 0)

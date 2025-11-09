@@ -1,5 +1,6 @@
+using InnoInternal.ImGui.Bridge;
 using InnoInternal.Render.Impl;
-using InnoInternal.Resource.Impl;
+using InnoInternal.Shell.Impl;
 
 namespace InnoInternal.ImGui.Impl;
 
@@ -8,26 +9,37 @@ namespace InnoInternal.ImGui.Impl;
 /// Responsible for handling frame lifecycle, rendering ImGui draw data,
 /// and binding textures for use in ImGui.
 /// </summary>
-internal interface IImGuiRenderer
+public interface IImGuiRenderer
 {
-    void Initialize(object windowHolder);
+    void Initialize(IGraphicsDevice graphicsDevice, IWindow windowHolder);
+
+    /// <summary>
+    /// Swaps extra windows between the main and virtual ImGui contexts.
+    /// </summary>
+    void SwapExtraImGuiWindows();
     
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
     /// </summary>
-    void BeginLayout(float deltaTime);
+    void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer);
 
     /// <summary>
     /// Ends the ImGui frame and finalizes draw data.
     /// </summary>
     void EndLayout();
-
+    
     /// <summary>
     /// Binds a texture for use by ImGui and returns a texture ID handle.
     /// </summary>
     /// <param name="texture">The texture to bind.</param>
     /// <returns>An IntPtr handle used by ImGui to reference this texture.</returns>
-    IntPtr BindTexture(ITexture2D texture);
+    IntPtr BindTexture(ITexture texture);
+    
+    /// <summary>
+    /// Unbinds a previously bound texture from ImGui.
+    /// </summary>
+    /// <param name="texture">The texture to unbind.</param>
+    void UnbindTexture(ITexture texture);
     
     /// <summary>
     /// Gets the associated ImGui context abstraction.
@@ -43,4 +55,18 @@ internal interface IImGuiRenderer
     /// Gets the pointer to the virtual ImGui context.
     /// </summary>
     IntPtr virtualContextPtr { get; }
+    
+    // Create Shell
+    enum ImGuiRendererType { Veldrid }
+    
+    static IImGuiRenderer CreateRenderer(ImGuiRendererType rendererType)
+    {
+        return rendererType switch
+        {
+            ImGuiRendererType.Veldrid => new ImGuiNETVeldridRenderer(),
+            
+            // Default case to handle unsupported shell types
+            _ => throw new NotSupportedException($"ImGuiRenderer type {rendererType} is not supported.")
+        };
+    }
 }

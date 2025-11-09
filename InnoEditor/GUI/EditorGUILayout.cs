@@ -23,22 +23,19 @@ public static class EditorGUILayout
     
     private static IImGuiContext m_context = null!;
 
-    internal static void Initialize(IImGuiContext context)
-    {
-        m_context = context;
-    }
-
     #region Lifecycles
 
     /// <summary>
     /// Reset auto ID.
     /// </summary>
-    public static void BeginFrame()
+    public static void BeginFrame(IImGuiContext context)
     {
         if (m_frameBegin)
         {
             throw new InvalidOperationException("BeginFrame() can only be called once.");
         }
+        
+        m_context = context;
 
         m_autoID = 0;
         m_autoMeasureID = 0;

@@ -1,23 +1,37 @@
+using InnoBase;
+using InnoInternal.Render.Impl;
+using InnoInternal.Shell.Bridge;
+
 namespace InnoInternal.Shell.Impl;
 
-internal interface IGameShell
+public interface IGameShell
 {
-    // Callbacks
-    void SetOnLoad(Action callback);
-    void SetOnSetup(Action callback);
-    void SetOnStep(Action<float, float> callback); // totalTime, deltaTime
-    void SetOnDraw(Action<float> callback);        // deltaTime
-    void SetOnClose(Action callback);
-    
-    // Window Events
-    void SetWindowResizable(bool enable);
-    void SetWindowSize(int width, int height);
-    void SetOnWindowSizeChanged(Action<int, int> callback);
+    public enum ShellType { Veldrid }
 
-    // Render Objects
-    // TODO: Change the following to specific types
-    object GetGraphicsDevice();
-    object GetWindowHolder();
-    
+    static IGameShell CreateShell(ShellType type)
+    {
+        return type switch
+        {
+            ShellType.Veldrid => new VeldridShell(),
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    // Window & App Controls
     void Run();
+    void SetWindowSize(int width, int height);
+    void SetWindowResizable(bool resizable);
+    
+
+    // Core lifecycle hooks
+    void SetOnLoad(Action onLoad);
+    void SetOnSetup(Action onSetup);
+    void SetOnStep(Action<float, float> onStep);
+    void SetOnEvent(Action<Event> onEvent); // TODO: Define event type
+    void SetOnDraw(Action<float> onDraw);
+    void SetOnClose(Action onClose);
+
+    // Provide handles for Editor
+    IGraphicsDevice GetGraphicsDevice();
+    IWindow GetWindow();
 }

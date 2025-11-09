@@ -1,7 +1,7 @@
+
 using InnoBase;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
-using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderPass;
 
@@ -12,43 +12,35 @@ internal class SpriteRenderPass : IRenderPass
 {
     public RenderPassTag tag => RenderPassTag.Sprite;
 
-    public void Render(IRenderAPI api)
+    public void Render(RenderContext ctx)
     {
-        api.spriteBatch.Begin();
-
-        var renderers = SceneManager.GetActiveScene()!.GetComponentManager().GetAll<SpriteRenderer>();
-        foreach (var r in renderers)
+        var scene = SceneManager.GetActiveScene();
+        if (scene == null) { return; }
+        
+        foreach (var spriteRenderer in scene.GetComponentManager().GetAll<SpriteRenderer>())
         {
-            if (!r.isActive) continue;
-
-            var cmd = r.GenerateRenderCommand();
-
-            var sprite = cmd.sprite;
-            var position = cmd.position;
-            var scale = cmd.scale;
-
-            float width = sprite.width * scale.x;
-            float height = sprite.height * scale.y;
-
-            var destinationRect = new Rect(
-                (int)position.x, 
-                (int)-position.y, // Flip Y for correct rendering
-
-                (int)width, 
-                (int)height);
-
-            api.spriteBatch.DrawQuad(
-                destinationRect,
-                sprite.sourceRect,
-                sprite.texture.texture2DImpl,
-                cmd.color,
-                cmd.rotation,
-                cmd.depth,
-                cmd.origin
-            );
+            if (spriteRenderer.sprite.texture == null)
+            {
+                var scale = Matrix.CreateScale(new Vector3(
+                    spriteRenderer.sprite.size.x * spriteRenderer.transform.worldScale.x,
+                    spriteRenderer.sprite.size.y * spriteRenderer.transform.worldScale.y,
+                    spriteRenderer.transform.worldScale.z
+                ));
+                var rotation = Matrix.CreateFromQuaternion(spriteRenderer.transform.worldRotation);
+                var translation = Matrix.CreateTranslation(new Vector3(
+                    spriteRenderer.transform.worldPosition.x,
+                    spriteRenderer.transform.worldPosition.y,
+                    spriteRenderer.transform.worldPosition.z
+                ));
+                
+                var transform = scale * rotation * translation;
+                var color = spriteRenderer.color * spriteRenderer.opacity;
+                
+                ctx.renderer.DrawQuad(transform, color);
+            }
+            
+            // TODO: Support texture rendering logic here.
         }
-
-        api.spriteBatch.End();
     }
 
 }
