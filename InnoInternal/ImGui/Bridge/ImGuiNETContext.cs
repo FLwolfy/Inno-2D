@@ -199,6 +199,7 @@ internal class ImGuiNETContext : IImGuiContext
     // IO
     public bool IsMouseDown(int button) => ImGuiNET.ImGui.GetIO().MouseDown[button];
     public bool IsMouseClicked(int button) => ImGuiNET.ImGui.GetIO().MouseClicked[button];
+    public bool IsMouseDragging(int button) => ImGuiNET.ImGui.IsMouseDragging((ImGuiNET.ImGuiMouseButton)button);
     public float GetMouseWheel() => ImGuiNET.ImGui.GetIO().MouseWheel;
     public Vector2 GetMouseDelta() => new Vector2(ImGuiNET.ImGui.GetIO().MouseDelta.X, ImGuiNET.ImGui.GetIO().MouseDelta.Y);
     public Vector2 GetMousePosition() => new Vector2(ImGuiNET.ImGui.GetIO().MousePos.X, ImGuiNET.ImGui.GetIO().MousePos.Y);

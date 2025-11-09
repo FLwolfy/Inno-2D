@@ -285,6 +285,7 @@ public interface IImGuiContext
     // IO
     bool IsMouseDown(int button);
     bool IsMouseClicked(int button);
+    bool IsMouseDragging(int button);
     float GetMouseWheel();
     Vector2 GetMouseDelta();
     Vector2 GetMousePosition();
