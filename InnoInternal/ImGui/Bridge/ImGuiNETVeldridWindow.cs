@@ -15,7 +15,7 @@ public class ImGuiNETVeldridWindow : IDisposable
     private readonly Sdl2Window m_window;
     private readonly Swapchain m_swapchain;
     
-    public Sdl2Window mainWindow => m_window;
+    public Sdl2Window window => m_window;
     public Swapchain swapchain => m_swapchain;
     public ImGuiViewportPtr viewportPtr => m_viewportPtr;
 
