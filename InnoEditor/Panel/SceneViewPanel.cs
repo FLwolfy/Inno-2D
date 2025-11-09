@@ -124,8 +124,10 @@ public class SceneViewPanel : EditorPanel
         Vector2 screenPos = imGuiContext.GetCursorStartPos();
         Vector2 mousePos = imGuiContext.GetMousePosition();
         Vector2 localMousePos = mousePos - screenPos - windowPos;
-        
-        if (localMousePos.y > 0 && imGuiContext.IsWindowHovered() && (imGuiContext.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f))
+
+        bool isMouseInContent = localMousePos.y > 0 && imGuiContext.IsWindowHovered();
+        bool isPanning = imGuiContext.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f;
+        if (isMouseInContent && isPanning)
         {
             if (imGuiContext.IsWindowFocused()) { panDelta = imGuiContext.GetMouseDelta(); }
             else { imGuiContext.SetWindowFocus(); }

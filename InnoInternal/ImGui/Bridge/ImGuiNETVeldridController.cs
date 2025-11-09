@@ -743,13 +743,18 @@ internal class ImGuiNETVeldridController : IDisposable
         SetPerFrameImGuiData(deltaSeconds);
         
         // Inputs
-        UpdateImGuiGlobalMouseInput(mainWindowSnapshot);
-        UpdateMouseCursor();
+        UpdateImGuiGlobalMouseButtonInput(mainWindowSnapshot);
+        UpdateImGuiMouseWheelInput(mainWindowSnapshot);
         UpdateImGuiKeyInput(mainWindowSnapshot);
+        
         foreach (var extraWindowSnapshot in extraWindowSnapshots)
         {
+            UpdateImGuiMouseWheelInput(extraWindowSnapshot);
             UpdateImGuiKeyInput(extraWindowSnapshot);
         }
+        
+        // Cursor
+        UpdateMouseCursor();
         
         // Monitor
         UpdateMonitors();
@@ -965,7 +970,7 @@ internal class ImGuiNETVeldridController : IDisposable
         }
     }
 
-    private void UpdateImGuiGlobalMouseInput(InputSnapshot mainWindowSnapShot)
+    private void UpdateImGuiGlobalMouseButtonInput(InputSnapshot mainWindowSnapShot)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
         
@@ -1009,7 +1014,12 @@ internal class ImGuiNETVeldridController : IDisposable
         }
         
         io.MousePos = new SYSVector2(x, y);
-        io.MouseWheel = mainWindowSnapShot.WheelDelta;
+    }
+
+    private void UpdateImGuiMouseWheelInput(InputSnapshot snapshot)
+    {
+        ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
+        io.MouseWheel = snapshot.WheelDelta == 0 ? io.MouseWheel : snapshot.WheelDelta;
     }
     
     private void UpdateImGuiKeyInput(InputSnapshot snapshot)
