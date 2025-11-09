@@ -2,7 +2,7 @@ namespace InnoBase;
 
 public static class Input
 {
-    public enum MouseButton : int
+    public enum MouseButton
     {
         Left = 0,
         Right = 1,
@@ -11,7 +11,7 @@ public static class Input
         XButton2 = 4
     }
 
-    public enum KeyCode : int
+    public enum KeyCode
     {
         A = 65,
         B = 66,
@@ -105,17 +105,16 @@ public static class Input
         F12 = 123,
 
         Plus = 187,          // '+' key
-        Minus = 189,         // '-' key
-        Equals = 187,        // '=' key
         Comma = 188,         // ',' key
+        Minus = 189,         // '-' key
         Period = 190,        // '.' key
         Slash = 191,         // '/' key
+        Tilde = 192,         // '`' key
         Backslash = 220,     // '\' key
         Semicolon = 186,     // ';' key
         Quote = 222,         // ''' key
         LeftBracket = 219,   // '[' key
-        RightBracket = 221,  // ']' key
-        Tilde = 192          // '`' key
+        RightBracket = 221   // ']' key
     }
 
 }

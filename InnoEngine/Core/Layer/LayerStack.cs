@@ -1,4 +1,5 @@
 
+using InnoBase;
 using InnoEngine.Graphics;
 
 namespace InnoEngine.Core.Layer;
@@ -54,7 +55,7 @@ public class LayerStack
         }
     }
 
-    public void OnEvent(object e)
+    public void OnEvent(Event e)
     {
         for (int i = m_layers.Count - 1; i >= 0; i--)
         {

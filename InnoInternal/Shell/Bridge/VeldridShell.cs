@@ -3,10 +3,7 @@ using InnoBase;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
-using InnoInternal.Window.Bridge;
-using InnoInternal.Window.Impl;
 using Veldrid;
-using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 
 using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
@@ -18,7 +15,6 @@ internal class VeldridShell : IGameShell
     private Action? m_onLoad;
     private Action? m_onSetup;
     private Action<float, float>? m_onStep;
-    private Action<Event>? m_onEvent;
     private Action<float>? m_onDraw;
     private Action? m_onClose;
 
@@ -34,7 +30,7 @@ internal class VeldridShell : IGameShell
     public void SetOnLoad(Action onLoad) => m_onLoad = onLoad;
     public void SetOnSetup(Action onSetup) => m_onSetup = onSetup;
     public void SetOnStep(Action<float, float> onStep) => m_onStep = onStep;
-    public void SetOnEvent(Action<Event> onEvent) => m_onEvent = onEvent;
+    public void SetOnEvent(Action<Event> onEvent) => m_windowVeldrid.OnEvent += onEvent;
     public void SetOnDraw(Action<float> onDraw) => m_onDraw = onDraw;
     public void SetOnClose(Action onClose) => m_onClose = onClose;
 
@@ -83,8 +79,13 @@ internal class VeldridShell : IGameShell
             float delta = (float)(now - m_lastTime);
             m_lastTime = now;
 
+            // Inputs
+            m_windowVeldrid.PumpEvents();
+            
+            // Logic Step
             m_onStep?.Invoke((float)now, delta);
-            // m_onEvent?.Invoke(m_window.PumpEvents()); TODO: Check event timing
+            
+            // Render
             m_onDraw?.Invoke(delta);
         }
 

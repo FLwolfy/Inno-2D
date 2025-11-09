@@ -1,4 +1,6 @@
-namespace InnoInternal.Window.Impl;
+using InnoBase;
+
+namespace InnoInternal.Shell.Impl;
 
 public interface IWindow
 {
@@ -13,8 +15,7 @@ public interface IWindow
     void Hide();
     void Close();
 
-    event Action? OnResize;
-    event Action? OnClose;
+    event Action<Event> OnEvent;
 
     void PumpEvents();
 }

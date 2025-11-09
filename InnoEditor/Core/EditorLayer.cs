@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoEditor.GUI;
 using InnoEditor.GUI.InspectorGUI;
 using InnoEditor.GUI.PropertyGUI;
@@ -23,6 +24,11 @@ public class EditorLayer() : Layer("EditorLayer")
         EditorManager.RegisterPanel(new SceneViewPanel());
         EditorManager.RegisterPanel(new HierarchyPanel());
         EditorManager.RegisterPanel(new InspectorPanel());
+    }
+
+    public override void OnEvent(Event e)
+    {
+        Console.WriteLine(e.type);
     }
 
     public override void OnUpdate()

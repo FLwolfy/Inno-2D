@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoEngine.Core.Layer;
 using InnoEngine.Graphics;
 using InnoEngine.Resource;
@@ -75,7 +76,7 @@ public abstract class EngineCore
         m_layerStack.OnUpdate();
     }
 
-    private void OnEvent(object e)
+    private void OnEvent(Event e)
     {
         m_layerStack.OnEvent(e);
     }

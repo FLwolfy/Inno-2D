@@ -1,3 +1,4 @@
+using InnoBase;
 using InnoEngine.ECS;
 using InnoEngine.Graphics;
 
@@ -9,6 +10,10 @@ public class GameLayer() : Layer("GameLayer")
     {
         // Start Scene Runtime
         SceneManager.BeginRuntime();
+    }
+
+    public override void OnEvent(Event e)
+    {
     }
 
     public override void OnUpdate()

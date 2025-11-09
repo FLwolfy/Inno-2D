@@ -6,8 +6,8 @@ using Veldrid.Sdl2;
 
 using ImGuiNET;
 using InnoInternal.Render.Bridge;
-using InnoInternal.Window.Bridge;
-using InnoInternal.Window.Impl;
+using InnoInternal.Shell.Bridge;
+using InnoInternal.Shell.Impl;
 using SYSVector4 = System.Numerics.Vector4;
 
 namespace InnoInternal.ImGui.Bridge;
@@ -17,7 +17,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     // Graphics
     private GraphicsDevice m_graphicsDevice = null!;
     private CommandList m_commandList = null!;
-    private Sdl2Window m_window = null!;
+    private VeldridSdl2Window m_veldridWindow = null!;
     private ImGuiNETVeldridController m_imGuiVeldridController = null!;
     
     // Properties
@@ -34,10 +34,10 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         m_graphicsDevice = device.inner;
         m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
-        m_window = window.inner;
+        m_veldridWindow = window;
         m_imGuiVeldridController = new ImGuiNETVeldridController(
             m_graphicsDevice,
-            m_window,
+            m_veldridWindow.inner,
             m_graphicsDevice.MainSwapchain.Framebuffer.OutputDescription,
             ImGuiNETColorSpaceHandling.Legacy
         );
@@ -74,12 +74,12 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         // Virtual Context
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
-        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_window.Width, m_window.Height);
+        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_veldridWindow.width, m_veldridWindow.height);
         ImGuiNET.ImGui.NewFrame();
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
-        m_imGuiVeldridController.Update(deltaTime, m_window.PumpEvents(), m_imGuiVeldridController.PumpExtraWindowInputs()); // TODO: Handle Events
+        m_imGuiVeldridController.Update(deltaTime, m_veldridWindow.innerSnapshot, m_imGuiVeldridController.PumpExtraWindowInputs());
         
         // Docking
         ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
