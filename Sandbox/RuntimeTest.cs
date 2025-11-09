@@ -37,11 +37,11 @@ public class RuntimeTest
     {
         private GameObject m_mainTestObj = null!;
         
-        private bool shouldRotate = false;
+        private bool m_shouldRotate = false;
         
         public override void OnUpdate()
         {
-            if (shouldRotate)
+            if (m_shouldRotate)
             {
                 m_mainTestObj.transform.localRotationZ += Time.deltaTime * 100f;
             }
@@ -57,7 +57,7 @@ public class RuntimeTest
 
                 if (keyEvent!.key == Input.KeyCode.R && !keyEvent!.repeat)
                 {
-                    shouldRotate = true;
+                    m_shouldRotate = true;
                 }
             }
             else if (e.type == EventType.KeyReleased)
@@ -66,7 +66,7 @@ public class RuntimeTest
 
                 if (keyEvent!.key == Input.KeyCode.R)
                 {
-                    shouldRotate = false;
+                    m_shouldRotate = false;
                 }
             }
         }
