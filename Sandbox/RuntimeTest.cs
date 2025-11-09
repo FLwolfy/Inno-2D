@@ -35,11 +35,11 @@ public class RuntimeTest
     
     private class TestGameLayer : GameLayer
     {
-        private GameObject m_testParentObject = null!;
+        private GameObject m_mainTestObj = null!;
         
         public override void OnUpdate()
         {
-            m_testParentObject.transform.localRotationZ += Time.deltaTime * 100f;
+            m_mainTestObj.transform.localRotationZ += Time.deltaTime * 100f;
             
             base.OnUpdate();
         }
@@ -58,23 +58,21 @@ public class RuntimeTest
             camera.size = 720f;
         
             // Object 1
-            m_testParentObject = new GameObject("Test Parent Object 1");
-            m_testParentObject.transform.worldPosition = new Vector3(300, 100, 1f);
-            m_testParentObject.transform.worldScale = new Vector3(1f, 1f, 1f);
-            m_testParentObject.transform.localRotationZ = 45f;
-            m_testParentObject.AddComponent<SpriteRenderer>();
-        
-            // Object 2 - 5
-            for (int i = 2; i <= 5; i++)
-            {
-                GameObject to = new GameObject("Test Object" + i);
-                to.transform.worldPosition = new Vector3(150 * (i - 2), 0, 0f);
-                to.transform.worldScale = new Vector3(5f, 5f, 1f);
-                SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
-                sr.color = Color.BLACK;
+            m_mainTestObj = new GameObject("Test Object 1");
+            m_mainTestObj.transform.worldPosition = new Vector3(0, 0, 1);
+            m_mainTestObj.transform.worldScale = new Vector3(100f, 100f, 1f);
+            m_mainTestObj.transform.localRotationZ = 45;
+            var mainSR = m_mainTestObj.AddComponent<SpriteRenderer>();
+            mainSR.layerDepth = 1;
+
+            // TODO: DEBUG: Why Depth test not applied on Metal
             
-                to.transform.SetParent(m_testParentObject.transform);
-            }
+            // Object 2
+            GameObject to = new GameObject("Test Object" + 2);
+            to.transform.worldPosition = new Vector3(0, 0, 0f);
+            to.transform.worldScale = new Vector3(50f, 50f, 1f);
+            SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
+            sr.color = Color.BLACK;
             
             // Scene Begin Runtime
             base.OnAttach();

@@ -11,10 +11,10 @@ internal static class Program
         // ImGuiTest it = new ImGuiTest();
         // it.Run();
         
-        // RuntimeTest runtimeTest = new RuntimeTest();
-        // runtimeTest.Run();
+        RuntimeTest runtimeTest = new RuntimeTest();
+        runtimeTest.Run();
         
-        EditorTest editorTest = new EditorTest();
-        editorTest.Run();
+        // EditorTest editorTest = new EditorTest();
+        // editorTest.Run();
     }
 }

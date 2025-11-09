@@ -22,6 +22,7 @@ public class SceneViewPanel : EditorPanel
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
 
     private ITexture? m_renderTexture;
+    private ITexture? m_depthTexture;
     private IFrameBuffer? m_renderTarget;
     
     private int m_width = 0;
@@ -62,44 +63,50 @@ public class SceneViewPanel : EditorPanel
         // if region change, reset
         if (newWidth != m_width || newHeight != m_height || m_renderTarget == null)
         {
-            // Update size
-            m_width = newWidth;
-            m_height = newHeight;
-            m_editorCamera2D.SetViewportSize(m_width, m_height);
-
-            // Recreate render target
-            m_renderTexture?.Dispose();
-            m_renderTarget?.Dispose();
-
-            var renderTexDesc = new TextureDescription
-            {
-                width = m_width,
-                height = m_height,
-                format = PixelFormat.B8G8R8A8UNorm,
-                usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
-                dimension = TextureDimension.Texture2D
-            };
-            
-            var depthTexDesc = new TextureDescription
-            {
-                width = m_width,
-                height = m_height,
-                format = PixelFormat.D32FloatS8UInt,
-                usage = TextureUsage.DepthStencil,
-                dimension = TextureDimension.Texture2D
-            };
-            
-            var depthTexture = renderContext.graphicsDevice.CreateTexture(depthTexDesc);
-            m_renderTexture = renderContext.graphicsDevice.CreateTexture(renderTexDesc);
-            
-            var renderTargetDesc = new FrameBufferDescription
-            {
-                depthAttachment = depthTexture,
-                colorAttachments = [m_renderTexture]
-            };
-            
-            m_renderTarget = renderContext.graphicsDevice.CreateFrameBuffer(renderTargetDesc);
+            RecreateRenderTarget(renderContext, newWidth, newHeight);
         }
+    }
+
+    private void RecreateRenderTarget(RenderContext renderContext, int width, int height)
+    {
+        // Update size
+        m_width = width;
+        m_height = height;
+        m_editorCamera2D.SetViewportSize(m_width, m_height);
+
+        // Recreate render target
+        m_depthTexture?.Dispose();
+        m_renderTexture?.Dispose();
+        m_renderTarget?.Dispose();
+
+        var renderTexDesc = new TextureDescription
+        {
+            width = m_width,
+            height = m_height,
+            format = PixelFormat.B8G8R8A8UNorm,
+            usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
+            dimension = TextureDimension.Texture2D
+        };
+            
+        var depthTexDesc = new TextureDescription
+        {
+            width = m_width,
+            height = m_height,
+            format = PixelFormat.D32FloatS8UInt,
+            usage = TextureUsage.DepthStencil,
+            dimension = TextureDimension.Texture2D
+        };
+            
+        m_depthTexture = renderContext.graphicsDevice.CreateTexture(depthTexDesc);
+        m_renderTexture = renderContext.graphicsDevice.CreateTexture(renderTexDesc);
+            
+        var renderTargetDesc = new FrameBufferDescription
+        {
+            depthAttachment = m_depthTexture,
+            colorAttachments = [m_renderTexture]
+        };
+            
+        m_renderTarget = renderContext.graphicsDevice.CreateFrameBuffer(renderTargetDesc);
     }
 
     private void RenderSceneToBuffer(RenderContext renderContext)

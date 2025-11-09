@@ -46,8 +46,9 @@ public class EditorTest
         
             // Object 1
             GameObject testObject = new GameObject("Test Object 1");
-            testObject.transform.worldPosition = new Vector3(250, 250, 0);
-            testObject.transform.worldScale = new Vector3(3f, 3f, 1f);
+            testObject.transform.worldPosition = new Vector3(0, 0, 0);
+            testObject.transform.worldScale = new Vector3(100f, 100f, 1f);
+            testObject.transform.localRotationZ = 45;
             testObject.AddComponent<SpriteRenderer>();
         
             // Object 2 - 5
@@ -55,7 +56,7 @@ public class EditorTest
             {
                 GameObject to = new GameObject("Test Object" + i);
                 to.transform.worldPosition = new Vector3(150 * (i - 2), 0, 0);
-                to.transform.worldScale = new Vector3(5f, 5f, 1f);
+                to.transform.worldScale = new Vector3(50f, 50f, 1f);
                 SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
                 sr.color = Color.BLACK;
             
