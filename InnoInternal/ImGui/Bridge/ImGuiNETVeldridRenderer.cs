@@ -6,6 +6,8 @@ using Veldrid.Sdl2;
 
 using ImGuiNET;
 using InnoInternal.Render.Bridge;
+using InnoInternal.Window.Bridge;
+using InnoInternal.Window.Impl;
 using SYSVector4 = System.Numerics.Vector4;
 
 namespace InnoInternal.ImGui.Bridge;
@@ -23,16 +25,16 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
     public IntPtr mainMainContextPtr { get; private set; }
     public IntPtr virtualContextPtr { get; private set; }
     
-    public unsafe void Initialize(IGraphicsDevice graphicsDevice, object windowHolder)
+    public unsafe void Initialize(IGraphicsDevice graphicsDevice, IWindow windowHolder)
     {
         if (graphicsDevice is not VeldridGraphicsDevice device)
             throw new ArgumentException("Expected a Veldrid GraphicsDevice.", nameof(graphicsDevice));
-        if (windowHolder is not Sdl2Window window)
+        if (windowHolder is not VeldridSdl2Window window)
             throw new ArgumentException("Expected a Sdl2Window.", nameof(windowHolder));
         
         m_graphicsDevice = device.inner;
         m_commandList = m_graphicsDevice.ResourceFactory.CreateCommandList();
-        m_window = window;
+        m_window = window.inner;
         m_imGuiVeldridController = new ImGuiNETVeldridController(
             m_graphicsDevice,
             m_window,
@@ -56,11 +58,20 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
 
     public void SwapExtraImGuiWindows()
     {
-        m_imGuiVeldridController.SwapExtraWindows(m_graphicsDevice);
+        m_imGuiVeldridController.SwapExtraWindowBuffers(m_graphicsDevice);
     }
 
-    public void BeginLayout(float deltaTime)
+    public void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer)
     {
+        // Begin Render
+        m_commandList.Begin();
+        m_commandList.SetFramebuffer(frameBuffer switch
+        {
+            null => m_graphicsDevice.SwapchainFramebuffer,
+            VeldridFrameBuffer fb => fb.inner,
+            _ => throw new ArgumentException("Expected a VeldridFrameBuffer.", nameof(frameBuffer))
+        });
+        
         // Virtual Context
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
         ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_window.Width, m_window.Height);
@@ -68,7 +79,7 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
-        m_imGuiVeldridController.Update(deltaTime, m_window.PumpEvents());
+        m_imGuiVeldridController.Update(deltaTime, m_window.PumpEvents(), m_imGuiVeldridController.PumpExtraWindowInputs()); // TODO: Handle Events
         
         // Docking
         ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
@@ -84,17 +95,9 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
         
         // Render
-        m_commandList.Begin();
-        m_commandList.SetFramebuffer(m_graphicsDevice.MainSwapchain.Framebuffer);
-        m_commandList.ClearColorTarget(0, RgbaFloat.Black);
         m_imGuiVeldridController.Render(m_graphicsDevice, m_commandList);
         m_commandList.End();
         m_graphicsDevice.SubmitCommands(m_commandList);
-    }
-
-    public void OnWindowResize(int width, int height)
-    {
-        m_imGuiVeldridController.WindowResized(width, height);
     }
 
     public IntPtr BindTexture(ITexture texture)

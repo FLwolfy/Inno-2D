@@ -82,7 +82,8 @@ public class Renderer2D : IDisposable
             vertexShader = vertexShader,
             fragmentShader = fragmentShader,
             vertexLayoutType = typeof(RenderVertexLayout.VertexPosition),
-            resourceSetBindings = [resourceSetBinding]
+            depthStencilState = DepthStencilState.DepthOnlyLessEqual,
+            resourceLayoutSpecifiers = [resourceSetBinding]
         };
         var pipeline = m_graphicsDevice.CreatePipelineState(pipelineDesc);
 

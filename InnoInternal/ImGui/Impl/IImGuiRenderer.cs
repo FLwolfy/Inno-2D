@@ -1,5 +1,6 @@
 using InnoInternal.ImGui.Bridge;
 using InnoInternal.Render.Impl;
+using InnoInternal.Window.Impl;
 
 namespace InnoInternal.ImGui.Impl;
 
@@ -10,7 +11,7 @@ namespace InnoInternal.ImGui.Impl;
 /// </summary>
 public interface IImGuiRenderer
 {
-    void Initialize(IGraphicsDevice graphicsDevice, object windowHolder);
+    void Initialize(IGraphicsDevice graphicsDevice, IWindow windowHolder);
 
     /// <summary>
     /// Swaps extra windows between the main and virtual ImGui contexts.
@@ -20,18 +21,13 @@ public interface IImGuiRenderer
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
     /// </summary>
-    void BeginLayout(float deltaTime);
+    void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer);
 
     /// <summary>
     /// Ends the ImGui frame and finalizes draw data.
     /// </summary>
     void EndLayout();
     
-    /// <summary>
-    /// Handles resizing of the window.
-    /// </summary>
-    void OnWindowResize(int width, int height);
-
     /// <summary>
     /// Binds a texture for use by ImGui and returns a texture ID handle.
     /// </summary>

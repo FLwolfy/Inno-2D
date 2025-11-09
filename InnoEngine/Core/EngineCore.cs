@@ -42,7 +42,6 @@ public abstract class EngineCore
         m_gameShell.SetOnDraw(OnDraw);
         
         // Window Callback
-        m_gameShell.SetOnResize(m_renderContext.imGuiRenderer.OnWindowResize);
         m_gameShell.SetOnClose(AssetRegistry.SaveToDisk);
     }
     
@@ -54,7 +53,7 @@ public abstract class EngineCore
         
         // Renderer Resource Load
         m_renderContext.renderer.LoadResources();
-        m_renderContext.imGuiRenderer.Initialize(m_gameShell.GetGraphicsDevice(), m_gameShell.GetWindowHolder());
+        m_renderContext.imGuiRenderer.Initialize(m_gameShell.GetGraphicsDevice(), m_gameShell.GetWindow());
         m_renderContext.passController.LoadPasses();
     }
 

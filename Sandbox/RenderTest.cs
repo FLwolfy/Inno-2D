@@ -153,7 +153,8 @@ internal class RenderTest
             vertexShader = vertexShader,
             fragmentShader = fragmentShader,
             vertexLayoutType = typeof(VertexPositionColor),
-            resourceSetBindings = [resourceSetBinding]
+            depthStencilState = DepthStencilState.DepthOnlyLessEqual,
+            resourceLayoutSpecifiers = [resourceSetBinding]
         };
 
         m_resourceSet = m_graphicsDevice.CreateResourceSet(resourceSetBinding);

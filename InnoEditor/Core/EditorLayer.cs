@@ -31,7 +31,7 @@ public class EditorLayer() : Layer("EditorLayer")
 
     public override void OnRender(RenderContext ctx)
     {
-        ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime);
+        ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, null);
         EditorGUILayout.BeginFrame(ctx.imGuiRenderer.context);
         EditorManager.DrawPanels(ctx.imGuiRenderer.context, ctx);
         EditorGUILayout.EndFrame();

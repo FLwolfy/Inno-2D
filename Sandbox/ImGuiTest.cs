@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using System.Numerics;
+using ImGuiNET;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Shell.Impl;
 
@@ -6,6 +7,8 @@ namespace Sandbox;
 
 internal class ImGuiTest
 {
+    private Vector3 testVect3;
+    
     public void Run()
     {
         var shell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
@@ -13,20 +16,15 @@ internal class ImGuiTest
         shell.SetWindowResizable(true);
         
         var imGuiRenderer = IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid);
-        
-        shell.SetOnResize((width, height) =>
-        {
-            imGuiRenderer.OnWindowResize(width, height);
-        });
 
         shell.SetOnLoad(() =>
         {
-            imGuiRenderer.Initialize(shell.GetGraphicsDevice(), shell.GetWindowHolder());
+            imGuiRenderer.Initialize(shell.GetGraphicsDevice(), shell.GetWindow());
         });
         
         shell.SetOnDraw(deltaTime =>
         {
-            imGuiRenderer.BeginLayout(deltaTime);
+            imGuiRenderer.BeginLayout(deltaTime, null);
             
             // Simple Window (Cannot be docked onto the main window)
             {
@@ -35,7 +33,7 @@ internal class ImGuiTest
             
             // Normal Window (Can be docked onto the main window)
             ImGui.Begin("Normal Window");
-            ImGui.Text("Hello from another window!");
+            ImGui.InputFloat3("test Vec3", ref testVect3);
             ImGui.End();
             
             // Demo Window

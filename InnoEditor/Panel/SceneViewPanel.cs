@@ -68,7 +68,6 @@ public class SceneViewPanel : EditorPanel
             m_editorCamera2D.SetViewportSize(m_width, m_height);
 
             // Recreate render target
-            // TODO: This should always match the GraphicsDevice
             m_renderTexture?.Dispose();
             m_renderTarget?.Dispose();
 

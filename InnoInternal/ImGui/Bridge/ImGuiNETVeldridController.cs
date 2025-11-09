@@ -9,6 +9,7 @@ using Veldrid;
 using Veldrid.Sdl2;
 
 using SYSVector2 = System.Numerics.Vector2;
+using VeldridMouseEvent = Veldrid.MouseEvent;
 
 namespace InnoInternal.ImGui.Bridge;
 
@@ -102,6 +103,11 @@ internal class ImGuiNETVeldridController : IDisposable
         m_mainWindow = mainWindow;
         m_windowWidth = mainWindow.Width;
         m_windowHeight = mainWindow.Height;
+        mainWindow.Resized += () =>
+        {
+            m_windowWidth = mainWindow.Width;
+            m_windowHeight = mainWindow.Height;
+        };
 
         IntPtr context = ImGuiNET.ImGui.CreateContext();
         ImGuiNET.ImGui.SetCurrentContext(context);
@@ -380,15 +386,6 @@ internal class ImGuiNETVeldridController : IDisposable
         }
 
         if (window != null) window.window.Title = System.Text.Encoding.ASCII.GetString(titlePtr, count);
-    }
-    
-    /// <summary>
-    /// Resize the renderer's output window.
-    /// </summary>
-    public void WindowResized(int width, int height)
-    {
-        m_windowWidth = width;
-        m_windowHeight = height;
     }
     
     #endregion
@@ -678,8 +675,29 @@ internal class ImGuiNETVeldridController : IDisposable
             idxOffset += cmdList.IdxBuffer.Size;
         }
     }
+
+    public InputSnapshot[] PumpExtraWindowInputs()
+    {
+        ImVector<ImGuiViewportPtr> viewports = ImGuiNET.ImGui.GetPlatformIO().Viewports;
+        var snapshots = new List<InputSnapshot>();
+
+        for (int i = 1; i < viewports.Size; i++)
+        {
+            ImGuiViewportPtr v = viewports[i];
+            var window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(v.PlatformUserData).Target;
+
+            if (window != null)
+            {
+                InputSnapshot snapshot = window.PumpEvents();
+                snapshots.Add(snapshot);
+            }
+        }
+
+        return snapshots.ToArray();
+    }
+
     
-    public void SwapExtraWindows(GraphicsDevice gd)
+    public void SwapExtraWindowBuffers(GraphicsDevice gd)
     {
         ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
         ImGuiNETVeldridWindow? focusWindow = ImGuiNETVeldridWindow.currentWindow;
@@ -708,7 +726,7 @@ internal class ImGuiNETVeldridController : IDisposable
     /// <summary>
     /// Updates ImGui input and IO configuration state.
     /// </summary>
-    public void Update(float deltaSeconds, InputSnapshot snapshot)
+    public void Update(float deltaSeconds, InputSnapshot mainWindowSnapshot, InputSnapshot[] extraWindowSnapshots)
     {
         if (m_frameBegun)
         {
@@ -716,8 +734,17 @@ internal class ImGuiNETVeldridController : IDisposable
         }
         
         SetPerFrameImGuiData(deltaSeconds);
-        UpdateImGuiInput(snapshot);
+        
+        // Inputs
+        UpdateImGuiGlobalMouseInput(mainWindowSnapshot);
         UpdateMouseCursor();
+        UpdateImGuiKeyInput(mainWindowSnapshot);
+        foreach (var extraWindowSnapshot in extraWindowSnapshots)
+        {
+            UpdateImGuiKeyInput(extraWindowSnapshot);
+        }
+        
+        // Monitor
         UpdateMonitors();
         
         m_frameBegun = true;
@@ -930,16 +957,16 @@ internal class ImGuiNETVeldridController : IDisposable
                 }
         }
     }
-    
-    private void UpdateImGuiInput(InputSnapshot snapshot)
+
+    private void UpdateImGuiGlobalMouseInput(InputSnapshot mainWindowSnapShot)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
-
-        // Determine if any of the mouse buttons were pressed during this snapshot period, even if they are no longer held.
+        
+        // Mouse: Determine if any of the mouse buttons were pressed during this snapshot period, even if they are no longer held.
         bool leftPressed = false;
         bool middlePressed = false;
         bool rightPressed = false;
-        foreach (MouseEvent me in snapshot.MouseEvents)
+        foreach (VeldridMouseEvent me in mainWindowSnapShot.MouseEvents)
         {
             if (me.Down)
             {
@@ -957,14 +984,14 @@ internal class ImGuiNETVeldridController : IDisposable
                 }
             }
         }
-
-        io.MouseDown[0] = leftPressed || snapshot.IsMouseDown(MouseButton.Left);
-        io.MouseDown[1] = middlePressed || snapshot.IsMouseDown(MouseButton.Right);
-        io.MouseDown[2] = rightPressed || snapshot.IsMouseDown(MouseButton.Middle);
-
+        
+        io.MouseDown[0] = leftPressed || mainWindowSnapShot.IsMouseDown(MouseButton.Left);
+        io.MouseDown[1] = middlePressed || mainWindowSnapShot.IsMouseDown(MouseButton.Right);
+        io.MouseDown[2] = rightPressed || mainWindowSnapShot.IsMouseDown(MouseButton.Middle);
+        
         m_pSdlGetGlobalMouseState ??=
             Sdl2Native.LoadFunction<SdlGetGlobalMouseStateT>("SDL_GetGlobalMouseState");
-
+        
         int x, y;
         unsafe
         {
@@ -973,23 +1000,28 @@ internal class ImGuiNETVeldridController : IDisposable
             io.MouseDown[1] = (buttons & 0b0010) != 0;
             io.MouseDown[2] = (buttons & 0b0100) != 0;
         }
-
+        
         io.MousePos = new SYSVector2(x, y);
-        io.MouseWheel = snapshot.WheelDelta;
+        io.MouseWheel = mainWindowSnapShot.WheelDelta;
+    }
+    
+    private void UpdateImGuiKeyInput(InputSnapshot snapshot)
+    {
+        ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
 
         IReadOnlyList<char> keyCharPresses = snapshot.KeyCharPresses;
         foreach (var c in keyCharPresses)
         {
             io.AddInputCharacter(c);
         }
-
+    
         foreach (var keyEvent in snapshot.KeyEvents)
         {
             if (TryMapKey(keyEvent.Key, out ImGuiKey imGuiKey))
             {
                 io.AddKeyEvent(imGuiKey, keyEvent.Down);
             }
-
+    
             switch (keyEvent.Key)
             {
                 case Key.ControlLeft: m_controlDown = keyEvent.Down; break;
@@ -998,19 +1030,11 @@ internal class ImGuiNETVeldridController : IDisposable
                 case Key.WinLeft: m_winKeyDown = keyEvent.Down; break;
             }
         }
-
+    
         io.KeyCtrl = m_controlDown;
         io.KeyAlt = m_altDown;
         io.KeyShift = m_shiftDown;
         io.KeySuper = m_winKeyDown;
-
-        ImVector<ImGuiViewportPtr> viewports = ImGuiNET.ImGui.GetPlatformIO().Viewports;
-        for (int i = 1; i < viewports.Size; i++)
-        {
-            ImGuiViewportPtr v = viewports[i];
-            ImGuiNETVeldridWindow? window = ((ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(v.PlatformUserData).Target);
-            window?.Update();
-        }
     }
     
     private void UpdateMouseCursor()

@@ -2,7 +2,7 @@ using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics.RenderObject;
 
-public class Material : IDisposable
+public class Material
 {
     public IShader vertexShader { get; }
     public IShader fragmentShader { get; }

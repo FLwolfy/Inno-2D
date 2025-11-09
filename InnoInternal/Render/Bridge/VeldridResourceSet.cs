@@ -8,7 +8,6 @@ namespace InnoInternal.Render.Bridge;
 internal class VeldridResourceSet : IResourceSet
 {
     private readonly GraphicsDevice m_graphicsDevice;
-
     internal ResourceSet inner { get; }
 
     public VeldridResourceSet(GraphicsDevice graphicsDevice, ResourceSetBinding binding)
@@ -26,12 +25,13 @@ internal class VeldridResourceSet : IResourceSet
                 .Select(ub => ((VeldridUniformBuffer)ub).inner)
                 .ToArray()
             : [];
-
+        
+        // TODO: Add support for other resource types (e.g., textures, samplers) here.
+        
+        // Add to boundResources
         var boundResources = new List<BindableResource>();
         boundResources.AddRange(uniformBuffers);
         
-        // TODO: Add support for other resource types (e.g., textures, samplers) here.
-
         return new VeldridRSDescription
         {
             Layout = m_graphicsDevice.ResourceFactory.CreateResourceLayout(GenerateResourceLayoutFromBinding(binding)),

@@ -26,7 +26,7 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_gcHandle = GCHandle.Alloc(this);
         m_graphicsDevice = gd;
         m_viewportPtr = vp;
-
+        
         SDL_WindowFlags flags = SDL_WindowFlags.Hidden;
         if ((vp.Flags & ImGuiViewportFlags.NoTaskBarIcon) != 0)
         {
@@ -83,9 +83,9 @@ public class ImGuiNETVeldridWindow : IDisposable
         vp.PlatformUserData = (IntPtr)m_gcHandle;
     }
 
-    public void Update()
+    public InputSnapshot PumpEvents()
     {
-        m_window.PumpEvents();
+        return m_window.PumpEvents();
     }
 
     public void Dispose()

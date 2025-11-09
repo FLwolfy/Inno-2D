@@ -1,14 +1,15 @@
 using System.Diagnostics;
+using InnoBase;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
-
+using InnoInternal.Window.Bridge;
+using InnoInternal.Window.Impl;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 
 using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
-using PixelFormat = Veldrid.PixelFormat;
 
 namespace InnoInternal.Shell.Bridge;
 
@@ -17,28 +18,25 @@ internal class VeldridShell : IGameShell
     private Action? m_onLoad;
     private Action? m_onSetup;
     private Action<float, float>? m_onStep;
-    private Action<object>? m_onEvent;
+    private Action<Event>? m_onEvent;
     private Action<float>? m_onDraw;
     private Action? m_onClose;
-    private Action<int, int>? m_onResize;
 
-    private readonly Sdl2Window m_window;
-    private readonly GraphicsDevice m_graphicsDevice;
+    private readonly VeldridSdl2Window m_windowVeldrid;
     private readonly VeldridGraphicsDevice m_graphicsDeviceVeldrid;
     private readonly Stopwatch m_timer = new();
     
     private double m_lastTime;
     
-    public void SetWindowSize(int width, int height) => (m_window.Width, m_window.Height) = (width, height);
-    public void SetWindowResizable(bool resizable) => m_window.Resizable = resizable;
+    public void SetWindowSize(int width, int height) => (m_windowVeldrid.width, m_windowVeldrid.height) = (width, height);
+    public void SetWindowResizable(bool resizable) => m_windowVeldrid.resizable = resizable;
 
     public void SetOnLoad(Action onLoad) => m_onLoad = onLoad;
     public void SetOnSetup(Action onSetup) => m_onSetup = onSetup;
     public void SetOnStep(Action<float, float> onStep) => m_onStep = onStep;
-    public void SetOnEvent(Action<object> onEvent) => m_onEvent = onEvent;
+    public void SetOnEvent(Action<Event> onEvent) => m_onEvent = onEvent;
     public void SetOnDraw(Action<float> onDraw) => m_onDraw = onDraw;
     public void SetOnClose(Action onClose) => m_onClose = onClose;
-    public void SetOnResize(Action<int, int> onResize) => m_onResize = onResize;
 
     public VeldridShell()
     {
@@ -50,7 +48,8 @@ internal class VeldridShell : IGameShell
             WindowInitialState = WindowState.Normal
         };
         
-        m_window = VeldridStartup.CreateWindow(ref windowCi);
+        var window = VeldridStartup.CreateWindow(ref windowCi);
+        m_windowVeldrid = new VeldridSdl2Window(window);
         
         var deviceOptions = new GraphicsDeviceOptions(
             debug: true,
@@ -61,13 +60,12 @@ internal class VeldridShell : IGameShell
             preferStandardClipSpaceYDirection: true
         );
         
-        m_graphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window, deviceOptions);
-        m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(m_graphicsDevice);
+        var graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, deviceOptions);
+        m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(graphicsDevice);
         
-        m_window.Resized += () =>
+        window.Resized += () =>
         {
-            m_graphicsDevice.MainSwapchain.Resize((uint)m_window.Width, (uint)m_window.Height);
-            m_onResize?.Invoke(m_window.Width, m_window.Height);
+            graphicsDevice.MainSwapchain.Resize((uint)window.Width, (uint)window.Height);
         };
     }
 
@@ -79,21 +77,21 @@ internal class VeldridShell : IGameShell
         m_timer.Start();
         m_lastTime = 0.0;
 
-        while (m_window.Exists)
+        while (m_windowVeldrid.exists)
         {
             double now = m_timer.Elapsed.TotalSeconds;
             float delta = (float)(now - m_lastTime);
             m_lastTime = now;
 
             m_onStep?.Invoke((float)now, delta);
-            m_onEvent?.Invoke(m_window.PumpEvents());
+            // m_onEvent?.Invoke(m_window.PumpEvents()); TODO: Check event timing
             m_onDraw?.Invoke(delta);
         }
 
         m_onClose?.Invoke();
-        m_graphicsDevice.Dispose();
+        m_graphicsDeviceVeldrid.Dispose();
     }
 
     public IGraphicsDevice GetGraphicsDevice() => m_graphicsDeviceVeldrid;
-    public object GetWindowHolder() => m_window;
+    public IWindow GetWindow() => m_windowVeldrid;
 }

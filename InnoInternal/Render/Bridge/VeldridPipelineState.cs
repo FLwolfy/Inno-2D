@@ -11,34 +11,38 @@ namespace InnoInternal.Render.Bridge;
 internal class VeldridPipelineState : IPipelineState
 {
     private readonly GraphicsDevice m_graphicsDevice;
-    private VeldridPSDescription m_innerDescription;
-
-    internal Pipeline inner { get; }
+    private readonly InnoPSDescription m_pipelineDesc;
+    
+    internal Dictionary<OutputDescription, Pipeline> inner { get; }
 
     public VeldridPipelineState(GraphicsDevice graphicsDevice, InnoPSDescription desc)
     {
         m_graphicsDevice = graphicsDevice;
+        m_pipelineDesc = desc;
 
-        m_innerDescription = ToVeldridPSDesc(desc);
-        inner = m_graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ref m_innerDescription);
+        inner = new Dictionary<OutputDescription, Pipeline>();
+        inner[graphicsDevice.SwapchainFramebuffer.OutputDescription] = graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ToVeldridPSDesc(desc, graphicsDevice.SwapchainFramebuffer.OutputDescription));
     }
     
-    internal void SetFrameBufferOutputDescription(OutputDescription desc)
+    internal void ValidateFrameBufferOutputDesc(OutputDescription outputDesc)
     {
-        m_innerDescription.Outputs = desc;
+        if (inner.ContainsKey(outputDesc)) return;
+        inner[outputDesc] = m_graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ToVeldridPSDesc(m_pipelineDesc, outputDesc));
     }
 
-    private VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc)
+    private VeldridPSDescription ToVeldridPSDesc(InnoPSDescription desc, OutputDescription outputDesc)
     {
         var vertexShader = ((VeldridShader)desc.vertexShader).inner;
         var fragmentShader = ((VeldridShader)desc.fragmentShader).inner;
         var vertexLayoutDescPair = new[] { GenerateVertexLayoutFromType(desc.vertexLayoutType) };
-        var resourceLayouts = desc.resourceSetBindings?.Length > 0 
-            ? desc.resourceSetBindings
+        var depthStencilState = ToVeldridDepthDesc(desc.depthStencilState);
+        var resourceLayouts = desc.resourceLayoutSpecifiers?.Length > 0 
+            ? desc.resourceLayoutSpecifiers
                 .Select(t => m_graphicsDevice.ResourceFactory.CreateResourceLayout(VeldridResourceSet.GenerateResourceLayoutFromBinding(t)))
                 .ToArray() 
             : [];
 
+        // TODO: Handle customized RasterizerState
         var rasterizerState = new RasterizerStateDescription(
             FaceCullMode.None,
             PolygonFillMode.Solid,
@@ -50,15 +54,26 @@ internal class VeldridPipelineState : IPipelineState
         return new GraphicsPipelineDescription
         {
             BlendState = BlendStateDescription.SingleAlphaBlend,
-            DepthStencilState = DepthStencilStateDescription.DepthOnlyLessEqual,
+            DepthStencilState = depthStencilState,
             RasterizerState = rasterizerState,
             PrimitiveTopology = PrimitiveTopology.TriangleList,
             ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),
             ResourceLayouts = resourceLayouts,
-            Outputs = m_graphicsDevice.SwapchainFramebuffer.OutputDescription
+            Outputs = outputDesc
         };
-        
-        // TODO: Handle customized DepthStencilState and RasterizerState
+    }
+
+    private static DepthStencilStateDescription ToVeldridDepthDesc(DepthStencilState dss)
+    {
+        return dss switch
+        {
+            DepthStencilState.Disabled => DepthStencilStateDescription.Disabled,
+            DepthStencilState.DepthOnlyLessEqual => DepthStencilStateDescription.DepthOnlyLessEqual,
+            DepthStencilState.DepthOnlyGreaterEqual => DepthStencilStateDescription.DepthOnlyGreaterEqual,
+            DepthStencilState.DepthReadOnlyLessEqual => DepthStencilStateDescription.DepthOnlyLessEqualRead,
+            DepthStencilState.DepthReadOnlyGreaterEqual => DepthStencilStateDescription.DepthOnlyGreaterEqualRead,
+            _ => throw new NotSupportedException($"Unsupported depth stencil state: {dss}")
+        };
     }
     
     private static VertexLayoutDescription GenerateVertexLayoutFromType(Type t)
@@ -84,6 +99,9 @@ internal class VeldridPipelineState : IPipelineState
     
     public void Dispose()
     {
-        inner.Dispose();
+        foreach (var p in inner.Values)
+        {
+            p.Dispose();
+        }
     }
 }

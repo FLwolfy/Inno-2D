@@ -68,8 +68,8 @@ internal class VeldridCommandList : ICommandList
     {
         if (pipelineState is VeldridPipelineState veldridPS)
         {
-            veldridPS.SetFrameBufferOutputDescription(m_currentFrameBuffer.OutputDescription);
-            inner.SetPipeline(veldridPS.inner);
+            veldridPS.ValidateFrameBufferOutputDesc(m_currentFrameBuffer.OutputDescription);
+            inner.SetPipeline(veldridPS.inner[m_currentFrameBuffer.OutputDescription]);
         }
     }
 

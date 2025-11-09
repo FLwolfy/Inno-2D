@@ -11,10 +11,10 @@ internal class VeldridUniformBuffer : IUniformBuffer
     
     public string bufferName { get; }
 
-    public VeldridUniformBuffer(GraphicsDevice graphicsDevice, DeviceBuffer indexBuffer, String name)
+    public VeldridUniformBuffer(GraphicsDevice graphicsDevice, DeviceBuffer uniformBuffer, String name)
     {
         m_graphicsDevice = graphicsDevice;
-        inner = indexBuffer;
+        inner = uniformBuffer;
         bufferName = name;
     }
 
