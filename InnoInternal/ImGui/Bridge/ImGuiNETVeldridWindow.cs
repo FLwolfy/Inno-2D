@@ -13,10 +13,10 @@ public class ImGuiNETVeldridWindow : IDisposable
     private readonly GraphicsDevice m_graphicsDevice;
     private readonly ImGuiViewportPtr m_viewportPtr;
     private readonly Sdl2Window m_window;
-    private readonly Swapchain? m_swapchain;
+    private readonly Swapchain m_swapchain;
     
-    public Sdl2Window window => m_window;
-    public Swapchain? swapchain => m_swapchain;
+    public Sdl2Window mainWindow => m_window;
+    public Swapchain swapchain => m_swapchain;
     public ImGuiViewportPtr viewportPtr => m_viewportPtr;
 
     public static ImGuiNETVeldridWindow? currentWindow;
@@ -26,7 +26,7 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_gcHandle = GCHandle.Alloc(this);
         m_graphicsDevice = gd;
         m_viewportPtr = vp;
-        
+
         SDL_WindowFlags flags = SDL_WindowFlags.Hidden;
         if ((vp.Flags & ImGuiViewportFlags.NoTaskBarIcon) != 0)
         {
@@ -56,7 +56,6 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_window.Closed += () => m_viewportPtr.PlatformRequestClose = true;
         m_window.Moved += _ => m_viewportPtr.PlatformRequestMove = true;
         m_window.FocusGained += () => currentWindow = this;
-        m_window.FocusLost += () => currentWindow = null;
 
         SwapchainSource scSource = VeldridStartup.GetSwapchainSource(m_window);
         SwapchainDescription scDesc = new SwapchainDescription(
@@ -74,12 +73,13 @@ public class ImGuiNETVeldridWindow : IDisposable
         vp.PlatformUserData = (IntPtr)m_gcHandle;
     }
 
-    public ImGuiNETVeldridWindow(GraphicsDevice gd, ImGuiViewportPtr vp, Sdl2Window window)
+    public ImGuiNETVeldridWindow(GraphicsDevice gd, ImGuiViewportPtr vp, Sdl2Window mainWindow)
     {
         m_gcHandle = GCHandle.Alloc(this);
         m_graphicsDevice = gd;
         m_viewportPtr = vp;
-        m_window = window;
+        m_window = mainWindow;
+        m_swapchain = gd.MainSwapchain;
         vp.PlatformUserData = (IntPtr)m_gcHandle;
     }
 
@@ -92,7 +92,7 @@ public class ImGuiNETVeldridWindow : IDisposable
     {
         if (currentWindow == this) currentWindow = null;
         m_graphicsDevice.WaitForIdle(); // TODO: Shouldn't be necessary, but Vulkan backend trips a validation error (swapchain in use when disposed).
-        m_swapchain?.Dispose();
+        m_swapchain.Dispose();
         m_window.Close();
         m_gcHandle.Free();
     }

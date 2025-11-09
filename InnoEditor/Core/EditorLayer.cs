@@ -28,7 +28,6 @@ public class EditorLayer() : Layer("EditorLayer")
 
     public override void OnEvent(Event e)
     {
-        Console.WriteLine(e.type);
     }
 
     public override void OnUpdate()
