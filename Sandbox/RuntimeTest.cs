@@ -37,11 +37,38 @@ public class RuntimeTest
     {
         private GameObject m_mainTestObj = null!;
         
+        private bool shouldRotate = false;
+        
         public override void OnUpdate()
         {
-            m_mainTestObj.transform.localRotationZ += Time.deltaTime * 100f;
+            if (shouldRotate)
+            {
+                m_mainTestObj.transform.localRotationZ += Time.deltaTime * 100f;
+            }
             
             base.OnUpdate();
+        }
+
+        public override void OnEvent(Event e)
+        {
+            if (e.type == EventType.KeyPressed)
+            {
+                var keyEvent = (e as KeyPressedEvent);
+
+                if (keyEvent!.key == Input.KeyCode.R && !keyEvent!.repeat)
+                {
+                    shouldRotate = true;
+                }
+            }
+            else if (e.type == EventType.KeyReleased)
+            {
+                var keyEvent = e as KeyReleasedEvent;
+
+                if (keyEvent!.key == Input.KeyCode.R)
+                {
+                    shouldRotate = false;
+                }
+            }
         }
 
         public override void OnAttach()

@@ -56,6 +56,8 @@ internal class VeldridShell : IGameShell
             preferStandardClipSpaceYDirection: true
         );
         
+        // TODO: use HasMainSwapchain = false and create customized FrameBuffer for depth-test
+        
         var graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, deviceOptions);
         m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(graphicsDevice);
         

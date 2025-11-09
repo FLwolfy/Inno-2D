@@ -26,14 +26,6 @@ public class EditorLayer() : Layer("EditorLayer")
         EditorManager.RegisterPanel(new InspectorPanel());
     }
 
-    public override void OnEvent(Event e)
-    {
-    }
-
-    public override void OnUpdate()
-    {
-    }
-
     public override void OnRender(RenderContext ctx)
     {
         ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, null);

@@ -12,10 +12,6 @@ public class GameLayer() : Layer("GameLayer")
         SceneManager.BeginRuntime();
     }
 
-    public override void OnEvent(Event e)
-    {
-    }
-
     public override void OnUpdate()
     {
         SceneManager.GetActiveScene()?.Update();
