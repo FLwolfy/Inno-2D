@@ -19,7 +19,7 @@ internal class VeldridTexture : ITexture
     
     internal readonly Texture inner;
 
-    public VeldridTexture(GraphicsDevice graphicsDevice, Texture inner)
+    public VeldridTexture(Texture inner)
     {
         this.inner = inner;
         width = (int)inner.Width;
@@ -29,7 +29,7 @@ internal class VeldridTexture : ITexture
     public static VeldridTexture Create(GraphicsDevice graphicsDevice, InnoTEXDescription desc)
     {
         VTexture vTexture = graphicsDevice.ResourceFactory.CreateTexture(ToVeldridTEXDesc(desc));
-        return new VeldridTexture(graphicsDevice, vTexture);
+        return new VeldridTexture(vTexture);
     }
 
     private static VeldridTEXDescription ToVeldridTEXDesc(InnoTEXDescription desc)

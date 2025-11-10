@@ -26,6 +26,7 @@ public abstract class EngineCore
         m_renderContext = new RenderContext
         (
             m_gameShell.GetGraphicsDevice(),
+            null, // TODO: Support global render target for consistency.
             new Renderer2D(m_gameShell.GetGraphicsDevice()),
             IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid),
             new RenderPassController()

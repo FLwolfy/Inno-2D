@@ -12,13 +12,12 @@ public class Renderer2D : IDisposable
     
     // Render Context 
     private IFrameBuffer m_currentFrameBuffer;
+    private Matrix m_currentViewProjection;
 
     // Quad Resources
     private Mesh m_quadMesh = null!;
     private Material m_quadMaterial = null!;
     private IResourceSet m_quadResources = null!;
-    
-    public Matrix viewProjection { get; private set; }
 
     public Renderer2D(IGraphicsDevice graphicsDevice)
     {
@@ -94,7 +93,7 @@ public class Renderer2D : IDisposable
     
     public void DrawQuad(Matrix transform, Color color)
     {
-        var mvp = transform * viewProjection;
+        var mvp = transform * m_currentViewProjection;
         
         m_commandList.UpdateUniform(m_quadMaterial.uniformBuffers["MVP"], ref mvp);
         m_commandList.UpdateUniform(m_quadMaterial.uniformBuffers["Color"], ref color);
@@ -111,15 +110,17 @@ public class Renderer2D : IDisposable
         m_commandList.ClearColor(color);
     }
 
+    // TODO: Make target not nullable
     public void BeginFrame(Matrix viewProjectionMatrix, float? aspectRatio, IFrameBuffer? target)
     {
         m_currentFrameBuffer = target ?? m_graphicsDevice.swapChainFrameBuffer;
-        viewProjection = viewProjectionMatrix;
+        m_currentViewProjection = viewProjectionMatrix;
         
         m_commandList.Begin();
         m_commandList.SetFrameBuffer(m_currentFrameBuffer);
         m_commandList.ClearColor(Color.BLACK);
 
+        // TODO: Move this into Graphics Device
         if (aspectRatio.HasValue)
         {
             float targetWidth = m_currentFrameBuffer.width;

@@ -1,4 +1,3 @@
-using InnoBase;
 using InnoEditor.GUI;
 using InnoEditor.GUI.InspectorGUI;
 using InnoEditor.GUI.PropertyGUI;

@@ -21,7 +21,6 @@ internal class VeldridPipelineState : IPipelineState
         m_pipelineDesc = desc;
 
         inner = new Dictionary<OutputDescription, Pipeline>();
-        inner[graphicsDevice.SwapchainFramebuffer.OutputDescription] = graphicsDevice.ResourceFactory.CreateGraphicsPipeline(ToVeldridPSDesc(desc, graphicsDevice.SwapchainFramebuffer.OutputDescription));
     }
     
     internal void ValidateFrameBufferOutputDesc(OutputDescription outputDesc)

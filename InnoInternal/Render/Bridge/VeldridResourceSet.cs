@@ -15,7 +15,7 @@ internal class VeldridResourceSet : IResourceSet
         m_graphicsDevice = graphicsDevice;
 
         var innerDescription = ToVeldridRSDesc(binding);
-        inner = m_graphicsDevice.ResourceFactory.CreateResourceSet(ref innerDescription);
+        inner = graphicsDevice.ResourceFactory.CreateResourceSet(ref innerDescription);
     }
     
     private VeldridRSDescription ToVeldridRSDesc(ResourceSetBinding binding)

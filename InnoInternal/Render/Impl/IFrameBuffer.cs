@@ -1,19 +1,20 @@
-using InnoBase;
-
 namespace InnoInternal.Render.Impl;
 
 public struct FrameBufferDescription
 {
-    public ITexture? depthAttachment;
-    public ITexture[] colorAttachments;
+    public int width;
+    public int height;
+    public TextureDescription? depthAttachmentDescription;
+    public TextureDescription[] colorAttachmentDescriptions;
 }
-
 
 public interface IFrameBuffer : IDisposable
 {
     int width { get; }
     int height { get; }
+    
+    void Resize(int width, int height);
 
-    ITexture GetAttachment(int index);
+    ITexture? GetColorAttachment(int index);
     ITexture? GetDepthAttachment();
 }

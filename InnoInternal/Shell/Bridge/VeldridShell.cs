@@ -3,10 +3,9 @@ using InnoBase;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
+
 using Veldrid;
 using Veldrid.StartupUtilities;
-
-using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
 
 namespace InnoInternal.Shell.Bridge;
 
@@ -46,18 +45,16 @@ internal class VeldridShell : IGameShell
         
         var window = VeldridStartup.CreateWindow(ref windowCi);
         m_windowVeldrid = new VeldridSdl2Window(window);
-        
+
         var deviceOptions = new GraphicsDeviceOptions(
             debug: true,
-            swapchainDepthFormat: VeldridTexture.ToVeldridPixelFormat(InnoPixelFormat.D32FloatS8UInt),
+            null,
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,
             preferStandardClipSpaceYDirection: true
         );
-        
-        // TODO: use HasMainSwapchain = false and create customized FrameBuffer for depth-test
-        
+
         var graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, deviceOptions);
         m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(graphicsDevice);
         

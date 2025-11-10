@@ -51,6 +51,8 @@ public class RuntimeTest
 
         public override void OnEvent(Event e)
         {
+            base.OnEvent(e);
+            
             if (e.type == EventType.KeyPressed)
             {
                 var keyEvent = (e as KeyPressedEvent);

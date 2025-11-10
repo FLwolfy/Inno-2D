@@ -1,12 +1,10 @@
 using InnoInternal.Render.Impl;
 
 using Veldrid;
-using Veldrid.SPIRV;
+
 using InnoFBDescription = InnoInternal.Render.Impl.FrameBufferDescription;
 using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 using TextureDescription = InnoInternal.Render.Impl.TextureDescription;
-
-using VeldridFBDescription = Veldrid.FramebufferDescription;
 
 namespace InnoInternal.Render.Bridge;
 
@@ -16,14 +14,18 @@ public class VeldridGraphicsDevice : IGraphicsDevice
     private readonly ResourceFactory m_factory;
     
     internal GraphicsDevice inner => m_graphicsDevice;
+    
+    // TODO: Remove this. But add a new API for submitting target texture to draw on swapChain.
     public IFrameBuffer swapChainFrameBuffer { get; }
 
     public VeldridGraphicsDevice(GraphicsDevice graphicsDevice)
     {
         m_graphicsDevice = graphicsDevice;
-        
-        swapChainFrameBuffer = new VeldridFrameBuffer(graphicsDevice, graphicsDevice.SwapchainFramebuffer);
         m_factory = graphicsDevice.ResourceFactory;
+        
+        // TODO: This is very bad. When SwapChain get resized, this may result in a NullPointerError.
+        // TODO: TEST ABOVE.
+        swapChainFrameBuffer = new VeldridFrameBuffer(graphicsDevice, graphicsDevice.SwapchainFramebuffer);
     }
 
     public IVertexBuffer CreateVertexBuffer(uint sizeInBytes)
@@ -96,6 +98,7 @@ public class VeldridGraphicsDevice : IGraphicsDevice
 
     public void Dispose()
     {
+        swapChainFrameBuffer.Dispose();
         m_graphicsDevice.Dispose();
     }
 }

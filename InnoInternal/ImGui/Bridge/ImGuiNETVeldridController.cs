@@ -573,7 +573,7 @@ internal class ImGuiNETVeldridController : IDisposable
                 {
                     ImGuiViewportPtr vp = platformIo.Viewports[i];
                     ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-                    if (window is { swapchain: not null })
+                    if (window != null)
                     {
                         cl.SetFramebuffer(window.swapchain.Framebuffer);
                         RenderImDrawData(vp.DrawData, gd, cl);

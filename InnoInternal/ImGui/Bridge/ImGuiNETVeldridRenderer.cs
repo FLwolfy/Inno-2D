@@ -61,13 +61,14 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_imGuiVeldridController.SwapExtraWindowBuffers(m_graphicsDevice);
     }
 
+    // TODO: Make framebuffer not Nullable.
     public void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer)
     {
         // Begin Render
         m_commandList.Begin();
         m_commandList.SetFramebuffer(frameBuffer switch
         {
-            null => m_graphicsDevice.SwapchainFramebuffer,
+            null => m_graphicsDevice.SwapchainFramebuffer, // TODO: Remove this
             VeldridFrameBuffer fb => fb.inner,
             _ => throw new ArgumentException("Expected a VeldridFrameBuffer.", nameof(frameBuffer))
         });

@@ -21,8 +21,6 @@ public class SceneViewPanel : EditorPanel
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
 
-    private ITexture? m_renderTexture;
-    private ITexture? m_depthTexture;
     private IFrameBuffer? m_renderTarget;
     
     private int m_width = 0;
@@ -61,28 +59,23 @@ public class SceneViewPanel : EditorPanel
         int newHeight = (int)Math.Max(available.y, 1);
         
         // if region change, reset
-        if (newWidth != m_width || newHeight != m_height || m_renderTarget == null)
+        if (newWidth != m_width || newHeight != m_height)
         {
-            RecreateRenderTarget(renderContext, newWidth, newHeight);
+            m_width = newWidth;
+            m_height = newHeight;
+            
+            m_editorCamera2D.SetViewportSize(newWidth, newHeight);
+            
+            // TODO: Remove this. Always use RenderTarget for consistency.
+            if (m_renderTarget is { } rt) rt.Resize(newWidth, newHeight);
+            else CreateRenderTarget(renderContext);
         }
     }
 
-    private void RecreateRenderTarget(RenderContext renderContext, int width, int height)
+    private void CreateRenderTarget(RenderContext renderContext)
     {
-        // Update size
-        m_width = width;
-        m_height = height;
-        m_editorCamera2D.SetViewportSize(m_width, m_height);
-
-        // Recreate render target
-        m_depthTexture?.Dispose();
-        m_renderTexture?.Dispose();
-        m_renderTarget?.Dispose();
-
         var renderTexDesc = new TextureDescription
         {
-            width = m_width,
-            height = m_height,
             format = PixelFormat.B8G8R8A8UNorm,
             usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
             dimension = TextureDimension.Texture2D
@@ -90,20 +83,17 @@ public class SceneViewPanel : EditorPanel
             
         var depthTexDesc = new TextureDescription
         {
-            width = m_width,
-            height = m_height,
             format = PixelFormat.D32FloatS8UInt,
             usage = TextureUsage.DepthStencil,
             dimension = TextureDimension.Texture2D
         };
             
-        m_depthTexture = renderContext.graphicsDevice.CreateTexture(depthTexDesc);
-        m_renderTexture = renderContext.graphicsDevice.CreateTexture(renderTexDesc);
-            
         var renderTargetDesc = new FrameBufferDescription
         {
-            depthAttachment = m_depthTexture,
-            colorAttachments = [m_renderTexture]
+            width = m_width,
+            height = m_height,
+            depthAttachmentDescription = depthTexDesc,
+            colorAttachmentDescriptions = [renderTexDesc]
         };
             
         m_renderTarget = renderContext.graphicsDevice.CreateFrameBuffer(renderTargetDesc);
@@ -148,16 +138,17 @@ public class SceneViewPanel : EditorPanel
 
     private void DrawScene(IImGuiContext imGuiContext)
     {
-        if (m_renderTexture != null)
+        var targetTexture = m_renderTarget?.GetColorAttachment(0);
+        if (targetTexture != null)
         {
-            imGuiContext.Image(m_renderTexture, m_width, m_height);
+            imGuiContext.Image(targetTexture, m_width, m_height);
         }
     }
     
     private void DrawAxisGizmo(IImGuiContext imGuiContext)
     {
         Vector2 axisOriginWorld = Vector2.Transform(Vector2.ZERO, m_editorCamera2D.GetScreenToWorldMatrix());
-        float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;;
+        float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
         int newAxisInterval = AXIS_INTERVAL;
         
         while (spacing < AXIS_INTERVAL * AXIS_INTERVAL_SCALE_RATE)
