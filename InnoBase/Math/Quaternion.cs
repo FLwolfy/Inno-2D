@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Quaternion : IEquatable<Quaternion>

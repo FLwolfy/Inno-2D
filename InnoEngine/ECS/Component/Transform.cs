@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoBase.Math;
 using InnoEngine.Serialization;
 
 namespace InnoEngine.ECS.Component;
@@ -79,7 +80,7 @@ public class Transform : GameComponent
         get => m_localRotationZ;
         set
         {
-            if (Math.Abs(m_localRotationZ - value) > 0.0001f)
+            if (!MathHelper.AlmostEquals(m_localRotationZ, value))
             {
                 m_localRotationZ = value;
                 m_localRotation = Quaternion.FromEulerAnglesXYZDegrees(new Vector3(0, 0, m_localRotationZ));

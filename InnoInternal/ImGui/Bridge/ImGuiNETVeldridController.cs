@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 using ImGuiNET;
 using InnoBase;
+using InnoBase.Math;
 using Veldrid;
 using Veldrid.Sdl2;
 
@@ -41,7 +42,7 @@ internal class ImGuiNETVeldridController : IDisposable
     private readonly IntPtr m_fontAtlasId = 1;
 
     // Window info
-    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow; // This should not be removed.
+    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow;
     private readonly Dictionary<uint, ImGuiNETVeldridWindow> m_windowHolders = new();
     private bool m_controlDown;
     private bool m_shiftDown;

@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Vector2 : IEquatable<Vector2>

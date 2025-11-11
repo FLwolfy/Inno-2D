@@ -1,4 +1,6 @@
-namespace InnoBase;
+using InnoBase.Math;
+
+namespace InnoBase.Graphics;
 
 /// <summary>
 /// Represents an RGBA color with float components in the range [0, 1].
@@ -12,10 +14,10 @@ public readonly struct Color
 
     public Color(float r, float g, float b, float a = 1f)
     {
-        this.r = Mathematics.Clamp(r, 0.0f, 1.0f);
-        this.g = Mathematics.Clamp(g, 0.0f, 1.0f);
-        this.b = Mathematics.Clamp(b, 0.0f, 1.0f);
-        this.a = Mathematics.Clamp(a, 0.0f, 1.0f);
+        this.r = MathHelper.Clamp(r, 0.0f, 1.0f);
+        this.g = MathHelper.Clamp(g, 0.0f, 1.0f);
+        this.b = MathHelper.Clamp(b, 0.0f, 1.0f);
+        this.a = MathHelper.Clamp(a, 0.0f, 1.0f);
     }
 
     public static Color FromBytes(byte r, byte g, byte b, byte a = 255)

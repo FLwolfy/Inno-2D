@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Matrix : IEquatable<Matrix>
@@ -219,7 +219,7 @@ public struct Matrix : IEquatable<Matrix>
         float b11 = a22 * a33 - a23 * a32;
 
         float det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-        if (MathF.Abs(det) < 1e-6f)
+        if (MathF.Abs(det) < MathHelper.C_TOLERANCE)
             return identity; // No Inverse, return identity matrix
 
         float invDet = 1f / det;

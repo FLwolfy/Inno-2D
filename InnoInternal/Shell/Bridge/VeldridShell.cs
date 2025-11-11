@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using InnoBase;
+using InnoBase.Event;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;

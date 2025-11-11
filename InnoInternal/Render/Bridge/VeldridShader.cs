@@ -1,8 +1,10 @@
 using System.Text;
 using InnoInternal.Render.Impl;
+
 using Veldrid;
 using Veldrid.SPIRV;
-using InnoShaderStage = InnoInternal.Render.Impl.ShaderStage;
+
+using InnoShaderStage = InnoBase.Graphics.ShaderStage;
 using InnoSDescription = InnoInternal.Render.Impl.ShaderDescription;
 using VeldridShaderStage = Veldrid.ShaderStages;
 using VeldridSDescription = Veldrid.ShaderDescription;
@@ -12,10 +14,10 @@ namespace InnoInternal.Render.Bridge;
 internal class VeldridShader : IShader
 {
     internal Shader inner { get; }
-    public ShaderStage stage { get; }
+    public InnoShaderStage stage { get; }
     
     
-    private VeldridShader(Shader inner, ShaderStage stage)
+    private VeldridShader(Shader inner, InnoShaderStage stage)
     {
         this.inner = inner;
         this.stage = stage;
@@ -73,7 +75,7 @@ internal class VeldridShader : IShader
         );
 
         var shader = graphicsDevice.ResourceFactory.CreateShader(veldridDesc);
-        return new VeldridShader(shader, ShaderStage.Compute);
+        return new VeldridShader(shader, InnoShaderStage.Compute);
     }
     
     private static string[] CrossCompileSpirv(GraphicsBackend backend, ShaderStages stage, params byte[][] spirvBytes)

@@ -1,4 +1,7 @@
 using InnoBase;
+using InnoBase.Event;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoEngine.Core;
 using InnoEngine.Core.Layer;
 using InnoEngine.ECS;

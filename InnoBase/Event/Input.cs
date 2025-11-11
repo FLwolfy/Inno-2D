@@ -1,4 +1,4 @@
-namespace InnoBase;
+namespace InnoBase.Event;
 
 public static class Input
 {

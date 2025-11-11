@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Vector3 : IEquatable<Vector3>
@@ -54,7 +54,7 @@ public struct Vector3 : IEquatable<Vector3>
 
     // Lerp
     public static Vector3 Lerp(Vector3 a, Vector3 b, float t) =>
-        a + (b - a) * Mathematics.Clamp(t, 0f, 1f);
+        a + (b - a) * MathHelper.Clamp(t, 0f, 1f);
 
     // Reflect
     public static Vector3 Reflect(Vector3 dir, Vector3 normal) =>
@@ -97,9 +97,9 @@ public struct Vector3 : IEquatable<Vector3>
     public static Vector3 operator /(Vector3 v, float s) => new(v.x / s, v.y / s, v.z / s);
 
     public static bool operator ==(Vector3 a, Vector3 b) =>
-        MathF.Abs(a.x - b.x) < 1e-6f &&
-        MathF.Abs(a.y - b.y) < 1e-6f &&
-        MathF.Abs(a.z - b.z) < 1e-6f;
+        MathHelper.AlmostEquals(a.x, b.x) &&
+        MathHelper.AlmostEquals(a.y, b.y) &&
+        MathHelper.AlmostEquals(a.z, b.z);
 
     public static bool operator !=(Vector3 a, Vector3 b) => !(a == b);
 

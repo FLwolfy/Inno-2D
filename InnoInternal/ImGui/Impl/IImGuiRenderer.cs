@@ -21,7 +21,7 @@ public interface IImGuiRenderer : IDisposable
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
     /// </summary>
-    void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer);
+    void BeginLayout(float deltaTime, IFrameBuffer frameBuffer);
 
     /// <summary>
     /// Ends the ImGui frame and finalizes draw data.

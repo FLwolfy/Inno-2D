@@ -1,4 +1,7 @@
 using InnoBase;
+using InnoBase.Event;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoEditor.Core;
 using InnoEditor.Gizmo;
 using InnoEditor.Utility;
@@ -33,6 +36,9 @@ public class SceneViewPanel : EditorPanel
     
     internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
     {
+        // Ensure scene render target
+        EnsureSceneRenderTarget(renderContext);
+        
         // Check if region changed
         CheckRegionChange(imGuiContext, renderContext);
 
@@ -47,6 +53,34 @@ public class SceneViewPanel : EditorPanel
         
         // Draw axis gizmo
         DrawAxisGizmo(imGuiContext);
+    }
+    
+    private void EnsureSceneRenderTarget(RenderContext ctx)
+    {
+        if (ctx.targetPool.Get("scene") == null)
+        {
+            var renderTexDesc = new TextureDescription
+            {
+                format = PixelFormat.B8_G8_R8_A8_UNorm,
+                usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
+                dimension = TextureDimension.Texture2D
+            };
+            
+            var depthTexDesc = new TextureDescription
+            {
+                format = PixelFormat.D32_Float_S8_UInt,
+                usage = TextureUsage.DepthStencil,
+                dimension = TextureDimension.Texture2D
+            };
+            
+            var renderTargetDesc = new FrameBufferDescription
+            {
+                depthAttachmentDescription = depthTexDesc,
+                colorAttachmentDescriptions = [renderTexDesc]
+            };
+            
+            ctx.targetPool.Create("scene", renderTargetDesc);
+        }
     }
 
     private void CheckRegionChange(IImGuiContext imGuiContext, RenderContext renderContext)

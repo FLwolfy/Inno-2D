@@ -1,4 +1,4 @@
-namespace InnoBase;
+namespace InnoBase.Math;
 
 public struct Rect
 {

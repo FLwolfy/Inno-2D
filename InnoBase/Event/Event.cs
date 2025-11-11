@@ -1,4 +1,4 @@
-namespace InnoBase;
+namespace InnoBase.Event;
 
 [Flags]
 public enum EventCategory

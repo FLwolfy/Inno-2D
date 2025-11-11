@@ -10,6 +10,7 @@ public class RenderTargetPool : IDisposable
     public RenderTargetPool(IGraphicsDevice device)
     {
         m_device = device;
+        m_targets["main"] = device.swapchainFrameBuffer;
     }
 
     public IFrameBuffer? Get(string name)
@@ -18,10 +19,15 @@ public class RenderTargetPool : IDisposable
         return fb;
     }
 
+    public IFrameBuffer GetMain()
+    {
+        return m_targets["main"];
+    }
+
     public void Create(string name, FrameBufferDescription desc)
     {
         if (m_targets.TryGetValue(name, out var fb))
-            fb.Dispose();
+            throw new InvalidOperationException($"Already exists a framebuffer named {name}!");
 
         m_targets[name] = m_device.CreateFrameBuffer(desc);
     }

@@ -1,5 +1,6 @@
 
 using InnoBase;
+using InnoBase.Math;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 
@@ -40,7 +41,7 @@ internal class SpriteRenderPass : IRenderPass
                 ));
                 
                 var transform = scale * rotation * translation;
-                var color = spriteRenderer.color * spriteRenderer.opacity;
+                var color = spriteRenderer.color * spriteRenderer.opacity; // TODO: Handle alpha sequences
                 
                 ctx.renderer2D.DrawQuad(transform, color);
             }

@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoBase.Graphics;
 
 namespace InnoEditor.GUI.PropertyGUI.PropertyRenderer;
 

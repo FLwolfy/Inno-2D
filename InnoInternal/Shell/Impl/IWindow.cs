@@ -1,4 +1,5 @@
 using InnoBase;
+using InnoBase.Event;
 
 namespace InnoInternal.Shell.Impl;
 

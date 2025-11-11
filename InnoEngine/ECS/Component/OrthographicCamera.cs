@@ -1,4 +1,4 @@
-using InnoBase;
+using InnoBase.Math;
 
 namespace InnoEngine.ECS.Component;
 
@@ -20,7 +20,7 @@ public class OrthographicCamera : GameCamera
         get => m_size;
         set
         {
-            if (MathF.Abs(m_size - value) > 0.0001f)
+            if (!MathHelper.AlmostEquals(m_size, value))
             {
                 m_size = value;
                 MarkDirty();

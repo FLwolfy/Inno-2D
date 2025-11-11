@@ -14,6 +14,7 @@ public class ImGuiNETVeldridWindow : IDisposable
     private readonly ImGuiViewportPtr m_viewportPtr;
     private readonly Sdl2Window m_window;
     private readonly Swapchain m_swapchain;
+    private readonly bool m_isMainWindow;
     
     public Sdl2Window window => m_window;
     public Swapchain swapchain => m_swapchain;
@@ -26,6 +27,7 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_gcHandle = GCHandle.Alloc(this);
         m_graphicsDevice = gd;
         m_viewportPtr = vp;
+        m_isMainWindow = false;
 
         SDL_WindowFlags flags = SDL_WindowFlags.Hidden;
         if ((vp.Flags & ImGuiViewportFlags.NoTaskBarIcon) != 0)
@@ -80,6 +82,7 @@ public class ImGuiNETVeldridWindow : IDisposable
         m_viewportPtr = vp;
         m_window = mainWindow;
         m_swapchain = gd.MainSwapchain;
+        m_isMainWindow = true;
         vp.PlatformUserData = (IntPtr)m_gcHandle;
     }
 
@@ -91,9 +94,14 @@ public class ImGuiNETVeldridWindow : IDisposable
     public void Dispose()
     {
         if (currentWindow == this) currentWindow = null;
-        m_graphicsDevice.WaitForIdle(); // TODO: Shouldn't be necessary, but Vulkan backend trips a validation error (swapchain in use when disposed).
-        m_swapchain.Dispose();
-        m_window.Close();
+
         m_gcHandle.Free();
+        
+        if (!m_isMainWindow)
+        {
+            m_graphicsDevice.WaitForIdle(); // TODO: Shouldn't be necessary, but Vulkan backend trips a validation error (swapchain in use when disposed).
+            m_swapchain.Dispose();
+            m_window.Close();
+        }
     }
 }

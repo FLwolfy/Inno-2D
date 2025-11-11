@@ -1,4 +1,5 @@
-using InnoBase;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoEngine.Graphics.RenderObject;
 using InnoEngine.Serialization;
 
@@ -33,7 +34,7 @@ public class SpriteRenderer : GameBehavior
     public float opacity
     {
         get => m_opacity;
-        set => m_opacity = Mathematics.Clamp(value, 0f, 1f);
+        set => m_opacity = MathHelper.Clamp(value, 0f, 1f);
     }
     
     /// <summary>
@@ -46,7 +47,7 @@ public class SpriteRenderer : GameBehavior
         set
         {
             if (m_layerDepth == value) return;
-            m_layerDepth = Mathematics.Clamp(value, 0, MAX_LAYER_DEPTH);
+            m_layerDepth = MathHelper.Clamp(value, 0, MAX_LAYER_DEPTH);
             // gameObject.scene.GetComponentManager().MarkSortDirty(this);
         }
     }

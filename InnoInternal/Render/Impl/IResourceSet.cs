@@ -1,3 +1,5 @@
+using InnoBase.Graphics;
+
 namespace InnoInternal.Render.Impl;
 
 public struct ResourceSetBinding

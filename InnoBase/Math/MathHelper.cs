@@ -1,31 +1,35 @@
 #nullable disable
-namespace InnoBase;
+namespace InnoBase.Math;
 
 /// <summary>
 /// Contains commonly used precalculated values and mathematical operations.
 /// </summary>
-public static class Mathematics
+public static class MathHelper
 {
-  /// <summary>Represents the mathematical constant e(2.71828175).</summary>
-  public const float C_E = 2.7182817f;
-  /// <summary>Represents the log base ten of e(0.4342945).</summary>
-  public const float C_LOG10_E = 0.4342945f;
-  /// <summary>Represents the log base two of e(1.442695).</summary>
-  public const float C_LOG2_E = 1.442695f;
-  /// <summary>Represents the value of pi(3.14159274).</summary>
-  public const float C_PI = 3.1415927f;
-  /// <summary>Represents the value of pi divided by two(1.57079637).</summary>
-  public const float C_PI_OVER2 = 1.5707964f;
-  /// <summary>Represents the value of pi divided by four(0.7853982).</summary>
-  public const float C_PI_OVER4 = 0.7853982f;
-  /// <summary>Represents the value of pi times two(6.28318548).</summary>
-  public const float C_TWO_PI = 6.2831855f;
+  public const float C_TOLERANCE = 1e-6f;
+  
   /// <summary>
-  /// Represents the value of pi times two(6.28318548).
-  /// This is an alias of TwoPi.
+  /// Determines whether two floating-point numbers are approximately equal,
+  /// using a relative tolerance based on the magnitude of the numbers.
+  /// This is useful for comparing floats where rounding errors may occur.
   /// </summary>
-  public const float C_TAU = 6.2831855f;
-
+  /// <param name="a">The first float value to compare.</param>
+  /// <param name="b">The second float value to compare.</param>
+  /// <param name="relTolerance">
+  /// The relative tolerance allowed between <paramref name="a"/> and <paramref name="b"/>.
+  /// Default is 1e-6. The comparison checks if the difference is within
+  /// <c>relTolerance * max(|a|, |b|)</c>.
+  /// </param>
+  /// <returns>
+  /// <c>true</c> if the absolute difference between <paramref name="a"/> and <paramref name="b"/>
+  /// is less than or equal to the relative tolerance multiplied by the larger magnitude of the two values;
+  /// otherwise, <c>false</c>.
+  /// </returns>
+  public static bool AlmostEquals(float a, float b, float relTolerance = C_TOLERANCE)
+  {
+    return MathF.Abs(a - b) <= relTolerance * MathF.Max(MathF.Abs(a), MathF.Abs(b));
+  }
+  
   /// <summary>
   /// Returns the Cartesian coordinate for one axis of a point that is defined by a given triangle and two normalized barycentric (areal) coordinates.
   /// </summary>
@@ -96,7 +100,7 @@ public static class Mathematics
   /// <param name="value1">Source value.</param>
   /// <param name="value2">Source value.</param>
   /// <returns>Distance between the two values.</returns>
-  public static float Distance(float value1, float value2) => Math.Abs(value1 - value2);
+  public static float Distance(float value1, float value2) => MathF.Abs(value1 - value2);
 
   /// <summary>Performs a Hermite spline interpolation.</summary>
   /// <param name="value1">Source position.</param>
@@ -221,7 +225,7 @@ public static class Mathematics
   /// though it returns single float
   /// Factor = pi / 180
   /// </remarks>
-  public static float ToRadians(float degrees) => degrees * ((float) Math.PI / 180f);
+  public static float ToRadians(float degrees) => degrees * ((float) MathF.PI / 180f);
 
   /// <summary>Reduces a given angle to a value between π and -π.</summary>
   /// <param name="angle">The angle to reduce, in radians.</param>

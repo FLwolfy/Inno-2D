@@ -1,13 +1,6 @@
-namespace InnoInternal.Render.Impl;
+using InnoBase.Graphics;
 
-public enum DepthStencilState
-{
-    Disabled,
-    DepthOnlyLessEqual,
-    DepthOnlyGreaterEqual,
-    DepthReadOnlyLessEqual,
-    DepthReadOnlyGreaterEqual
-}
+namespace InnoInternal.Render.Impl;
 
 public struct PipelineStateDescription
 {
