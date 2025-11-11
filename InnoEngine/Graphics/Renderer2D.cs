@@ -10,7 +10,8 @@ public class Renderer2D : IDisposable
     private readonly IGraphicsDevice m_graphicsDevice;
     private readonly ICommandList m_commandList;
     
-    // Render Context 
+    // Render Info 
+    private IFrameBuffer m_sceneFrameBuffer;
     private IFrameBuffer m_currentFrameBuffer;
     private Matrix m_currentViewProjection;
 
@@ -113,7 +114,7 @@ public class Renderer2D : IDisposable
     // TODO: Make target not nullable
     public void BeginFrame(Matrix viewProjectionMatrix, float? aspectRatio, IFrameBuffer? target)
     {
-        m_currentFrameBuffer = target ?? m_graphicsDevice.swapChainFrameBuffer;
+        m_currentFrameBuffer = target ?? m_graphicsDevice.swapchainFrameBuffer;
         m_currentViewProjection = viewProjectionMatrix;
         
         m_commandList.Begin();

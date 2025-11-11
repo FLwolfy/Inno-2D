@@ -2,7 +2,7 @@ namespace InnoInternal.Render.Impl;
 
 public interface IGraphicsDevice : IDisposable
 {
-    IFrameBuffer swapChainFrameBuffer { get; }
+    IFrameBuffer swapchainFrameBuffer { get; }
     
     IVertexBuffer CreateVertexBuffer(uint sizeInBytes);
     IIndexBuffer CreateIndexBuffer(uint sizeInBytes);

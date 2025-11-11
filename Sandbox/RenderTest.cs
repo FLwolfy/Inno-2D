@@ -90,7 +90,7 @@ internal class RenderTest
 
         m_commandList.UpdateUniform(m_transformBuffer, ref m_transform);
         
-        m_commandList.SetFrameBuffer(m_graphicsDevice.swapChainFrameBuffer);
+        m_commandList.SetFrameBuffer(m_graphicsDevice.swapchainFrameBuffer);
         m_commandList.ClearColor(Color.BLACK);
         m_commandList.SetPipelineState(m_pipeline);
         m_commandList.SetVertexBuffer(m_vertexBuffer);

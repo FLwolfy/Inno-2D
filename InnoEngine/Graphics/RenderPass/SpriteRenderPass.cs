@@ -42,7 +42,7 @@ internal class SpriteRenderPass : IRenderPass
                 var transform = scale * rotation * translation;
                 var color = spriteRenderer.color * spriteRenderer.opacity;
                 
-                ctx.renderer.DrawQuad(transform, color);
+                ctx.renderer2D.DrawQuad(transform, color);
             }
             
             // TODO: Support texture rendering logic here.

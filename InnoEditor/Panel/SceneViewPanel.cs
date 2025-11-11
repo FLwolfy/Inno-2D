@@ -20,8 +20,6 @@ public class SceneViewPanel : EditorPanel
     
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
-
-    private IFrameBuffer? m_renderTarget;
     
     private int m_width = 0;
     private int m_height = 0;
@@ -45,7 +43,7 @@ public class SceneViewPanel : EditorPanel
         RenderSceneToBuffer(renderContext);
 
         // display on scene view
-        DrawScene(imGuiContext);
+        DrawScene(imGuiContext, renderContext);
         
         // Draw axis gizmo
         DrawAxisGizmo(imGuiContext);
@@ -58,57 +56,27 @@ public class SceneViewPanel : EditorPanel
         int newWidth = (int)Math.Max(available.x, 1);
         int newHeight = (int)Math.Max(available.y, 1);
         
-        // if region change, reset
+        // if region change, resize
         if (newWidth != m_width || newHeight != m_height)
         {
             m_width = newWidth;
             m_height = newHeight;
             
             m_editorCamera2D.SetViewportSize(newWidth, newHeight);
-            
-            // TODO: Remove this. Always use RenderTarget for consistency.
-            if (m_renderTarget is { } rt) rt.Resize(newWidth, newHeight);
-            else CreateRenderTarget(renderContext);
+            renderContext.targetPool.Get("scene")?.Resize(newWidth, newHeight);
         }
-    }
-
-    private void CreateRenderTarget(RenderContext renderContext)
-    {
-        var renderTexDesc = new TextureDescription
-        {
-            format = PixelFormat.B8G8R8A8UNorm,
-            usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
-            dimension = TextureDimension.Texture2D
-        };
-            
-        var depthTexDesc = new TextureDescription
-        {
-            format = PixelFormat.D32FloatS8UInt,
-            usage = TextureUsage.DepthStencil,
-            dimension = TextureDimension.Texture2D
-        };
-            
-        var renderTargetDesc = new FrameBufferDescription
-        {
-            width = m_width,
-            height = m_height,
-            depthAttachmentDescription = depthTexDesc,
-            colorAttachmentDescriptions = [renderTexDesc]
-        };
-            
-        m_renderTarget = renderContext.graphicsDevice.CreateFrameBuffer(renderTargetDesc);
     }
 
     private void RenderSceneToBuffer(RenderContext renderContext)
     {
-        if (m_renderTarget != null)
+        if (renderContext.targetPool.Get("scene") != null)
         {
             var flipYViewMatrix = m_editorCamera2D.viewMatrix;
             flipYViewMatrix.m42 *= -1;
             
-            renderContext.renderer.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, m_renderTarget);
+            renderContext.renderer2D.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, renderContext.targetPool.Get("scene"));
             renderContext.passController.RenderPasses(renderContext);
-            renderContext.renderer.EndFrame();
+            renderContext.renderer2D.EndFrame();
         }
     }
     
@@ -136,9 +104,9 @@ public class SceneViewPanel : EditorPanel
         }
     }
 
-    private void DrawScene(IImGuiContext imGuiContext)
+    private void DrawScene(IImGuiContext imGuiContext, RenderContext renderContext)
     {
-        var targetTexture = m_renderTarget?.GetColorAttachment(0);
+        var targetTexture = renderContext.targetPool.Get("scene")?.GetColorAttachment(0);
         if (targetTexture != null)
         {
             imGuiContext.Image(targetTexture, m_width, m_height);

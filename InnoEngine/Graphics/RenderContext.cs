@@ -1,14 +1,11 @@
-using InnoBase;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 
-public class RenderContext(IGraphicsDevice graphicsDevice, IFrameBuffer renderTarget, Renderer2D renderer, IImGuiRenderer imGuiRenderer, RenderPassController passController)
+public class RenderContext(Renderer2D renderer2D, IImGuiRenderer imGuiRenderer, RenderPassController passController, RenderTargetPool targetPool)
 {
-    public IGraphicsDevice graphicsDevice { get; } = graphicsDevice;
-    public IFrameBuffer renderTarget { get; } = renderTarget;
-    public Renderer2D renderer { get; } = renderer;
-    public IImGuiRenderer imGuiRenderer { get; } = imGuiRenderer;
+    public Renderer2D renderer2D { get; } = renderer2D;
     public RenderPassController passController { get; } = passController;
+    public RenderTargetPool targetPool { get; } = targetPool;
+    public IImGuiRenderer imGuiRenderer { get; } = imGuiRenderer;
 }

@@ -13,6 +13,6 @@ internal class ClearScreenPass : IRenderPass
 
     public void Render(RenderContext ctx)
     {
-        ctx.renderer.ClearColor(CLEAR_COLOR);
+        ctx.renderer2D.ClearColor(CLEAR_COLOR);
     }
 }

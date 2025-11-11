@@ -1,11 +1,11 @@
 namespace InnoInternal.Render.Impl;
 
-public struct FrameBufferDescription
+public struct FrameBufferDescription()
 {
-    public int width;
-    public int height;
+    public int width = 1;
+    public int height = 1;
     public TextureDescription? depthAttachmentDescription;
-    public TextureDescription[] colorAttachmentDescriptions;
+    public TextureDescription[] colorAttachmentDescriptions = null!;
 }
 
 public interface IFrameBuffer : IDisposable

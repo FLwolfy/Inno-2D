@@ -16,8 +16,10 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
 {
     // Graphics
     private GraphicsDevice m_graphicsDevice = null!;
-    private CommandList m_commandList = null!;
     private VeldridSdl2Window m_veldridWindow = null!;
+    
+    // Resources
+    private CommandList m_commandList = null!;
     private ImGuiNETVeldridController m_imGuiVeldridController = null!;
     
     // Properties
@@ -166,6 +168,12 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         style.FrameRounding = 3.0f;
         style.ScrollbarRounding = 3.0f;
         style.GrabRounding = 3.0f;
+    }
+    
+    public void Dispose()
+    {
+        m_commandList.Dispose();
+        m_imGuiVeldridController.Dispose();
     }
 }
 

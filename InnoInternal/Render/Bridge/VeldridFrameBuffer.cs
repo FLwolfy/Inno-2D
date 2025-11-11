@@ -9,30 +9,30 @@ namespace InnoInternal.Render.Bridge;
 internal class VeldridFrameBuffer : IFrameBuffer
 {
     private readonly GraphicsDevice m_graphicsDevice;
+    private readonly bool m_isSwapchainFrameBuffer;
     
     private InnoFBDescription m_frameBufferDescription;
     private ITexture? m_depthAttachment;
     private ITexture[] m_colorAttachments;
     
-    public int width { get; private set; }
-    public int height { get; private set; }
+    public int width => m_isSwapchainFrameBuffer ? (int)m_graphicsDevice.SwapchainFramebuffer.Width : m_frameBufferDescription.width;
+    public int height => m_isSwapchainFrameBuffer ? (int)m_graphicsDevice.SwapchainFramebuffer.Height : m_frameBufferDescription.height;
 
     internal Framebuffer inner { get; private set; }
 
-    // TODO: After applying texture shaders, remove this totally
-    [Obsolete]
-    internal VeldridFrameBuffer(GraphicsDevice graphicsDevice, Framebuffer frameBuffer)
+    internal VeldridFrameBuffer(GraphicsDevice graphicsDevice, Framebuffer swapchainFrameBuffer)
     {
         m_graphicsDevice = graphicsDevice;
+        m_isSwapchainFrameBuffer = true;
         
-        inner = frameBuffer;
+        inner = swapchainFrameBuffer;
 
-        if (frameBuffer.DepthTarget != null)
+        if (swapchainFrameBuffer.DepthTarget != null)
         {
-            m_depthAttachment = new VeldridTexture(frameBuffer.DepthTarget.Value.Target);
+            m_depthAttachment = new VeldridTexture(swapchainFrameBuffer.DepthTarget.Value.Target);
         }
         
-        m_colorAttachments = frameBuffer.ColorTargets
+        m_colorAttachments = swapchainFrameBuffer.ColorTargets
             .Select(ct => new VeldridTexture(ct.Target))
             .ToArray<ITexture>();
     }
@@ -40,9 +40,7 @@ internal class VeldridFrameBuffer : IFrameBuffer
     public VeldridFrameBuffer(GraphicsDevice graphicsDevice, InnoFBDescription desc)
     {
         m_graphicsDevice = graphicsDevice;
-        
-        width = desc.width;
-        height = desc.height;
+        m_isSwapchainFrameBuffer = false;
         
         EnsureTextureSize(ref desc);
 
@@ -55,7 +53,21 @@ internal class VeldridFrameBuffer : IFrameBuffer
         m_depthAttachment = desc.depthAttachmentDescription == null ? null : VeldridTexture.Create(graphicsDevice, desc.depthAttachmentDescription.Value);
         
         m_frameBufferDescription = desc;
-        inner = m_graphicsDevice.ResourceFactory.CreateFramebuffer(ToVeldridFBDesc(desc));
+        inner = m_graphicsDevice.ResourceFactory.CreateFramebuffer(GetVeldridFBDesc());
+    }
+
+    private void RecreateSwapchainInner()
+    {
+        inner = m_graphicsDevice.SwapchainFramebuffer;
+        
+        if (m_graphicsDevice.SwapchainFramebuffer.DepthTarget != null)
+        {
+            m_depthAttachment = new VeldridTexture(m_graphicsDevice.SwapchainFramebuffer.DepthTarget.Value.Target);
+        }
+        
+        m_colorAttachments = m_graphicsDevice.SwapchainFramebuffer.ColorTargets
+            .Select(ct => new VeldridTexture(ct.Target))
+            .ToArray<ITexture>();
     }
 
     private void RecreateInner()
@@ -75,7 +87,7 @@ internal class VeldridFrameBuffer : IFrameBuffer
         m_colorAttachments = colorTextures.ToArray();
         m_depthAttachment = m_frameBufferDescription.depthAttachmentDescription == null ? null : VeldridTexture.Create(m_graphicsDevice, m_frameBufferDescription.depthAttachmentDescription.Value);
         
-        inner = m_graphicsDevice.ResourceFactory.CreateFramebuffer(ToVeldridFBDesc(m_frameBufferDescription));
+        inner = m_graphicsDevice.ResourceFactory.CreateFramebuffer(GetVeldridFBDesc());
     }
 
     private void EnsureTextureSize(ref InnoFBDescription desc)
@@ -97,10 +109,29 @@ internal class VeldridFrameBuffer : IFrameBuffer
 
     public void Resize(int newWidth, int newHeight)
     {
-        width = newWidth;
-        height = newHeight;
+        if (m_isSwapchainFrameBuffer)
+        {
+            m_graphicsDevice.MainSwapchain.Resize((uint)newWidth, (uint)newHeight);
+            
+            RecreateSwapchainInner();
+        }
+        else
+        {
+            m_frameBufferDescription.width = newWidth;
+            m_frameBufferDescription.height = newHeight;
         
-        RecreateInner();
+            RecreateInner();
+        }
+    }
+    
+    private VeldridFBDescription GetVeldridFBDesc()
+    {
+        var depthTexture = (m_depthAttachment as VeldridTexture)?.inner;
+        var colorTextures = m_colorAttachments
+            .Select(ct => (ct as VeldridTexture)!.inner)
+            .ToArray();
+        
+        return new VeldridFBDescription(depthTexture, colorTextures);
     }
     
     public ITexture? GetColorAttachment(int index)
@@ -113,26 +144,19 @@ internal class VeldridFrameBuffer : IFrameBuffer
     {
         return m_depthAttachment;
     }
-
-    private VeldridFBDescription ToVeldridFBDesc(InnoFBDescription desc)
-    {
-        var depthTexture = (m_depthAttachment as VeldridTexture)?.inner;
-        var colorTextures = m_colorAttachments
-            .Select(ct => (ct as VeldridTexture)!.inner)
-            .ToArray();
-        
-        return new VeldridFBDescription(depthTexture, colorTextures);
-    }
     
     public void Dispose()
     {
-        m_depthAttachment?.Dispose();
-        
-        foreach (var colorAttachment in m_colorAttachments)
+        if (!m_isSwapchainFrameBuffer)
         {
-            colorAttachment.Dispose();
-        }
+            m_depthAttachment?.Dispose();
         
-        inner.Dispose();
+            foreach (var colorAttachment in m_colorAttachments)
+            {
+                colorAttachment.Dispose();
+            }
+        
+            inner.Dispose();
+        }
     }
 }

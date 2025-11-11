@@ -23,8 +23,8 @@ public class GameLayer() : Layer("GameLayer")
         if (camera == null) { return; }
         
         // Render Pipeline
-        ctx.renderer.BeginFrame(camera.viewMatrix * camera.projectionMatrix, camera.aspectRatio, null);
+        ctx.renderer2D.BeginFrame(camera.viewMatrix * camera.projectionMatrix, camera.aspectRatio, null);
         ctx.passController.RenderPasses(ctx);
-        ctx.renderer.EndFrame();
+        ctx.renderer2D.EndFrame();
     }
 }

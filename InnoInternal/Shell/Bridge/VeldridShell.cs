@@ -60,7 +60,7 @@ internal class VeldridShell : IGameShell
         
         window.Resized += () =>
         {
-            graphicsDevice.MainSwapchain.Resize((uint)window.Width, (uint)window.Height);
+            m_graphicsDeviceVeldrid.swapchainFrameBuffer.Resize(window.Width, window.Height);
         };
     }
 
