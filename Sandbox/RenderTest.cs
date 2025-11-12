@@ -7,6 +7,7 @@ using InnoInternal.Render.Impl;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
+using PrimitiveTopology = InnoBase.Graphics.PrimitiveTopology;
 using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 
 namespace Sandbox;
@@ -116,7 +117,7 @@ internal class RenderTest
             new(new Vector2(0.75f, -0.75f), Color.YELLOW)
         };
         
-        ushort[] quadIndices = { 0, 1, 2, 1, 3, 2 };
+        uint[] quadIndices = { 0, 1, 2, 1, 3, 2 };
 
         m_transform = new(
             Matrix.CreateTranslation(new Vector3(0, 0, 0)),
@@ -125,11 +126,11 @@ internal class RenderTest
         );
 
         uint vertexSize = (uint)(4 * sizeof(VertexPositionColor));
-        uint indexSize = 6 * sizeof(ushort);
+        uint indexSize = 6 * sizeof(uint);
 
         m_vertexBuffer = m_graphicsDevice.CreateVertexBuffer(vertexSize);
         m_indexBuffer = m_graphicsDevice.CreateIndexBuffer(indexSize);
-        m_transformBuffer = m_graphicsDevice.CreateUniformBuffer<TransformBuffer>("Transform");
+        m_transformBuffer = m_graphicsDevice.CreateUniformBuffer("Transform", typeof(TransformBuffer));
 
         m_vertexBuffer.Set(quadVertices);
         m_indexBuffer.Set(quadIndices);
@@ -154,8 +155,9 @@ internal class RenderTest
         {
             vertexShader = vertexShader,
             fragmentShader = fragmentShader,
-            vertexLayoutType = typeof(VertexPositionColor),
+            vertexLayoutTypes = [typeof(Vector2), typeof(Color)],
             depthStencilState = DepthStencilState.DepthOnlyLessEqual,
+            primitiveTopology = PrimitiveTopology.TriangleList,
             resourceLayoutSpecifiers = [resourceSetBinding]
         };
 

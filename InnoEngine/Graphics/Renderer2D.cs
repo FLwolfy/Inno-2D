@@ -1,7 +1,7 @@
-using InnoBase;
 using InnoBase.Graphics;
 using InnoBase.Math;
-using InnoEngine.Graphics.RenderObject;
+using InnoEngine.Graphics.Material;
+using InnoEngine.Graphics.Mesh;
 using InnoEngine.Graphics.Shader;
 using InnoInternal.Render.Impl;
 
@@ -17,10 +17,8 @@ public class Renderer2D : IDisposable
     private Matrix m_currentViewProjection;
 
     // Quad Resources
-    private Mesh m_quadMesh = null!;
-    private Material m_quadOpaqueMaterial = null!;
-    private Material m_quadAlphaMaterial = null!;
-    private IResourceSet m_quadResources = null!;
+    private RenderGraphicsResource m_quadOpaqueResources = null!;
+    private RenderGraphicsResource m_quadAlphaResources = null!;
 
     public Renderer2D(IGraphicsDevice graphicsDevice)
     {
@@ -35,102 +33,82 @@ public class Renderer2D : IDisposable
 
     private void CreateSolidQuadResources()
     {
-        // Buffers
-        ShaderVertexLayout.VertexPosition[] quadVertices =
-        [
-            new(new Vector3(-1.0f, 1.0f, 0f)),
-            new(new Vector3(1.0f, 1.0f, 0f)),
-            new(new Vector3(-1.0f, -1.0f, 0f)),
-            new(new Vector3(1.0f, -1.0f, 0f))
-        ];
-
-        var quadIndices = new short[] { 0, 1, 2, 1, 3, 2 };
-        var vertexSize = sizeof(float) * 3;
-
-        var vb = m_graphicsDevice.CreateVertexBuffer((uint)(quadVertices.Length * vertexSize));
-        var ib = m_graphicsDevice.CreateIndexBuffer((uint)(quadIndices.Length * sizeof(ushort)));
+        // Mesh
+        var mesh = new Mesh.Mesh("Quad");
+        mesh.renderState = new MeshRenderState
+        {
+            topology = PrimitiveTopology.TriangleList
+        };
+        mesh.SetAttribute("Position", new Vector3[]
+        {
+            new(-1.0f,  1.0f, 0f),
+            new( 1.0f,  1.0f, 0f),
+            new(-1.0f, -1.0f, 0f),
+            new( 1.0f, -1.0f, 0f)
+        });
+        mesh.SetIndices([
+            0, 1, 2,
+            2, 1, 3
+        ]);
         
-        var mvpBuffer = m_graphicsDevice.CreateUniformBuffer<Matrix>("MVP");
-        var colorBuffer = m_graphicsDevice.CreateUniformBuffer<Color>("Color");
-
-        vb.Set(quadVertices);
-        ib.Set(quadIndices);
-
-        // Shaders
-        var vertexDesc = new ShaderDescription
+        // Opaque Material
+        var opaqueMat = new Material.Material("QuadOpaque");
+        opaqueMat.renderState = new MaterialRenderState
         {
-            stage = ShaderStage.Vertex,
-            sourceCode = ShaderLibrary.LoadEmbeddedShader("SolidQuad.vert").sourceCode
+            depthStencilState = DepthStencilState.DepthOnlyLessEqual
         };
-        var fragmentDesc = new ShaderDescription
-        {
-            stage = ShaderStage.Fragment,
-            sourceCode = ShaderLibrary.LoadEmbeddedShader("SolidQuad.frag").sourceCode
-        };
-
-        var (vertexShader, fragmentShader) = m_graphicsDevice.CreateVertexFragmentShader(vertexDesc, fragmentDesc);
+        opaqueMat.shaders = new ShaderProgram();
+        opaqueMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.vert"));
+        opaqueMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.frag"));
         
-        // Resource
-        var resourceSetBinding = new ResourceSetBinding
+        // Alpha Material
+        var alphaMat = new Material.Material("QuadAlpha");
+        alphaMat.renderState = new MaterialRenderState
         {
-            shaderStages = ShaderStage.Vertex,
-            uniformBuffers = [mvpBuffer, colorBuffer]
+            depthStencilState = DepthStencilState.DepthReadOnlyLessEqual
         };
-        m_quadResources = m_graphicsDevice.CreateResourceSet(resourceSetBinding);
-
-        // Pipeline
-        var pipelineWithDepthReadWrite = new PipelineStateDescription
-        {
-            vertexShader = vertexShader,
-            fragmentShader = fragmentShader,
-            vertexLayoutType = typeof(ShaderVertexLayout.VertexPosition),
-            depthStencilState = DepthStencilState.DepthOnlyLessEqual,
-            resourceLayoutSpecifiers = [resourceSetBinding]
-        };
-        var pipelineDepthReadOnly = new PipelineStateDescription
-        {
-            vertexShader = vertexShader,
-            fragmentShader = fragmentShader,
-            vertexLayoutType = typeof(ShaderVertexLayout.VertexPosition),
-            depthStencilState = DepthStencilState.DepthReadOnlyLessEqual,
-            resourceLayoutSpecifiers = [resourceSetBinding]
-        };
-        var pipelineDepthReadWrite = m_graphicsDevice.CreatePipelineState(pipelineWithDepthReadWrite);
-        var pipelineDepthReadonly = m_graphicsDevice.CreatePipelineState(pipelineDepthReadOnly);
-
-        // Mesh and Material
-        m_quadMesh = new Mesh(vb, ib);
-        m_quadOpaqueMaterial = new Material(vertexShader, fragmentShader, pipelineDepthReadWrite, [mvpBuffer, colorBuffer]);
-        m_quadAlphaMaterial = new Material(vertexShader, fragmentShader, pipelineDepthReadonly, [mvpBuffer, colorBuffer]);
+        alphaMat.shaders = new ShaderProgram();
+        alphaMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.vert"));
+        alphaMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.frag"));
+        
+        // Opaque Resource
+        m_quadOpaqueResources = new RenderGraphicsResource(mesh, [opaqueMat]);
+        m_quadOpaqueResources.RegisterPerObjectUniform("MVP", typeof(Matrix));
+        m_quadOpaqueResources.RegisterPerObjectUniform("Color", typeof(Color));
+        m_quadOpaqueResources.Create(m_graphicsDevice);
+        
+        // Alpha Resource 
+        m_quadAlphaResources = new RenderGraphicsResource(mesh, [alphaMat]);
+        m_quadAlphaResources.RegisterPerObjectUniform("MVP", typeof(Matrix));
+        m_quadAlphaResources.RegisterPerObjectUniform("Color", typeof(Color));
+        m_quadAlphaResources.Create(m_graphicsDevice);
     }
     
     public void DrawQuad(Matrix transform, Color color)
     {
         var mvp = transform * m_currentViewProjection;
-        
-        m_commandList.UpdateUniform(m_quadOpaqueMaterial.uniformBuffers["MVP"], ref mvp);
-        m_commandList.UpdateUniform(m_quadOpaqueMaterial.uniformBuffers["Color"], ref color);
-        
-        var material = MathF.Abs(color.a - 1.0f) < 1e-5f ? m_quadOpaqueMaterial : m_quadAlphaMaterial;
-        
-        m_commandList.SetPipelineState(material.pipeline);
-        m_commandList.SetVertexBuffer(m_quadMesh.vertexBuffer);
-        m_commandList.SetIndexBuffer(m_quadMesh.indexBuffer);
-        m_commandList.SetResourceSet(0, m_quadResources);
-        m_commandList.DrawIndexed(6);
+
+        if (MathHelper.AlmostEquals(color.a, 1.0f))
+        {
+            m_quadOpaqueResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
+            m_quadOpaqueResources.UpdatePerObjectUniform(m_commandList, "Color", color);
+            m_quadOpaqueResources.ApplyAll(m_commandList);
+        }
+        else
+        {
+            m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
+            m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "Color", color);
+            m_quadAlphaResources.ApplyAll(m_commandList);
+        }
     }
     
     public void ClearColor(Color color)
     {
         var mvp = Matrix.identity;
-        m_commandList.UpdateUniform(m_quadOpaqueMaterial.uniformBuffers["MVP"], ref mvp);
-        m_commandList.UpdateUniform(m_quadOpaqueMaterial.uniformBuffers["Color"], ref color);
         
-        m_commandList.SetPipelineState(m_quadOpaqueMaterial.pipeline);
-        m_commandList.SetVertexBuffer(m_quadMesh.vertexBuffer);
-        m_commandList.SetIndexBuffer(m_quadMesh.indexBuffer);
-        m_commandList.SetResourceSet(0, m_quadResources);
-        m_commandList.DrawIndexed(6);
+        m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
+        m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "Color", color);
+        m_quadAlphaResources.ApplyAll(m_commandList);
     }
 
     public void BeginFrame(Matrix viewProjectionMatrix, float? aspectRatio, IFrameBuffer target)
@@ -189,8 +167,7 @@ public class Renderer2D : IDisposable
         m_commandList.Dispose();
         
         // Quad
-        m_quadMesh.Dispose();
-        m_quadOpaqueMaterial.Dispose();
-        m_quadResources.Dispose();
+        m_quadOpaqueResources.Dispose();
+        m_quadAlphaResources.Dispose();
     }
 }

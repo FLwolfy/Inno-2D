@@ -1,7 +1,6 @@
-using InnoBase;
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.RenderPass;
+namespace InnoEngine.Graphics.RenderPass.Pass;
 
 /// <summary>
 /// Clears the screen before rendering.

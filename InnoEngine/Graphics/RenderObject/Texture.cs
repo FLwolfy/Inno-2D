@@ -1,10 +1,20 @@
+using InnoBase.Graphics;
+
 namespace InnoEngine.Graphics.RenderObject;
 
-public class Texture
+public class Texture(
+    int width,
+    int height,
+    byte[] data,
+    PixelFormat format,
+    TextureUsage usage,
+    TextureDimension dimension)
 {
-    private int m_width;
-    private int m_height;
-    
-    public int width => m_width;
-    public int height => m_height;
+    public int width { get; } = width;
+    public int height { get; } = height;
+    public byte[] data { get; } = data;
+
+    public PixelFormat format { get; } = format;
+    public TextureUsage usage { get; } = usage;
+    public TextureDimension dimension { get; } = dimension;
 }

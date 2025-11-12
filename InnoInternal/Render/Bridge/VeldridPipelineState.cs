@@ -1,9 +1,14 @@
 using System.Reflection;
-using InnoBase;
 using InnoBase.Graphics;
 using InnoBase.Math;
 using InnoInternal.Render.Impl;
 using Veldrid;
+
+using InnoTopology = InnoBase.Graphics.PrimitiveTopology;
+using VeldridTopology = Veldrid.PrimitiveTopology;
+using InnoDepthStencilState = InnoBase.Graphics.DepthStencilState;
+using VeldridDepthStencilState = Veldrid.DepthStencilStateDescription;
+
 
 using InnoPSDescription = InnoInternal.Render.Impl.PipelineStateDescription;
 using VeldridPSDescription = Veldrid.GraphicsPipelineDescription;
@@ -35,8 +40,9 @@ internal class VeldridPipelineState : IPipelineState
     {
         var vertexShader = ((VeldridShader)desc.vertexShader).inner;
         var fragmentShader = ((VeldridShader)desc.fragmentShader).inner;
-        var vertexLayoutDescPair = new[] { GenerateVertexLayoutFromType(desc.vertexLayoutType) };
-        var depthStencilState = ToVeldridDepthDesc(desc.depthStencilState);
+        var vertexLayoutDescriptions = new[] { GenerateVertexLayoutFromTypes(desc.vertexLayoutTypes) };
+        var depthStencilState = ToVeldridDepthStencil(desc.depthStencilState);
+        var primitiveTopology = ToVeldridTopology(desc.primitiveTopology);
         var resourceLayouts = desc.resourceLayoutSpecifiers?.Length > 0 
             ? desc.resourceLayoutSpecifiers
                 .Select(t => m_graphicsDevice.ResourceFactory.CreateResourceLayout(VeldridResourceSet.GenerateResourceLayoutFromBinding(t)))
@@ -57,46 +63,69 @@ internal class VeldridPipelineState : IPipelineState
             BlendState = BlendStateDescription.SingleAlphaBlend,
             DepthStencilState = depthStencilState,
             RasterizerState = rasterizerState,
-            PrimitiveTopology = PrimitiveTopology.TriangleList,
-            ShaderSet = new ShaderSetDescription(vertexLayoutDescPair, [vertexShader, fragmentShader]),
+            PrimitiveTopology = primitiveTopology,
+            ShaderSet = new ShaderSetDescription(vertexLayoutDescriptions, [vertexShader, fragmentShader]),
             ResourceLayouts = resourceLayouts,
             Outputs = outputDesc
         };
     }
+    
+    private static VeldridTopology ToVeldridTopology(InnoTopology topology)
+    {
+        return topology switch
+        {
+            InnoTopology.TriangleList => VeldridTopology.TriangleList,
+            InnoTopology.TriangleStrip => VeldridTopology.TriangleStrip,
+            InnoTopology.LineList => VeldridTopology.LineList,
+            InnoTopology.LineStrip => VeldridTopology.LineStrip,
+            _ => throw new NotSupportedException($"Unsupported primitive topology: {topology}")
+        };
+    }
 
-    private static DepthStencilStateDescription ToVeldridDepthDesc(DepthStencilState dss)
+    private static VeldridDepthStencilState ToVeldridDepthStencil(InnoDepthStencilState dss)
     {
         return dss switch
         {
-            DepthStencilState.Disabled => DepthStencilStateDescription.Disabled,
-            DepthStencilState.DepthOnlyLessEqual => DepthStencilStateDescription.DepthOnlyLessEqual,
-            DepthStencilState.DepthOnlyGreaterEqual => DepthStencilStateDescription.DepthOnlyGreaterEqual,
-            DepthStencilState.DepthReadOnlyLessEqual => DepthStencilStateDescription.DepthOnlyLessEqualRead,
-            DepthStencilState.DepthReadOnlyGreaterEqual => DepthStencilStateDescription.DepthOnlyGreaterEqualRead,
+            InnoDepthStencilState.Disabled 
+                => VeldridDepthStencilState.Disabled,
+            InnoDepthStencilState.DepthOnlyLessEqual 
+                => VeldridDepthStencilState.DepthOnlyLessEqual,
+            InnoDepthStencilState.DepthOnlyGreaterEqual 
+                => VeldridDepthStencilState.DepthOnlyGreaterEqual,
+            InnoDepthStencilState.DepthReadOnlyLessEqual 
+                => VeldridDepthStencilState.DepthOnlyLessEqualRead,
+            InnoDepthStencilState.DepthReadOnlyGreaterEqual 
+                => VeldridDepthStencilState.DepthOnlyGreaterEqualRead,
             _ => throw new NotSupportedException($"Unsupported depth stencil state: {dss}")
         };
     }
     
-    private static VertexLayoutDescription GenerateVertexLayoutFromType(Type t)
+    private static VertexLayoutDescription GenerateVertexLayoutFromTypes(List<Type> types)
     {
-        var fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
-            .OrderBy(f => f.MetadataToken);
-        var elements = fields.Select(f =>
-        {
-            if (f.FieldType == typeof(Vector2))
-                return new VertexElementDescription(f.Name, VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2);
-            if (f.FieldType == typeof(Vector3))
-                return new VertexElementDescription(f.Name, VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3);
-            if (f.FieldType == typeof(Vector4))
-                return new VertexElementDescription(f.Name, VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4);
-            if (f.FieldType == typeof(Color))
-                return new VertexElementDescription(f.Name, VertexElementSemantic.Color, VertexElementFormat.Float4);
+        if (types == null || types.Count == 0)
+            throw new ArgumentException("types list cannot be null or empty");
 
-            throw new NotSupportedException($"Unsupported vertex field type: {f.FieldType}");
-        }).ToArray();
+        var elements = new VertexElementDescription[types.Count];
+
+        for (int i = 0; i < types.Count; i++)
+        {
+            // The VertexElementSemantic is always VertexElementSemantic.TextureCoordinate. Since we're using SPIR-V to generate shader codes.
+            Type t = types[i];
+            if (t == typeof(Vector2))
+                elements[i] = new VertexElementDescription($"attr{i}", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2);
+            else if (t == typeof(Vector3))
+                elements[i] = new VertexElementDescription($"attr{i}", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3);
+            else if (t == typeof(Vector4))
+                elements[i] = new VertexElementDescription($"attr{i}", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4);
+            else if (t == typeof(Color))
+                elements[i] = new VertexElementDescription($"attr{i}", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4);
+            else
+                throw new NotSupportedException($"Unsupported vertex field type: {t}");
+        }
 
         return new VertexLayoutDescription(elements);
     }
+
     
     public void Dispose()
     {

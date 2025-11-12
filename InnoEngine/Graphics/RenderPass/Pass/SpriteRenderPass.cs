@@ -1,10 +1,8 @@
-
-using InnoBase;
 using InnoBase.Math;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 
-namespace InnoEngine.Graphics.RenderPass;
+namespace InnoEngine.Graphics.RenderPass.Pass;
 
 /// <summary>
 /// Renders all SpriteRenderers in the scene.

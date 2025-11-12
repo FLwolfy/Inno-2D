@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
@@ -37,9 +38,10 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         return new VeldridIndexBuffer(m_graphicsDevice, ib);
     }
 
-    public unsafe IUniformBuffer CreateUniformBuffer<T>(String name) where T: unmanaged
+    public IUniformBuffer CreateUniformBuffer(string name, Type type)
     {
-        var ub = m_factory.CreateBuffer(new BufferDescription((uint)sizeof(T), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        int size = Marshal.SizeOf(type);
+        var ub = m_factory.CreateBuffer(new BufferDescription((uint)size, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         return new VeldridUniformBuffer(m_graphicsDevice, ub, name);
     }
 

@@ -1,4 +1,4 @@
-namespace InnoEngine.Graphics;
+namespace InnoEngine.Graphics.RenderPass;
 
 /// <summary>
 /// Defines the order of rendering passes.

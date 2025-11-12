@@ -1,7 +1,6 @@
-using InnoEngine.Graphics.RenderPass;
-using InnoInternal.Render.Impl;
+using InnoEngine.Graphics.RenderPass.Pass;
 
-namespace InnoEngine.Graphics;
+namespace InnoEngine.Graphics.RenderPass;
 
 /// <summary>
 /// System to update and render all Renderer components in scene.

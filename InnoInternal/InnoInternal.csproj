@@ -27,7 +27,6 @@
 
     <ItemGroup>
       <Folder Include="ImGui\Assets\Shaders\" />
-      <Folder Include="Render\Assets\" />
     </ItemGroup>
 
 </Project>
