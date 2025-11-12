@@ -19,6 +19,7 @@ public class SpriteRenderer : GameBehavior
     /// <summary>
     /// The sprite to render.
     /// </summary>
+    [SerializableProperty]
     public Sprite sprite { get; set; } = Sprite.SolidColor(new Vector2(1, 1));
     
     /// <summary>

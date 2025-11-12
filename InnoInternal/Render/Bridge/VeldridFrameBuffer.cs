@@ -29,11 +29,11 @@ internal class VeldridFrameBuffer : IFrameBuffer
 
         if (swapchainFrameBuffer.DepthTarget != null)
         {
-            m_depthAttachment = new VeldridTexture(swapchainFrameBuffer.DepthTarget.Value.Target);
+            m_depthAttachment = new VeldridTexture(graphicsDevice, swapchainFrameBuffer.DepthTarget.Value.Target);
         }
         
         m_colorAttachments = swapchainFrameBuffer.ColorTargets
-            .Select(ct => new VeldridTexture(ct.Target))
+            .Select(ct => new VeldridTexture(graphicsDevice, ct.Target))
             .ToArray<ITexture>();
     }
     
@@ -62,11 +62,11 @@ internal class VeldridFrameBuffer : IFrameBuffer
         
         if (m_graphicsDevice.SwapchainFramebuffer.DepthTarget != null)
         {
-            m_depthAttachment = new VeldridTexture(m_graphicsDevice.SwapchainFramebuffer.DepthTarget.Value.Target);
+            m_depthAttachment = new VeldridTexture(m_graphicsDevice, m_graphicsDevice.SwapchainFramebuffer.DepthTarget.Value.Target);
         }
         
         m_colorAttachments = m_graphicsDevice.SwapchainFramebuffer.ColorTargets
-            .Select(ct => new VeldridTexture(ct.Target))
+            .Select(ct => new VeldridTexture(m_graphicsDevice, ct.Target))
             .ToArray<ITexture>();
     }
 

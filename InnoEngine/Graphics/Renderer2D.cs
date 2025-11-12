@@ -1,8 +1,6 @@
 using InnoBase.Graphics;
 using InnoBase.Math;
-using InnoEngine.Graphics.Material;
-using InnoEngine.Graphics.Mesh;
-using InnoEngine.Graphics.Shader;
+using InnoEngine.Graphics.Resource;
 using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
@@ -17,8 +15,8 @@ public class Renderer2D : IDisposable
     private Matrix m_currentViewProjection;
 
     // Quad Resources
-    private RenderGraphicsResource m_quadOpaqueResources = null!;
-    private RenderGraphicsResource m_quadAlphaResources = null!;
+    private GraphicsResource m_quadOpaqueResources = null!;
+    private GraphicsResource m_quadAlphaResources = null!;
 
     public Renderer2D(IGraphicsDevice graphicsDevice)
     {
@@ -34,7 +32,7 @@ public class Renderer2D : IDisposable
     private void CreateSolidQuadResources()
     {
         // Mesh
-        var mesh = new Mesh.Mesh("Quad");
+        var mesh = new Mesh("Quad");
         mesh.renderState = new MeshRenderState
         {
             topology = PrimitiveTopology.TriangleList
@@ -52,7 +50,7 @@ public class Renderer2D : IDisposable
         ]);
         
         // Opaque Material
-        var opaqueMat = new Material.Material("QuadOpaque");
+        var opaqueMat = new Material("QuadOpaque");
         opaqueMat.renderState = new MaterialRenderState
         {
             depthStencilState = DepthStencilState.DepthOnlyLessEqual
@@ -62,7 +60,7 @@ public class Renderer2D : IDisposable
         opaqueMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.frag"));
         
         // Alpha Material
-        var alphaMat = new Material.Material("QuadAlpha");
+        var alphaMat = new Material("QuadAlpha");
         alphaMat.renderState = new MaterialRenderState
         {
             depthStencilState = DepthStencilState.DepthReadOnlyLessEqual
@@ -72,13 +70,13 @@ public class Renderer2D : IDisposable
         alphaMat.shaders.Add(ShaderLibrary.LoadEmbeddedShader("SolidQuad.frag"));
         
         // Opaque Resource
-        m_quadOpaqueResources = new RenderGraphicsResource(mesh, [opaqueMat]);
+        m_quadOpaqueResources = new GraphicsResource(mesh, [opaqueMat]);
         m_quadOpaqueResources.RegisterPerObjectUniform("MVP", typeof(Matrix));
         m_quadOpaqueResources.RegisterPerObjectUniform("Color", typeof(Color));
         m_quadOpaqueResources.Create(m_graphicsDevice);
         
         // Alpha Resource 
-        m_quadAlphaResources = new RenderGraphicsResource(mesh, [alphaMat]);
+        m_quadAlphaResources = new GraphicsResource(mesh, [alphaMat]);
         m_quadAlphaResources.RegisterPerObjectUniform("MVP", typeof(Matrix));
         m_quadAlphaResources.RegisterPerObjectUniform("Color", typeof(Color));
         m_quadAlphaResources.Create(m_graphicsDevice);

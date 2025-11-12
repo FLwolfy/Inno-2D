@@ -1,7 +1,6 @@
 using InnoEngine.Graphics.RenderObject;
-using InnoEngine.Graphics.Shader;
 
-namespace InnoEngine.Graphics.Material;
+namespace InnoEngine.Graphics.Resource;
 
 public class Material
 {

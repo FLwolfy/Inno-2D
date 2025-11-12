@@ -69,6 +69,8 @@ internal class ImGuiNETContext : IImGuiContext
         m_inInvisible = false;
     }
     public Vector2 GetInvisibleItemRectSize() => m_invisibleSizeCache;
+    public float GetTextLineHeight(bool spacing) => spacing ? ImGuiNET.ImGui.GetTextLineHeightWithSpacing() : ImGuiNET.ImGui.GetTextLineHeight();
+    public float GetFrameHeight(bool spacing) => spacing ? ImGuiNET.ImGui.GetFrameHeightWithSpacing() : ImGuiNET.ImGui.GetFrameHeight();
     public void SameLine() => ImGuiNET.ImGui.SameLine();
     public float CalcItemWidth() => ImGuiNET.ImGui.CalcItemWidth();
     public Vector2 GetItemRectSize() => new Vector2(ImGuiNET.ImGui.GetItemRectSize().X, ImGuiNET.ImGui.GetItemRectSize().Y);
@@ -154,6 +156,7 @@ internal class ImGuiNETContext : IImGuiContext
     public void TableNextRow() => ImGuiNET.ImGui.TableNextRow();
     public void TableNextColumn() => ImGuiNET.ImGui.TableNextColumn();
     public void TableSetColumnIndex(int index) => ImGuiNET.ImGui.TableSetColumnIndex(index);
+    public void TableSetupColumn(string columnName, float weight) => ImGuiNET.ImGui.TableSetupColumn(columnName, ImGuiNET.ImGuiTableColumnFlags.None, weight);
 
     // Tree
     public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)flags);

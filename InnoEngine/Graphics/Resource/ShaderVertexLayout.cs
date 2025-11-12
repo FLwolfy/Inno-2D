@@ -1,6 +1,6 @@
 using InnoBase.Math;
 
-namespace InnoEngine.Graphics.Shader;
+namespace InnoEngine.Graphics.Resource;
 
 public static class ShaderVertexLayout
 {

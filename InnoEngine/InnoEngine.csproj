@@ -17,5 +17,9 @@
             <LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Graphics\Mesh\" />
+    </ItemGroup>
     
 </Project>

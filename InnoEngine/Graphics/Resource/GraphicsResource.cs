@@ -2,9 +2,9 @@ using System.Runtime.InteropServices;
 using InnoBase.Graphics;
 using InnoInternal.Render.Impl;
 
-namespace InnoEngine.Graphics;
+namespace InnoEngine.Graphics.Resource;
 
-public class RenderGraphicsResource : IDisposable
+public class GraphicsResource : IDisposable
 {
     public static readonly int PER_OBJECT_RESOURCE_SET_INDEX = 0;
     public static readonly int MATERIAL_RESOURCE_SET_INDEX = 1;
@@ -16,22 +16,22 @@ public class RenderGraphicsResource : IDisposable
     private IResourceSet[]? m_resourceSets;
     private IResourceSet? m_perObjectResourceSet;
 
-    private readonly Mesh.Mesh m_mesh;
-    private readonly Material.Material[] m_materials;
+    private readonly Mesh m_mesh;
+    private readonly Material[] m_materials;
 
     private readonly List<(string name, Type type)> m_perObjectUniformDesc = new();
     private readonly Dictionary<string, int> m_perObjectUniformIndex = new();
     private List<IUniformBuffer>? m_perObjectUniformList;
 
-    public RenderGraphicsResource(Mesh.Mesh mesh, Material.Material[] materials)
+    public GraphicsResource(Mesh mesh, Material[] materials)
     {
         m_mesh = mesh;
         m_materials = materials;
 
-        // Create 'Whole' SubMesh if none exists
-        if (mesh.subMeshCount == 0)
+        // Create 'Whole' Segment if none exists
+        if (mesh.segmentCount == 0)
         {
-            mesh.AddSubMesh(new("whole", 0, mesh.indexCount, 0));
+            mesh.AddSegment(new("whole", 0, mesh.indexCount, 0));
         }
     }
 
@@ -53,12 +53,12 @@ public class RenderGraphicsResource : IDisposable
         m_vertexBuffer.Set(GenerateVertexArray(m_mesh));
 
         // Index Buffers
-        var subMeshes = m_mesh.GetSubMeshes();
-        int subMeshCount = m_mesh.subMeshCount;
-        m_indexBuffers = new IIndexBuffer[subMeshCount];
-        for (int i = 0; i < subMeshCount; i++)
+        var meshSegments = m_mesh.GetSegments();
+        int segmentCount = m_mesh.segmentCount;
+        m_indexBuffers = new IIndexBuffer[segmentCount];
+        for (int i = 0; i < segmentCount; i++)
         {
-            var sub = subMeshes[i];
+            var sub = meshSegments[i];
             m_indexBuffers[i] = gd.CreateIndexBuffer((uint)sub.indexCount * sizeof(uint));
             uint[] subIndices = new uint[sub.indexCount];
             Array.Copy(m_mesh.GetIndices(), sub.indexStart, subIndices, 0, sub.indexCount);
@@ -78,7 +78,7 @@ public class RenderGraphicsResource : IDisposable
             uniformBuffers = m_perObjectUniformList.ToArray()
         });
 
-        // Material UniformBuffers / ResourceSets / Pipelines
+        // Material UniformBuffers / Textures / ResourceSets / Pipelines
         int materialCount = m_materials.Length;
         m_uniformBuffers = new IUniformBuffer[materialCount][];
         m_pipelines = new IPipelineState[materialCount];
@@ -118,14 +118,15 @@ public class RenderGraphicsResource : IDisposable
                 fragmentShader = fragmentShader,
                 vertexLayoutTypes = GenerateVertexLayoutTypes(m_mesh),
                 depthStencilState = m_materials[i].renderState.depthStencilState,
-                resourceLayoutSpecifiers = new ResourceSetBinding[] { 
+                resourceLayoutSpecifiers =
+                [
                     new ResourceSetBinding
                     {
                         shaderStages = ShaderStage.Vertex | ShaderStage.Fragment,
                         uniformBuffers = m_perObjectUniformList.ToArray()
                     },
                     materialBinding
-                }
+                ]
             };
             m_pipelines[i] = gd.CreatePipelineState(pipelineDesc);
         }
@@ -143,23 +144,23 @@ public class RenderGraphicsResource : IDisposable
         cmd.UpdateUniform(ub, ref value);
     }
 
-    public void Apply(ICommandList cmd, int subMeshIndex)
+    public void Apply(ICommandList cmd, int segmentIndex)
     {
         if (m_vertexBuffer == null || m_indexBuffers == null || m_pipelines == null || m_resourceSets == null)
             throw new InvalidOperationException("GPU resources not created yet. Call Create() first.");
 
-        var subMesh = m_mesh.GetSubMeshes()[subMeshIndex];
-        var materialIndex = subMesh.materialIndex;
+        var segment = m_mesh.GetSegments()[segmentIndex];
+        var materialIndex = segment.materialIndex;
 
         cmd.SetVertexBuffer(m_vertexBuffer);
-        cmd.SetIndexBuffer(m_indexBuffers[subMeshIndex]);
+        cmd.SetIndexBuffer(m_indexBuffers[segmentIndex]);
         cmd.SetPipelineState(m_pipelines[materialIndex]);
 
         if (m_perObjectResourceSet != null) 
             cmd.SetResourceSet(PER_OBJECT_RESOURCE_SET_INDEX, m_perObjectResourceSet);
 
         cmd.SetResourceSet(MATERIAL_RESOURCE_SET_INDEX, m_resourceSets[materialIndex]);
-        cmd.DrawIndexed((uint)subMesh.indexCount);
+        cmd.DrawIndexed((uint)segment.indexCount);
     }
 
     public void ApplyAll(ICommandList cmd)
@@ -168,7 +169,7 @@ public class RenderGraphicsResource : IDisposable
             Apply(cmd, i);
     }
 
-    private static uint GenerateVertexStride(Mesh.Mesh mesh)
+    private static uint GenerateVertexStride(Mesh mesh)
     {
         uint stride = 0;
         foreach (var attr in mesh.GetAllAttributes())
@@ -176,7 +177,7 @@ public class RenderGraphicsResource : IDisposable
         return stride;
     }
 
-    private static List<Type> GenerateVertexLayoutTypes(Mesh.Mesh mesh)
+    private static List<Type> GenerateVertexLayoutTypes(Mesh mesh)
     {
         var list = new List<Type>();
         foreach (var attr in mesh.GetAllAttributes())
@@ -184,10 +185,10 @@ public class RenderGraphicsResource : IDisposable
         return list;
     }
 
-    private static byte[] GenerateVertexArray(Mesh.Mesh mesh)
+    private static byte[] GenerateVertexArray(Mesh mesh)
     {
         var attributes = mesh.GetAllAttributes();
-        if (attributes.Count == 0) return Array.Empty<byte>();
+        if (attributes.Count == 0) return [];
 
         int vertexCount = mesh.vertexCount;
         int stride = 0;

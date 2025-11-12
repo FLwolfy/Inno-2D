@@ -1,6 +1,6 @@
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.Mesh;
+namespace InnoEngine.Graphics.Resource;
 
 public struct MeshRenderState
 {

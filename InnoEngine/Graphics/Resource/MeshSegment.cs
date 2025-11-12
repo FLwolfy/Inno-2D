@@ -1,13 +1,13 @@
-namespace InnoEngine.Graphics.Mesh;
+namespace InnoEngine.Graphics.Resource;
 
-public class SubMesh
+public class MeshSegment
 {
     public string name { get; }
     public int indexStart { get; } 
     public int indexCount { get; }
     public int materialIndex { get; }
 
-    public SubMesh(string name, int indexStart, int indexCount, int materialIndex)
+    public MeshSegment(string name, int indexStart, int indexCount, int materialIndex)
     {
         this.name = name;
         this.indexStart = indexStart;

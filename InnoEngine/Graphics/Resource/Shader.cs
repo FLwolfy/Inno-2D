@@ -1,6 +1,6 @@
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.Shader;
+namespace InnoEngine.Graphics.Resource;
 
 public class Shader(string name, ShaderStage stage, string sourceCode)
 {

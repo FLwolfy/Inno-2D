@@ -1,23 +1,23 @@
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.Shader;
+namespace InnoEngine.Graphics.Resource;
 
 public class ShaderProgram
 {
-    private readonly Dictionary<ShaderStage, Dictionary<string, Shader>> m_shaders = new();
+    private readonly Dictionary<ShaderStage, Dictionary<string, Resource.Shader>> m_shaders = new();
 
-    public void Add(Shader shader)
+    public void Add(Resource.Shader shader)
     {
         if (!m_shaders.TryGetValue(shader.stage, out var stageDict))
         {
-            stageDict = new Dictionary<string, Shader>();
+            stageDict = new Dictionary<string, Resource.Shader>();
             m_shaders[shader.stage] = stageDict;
         }
 
         stageDict[shader.name] = shader;
     }
 
-    public Shader? Get(ShaderStage stage, string name)
+    public Resource.Shader? Get(ShaderStage stage, string name)
     {
         if (m_shaders.TryGetValue(stage, out var stageDict))
         {
@@ -27,8 +27,8 @@ public class ShaderProgram
         return null;
     }
 
-    public IReadOnlyDictionary<string, Shader> GetShadersByStage(ShaderStage stage) 
-        => m_shaders.TryGetValue(stage, out var stageDict) ? stageDict : new Dictionary<string, Shader>();
+    public IReadOnlyDictionary<string, Resource.Shader> GetShadersByStage(ShaderStage stage) 
+        => m_shaders.TryGetValue(stage, out var stageDict) ? stageDict : new Dictionary<string, Resource.Shader>();
     
     public bool Contains(ShaderStage stage, string name) 
         => m_shaders.TryGetValue(stage, out var stageDict) && stageDict.ContainsKey(name);

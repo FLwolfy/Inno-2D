@@ -1,6 +1,6 @@
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.Material;
+namespace InnoEngine.Graphics.Resource;
 
 public struct MaterialRenderState
 {

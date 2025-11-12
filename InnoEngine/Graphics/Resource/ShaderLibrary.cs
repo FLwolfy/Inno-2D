@@ -1,16 +1,15 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.Shader;
+namespace InnoEngine.Graphics.Resource;
 
 public static class ShaderLibrary
 {
     private static readonly Assembly ASSEMBLY = typeof(ShaderLibrary).GetTypeInfo().Assembly;
-    private static readonly ConcurrentDictionary<string, Shader> CACHE = new();
+    private static readonly ConcurrentDictionary<string, Resource.Shader> CACHE = new();
 
-    public static Shader LoadEmbeddedShader(string fullName)
+    public static Resource.Shader LoadEmbeddedShader(string fullName)
     {
         if (CACHE.TryGetValue(fullName, out var cached))
             return cached;
@@ -25,7 +24,7 @@ public static class ShaderLibrary
         using Stream s = ASSEMBLY.GetManifestResourceStream(match)!;
         using StreamReader reader = new StreamReader(s);
         
-        var shader = new Shader
+        var shader = new Resource.Shader
         (
             fullName.Substring(0, dotIndex), 
             GetShaderStageFromExt(extension), 

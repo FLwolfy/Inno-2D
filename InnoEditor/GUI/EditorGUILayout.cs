@@ -1,4 +1,3 @@
-using InnoBase;
 using InnoBase.Graphics;
 using InnoBase.Math;
 using InnoInternal.ImGui.Impl;
@@ -17,6 +16,8 @@ public static class EditorGUILayout
     private static readonly Stack<LayoutAlign> ALIGN_STACK = new();
     private static readonly Stack<bool> COLUMN_DIRTY_STACK = new();
     private static readonly Dictionary<int, int> COLUMN_COUNT_MAP = new();
+    private static readonly Dictionary<int, float> COLUMN_TOTAL_WEIGHT_MAP = new();
+    private static readonly Dictionary<int, List<float>> COLUMN_WEIGHT_MAP = new();
     
     private static int m_autoID = 0;
     private static int m_autoMeasureID = 0;
@@ -80,11 +81,12 @@ public static class EditorGUILayout
     #region Layouts
 
     /// <summary>
-    /// Begins a column layout with specified column numbers.
+    /// Begins a column layout.
     /// </summary>
-    public static void BeginColumns(bool bordered = false)
+    public static void BeginColumns(float firstColumnWeight = 1.0f, bool bordered = false)
     {
-        var flags = IImGuiContext.TableFlags.SizingStretchSame;
+        var flags = IImGuiContext.TableFlags.SizingStretchProp;
+        
         if (bordered)
         {
             flags |= IImGuiContext.TableFlags.BordersInner | IImGuiContext.TableFlags.BordersOuter;
@@ -95,12 +97,24 @@ public static class EditorGUILayout
 
         if (!COLUMN_DIRTY_STACK.Peek())
         {
-            m_context.BeginTable("EditorLayout", COLUMN_COUNT_MAP[m_columnDepth], flags);
+            var columnCount = COLUMN_COUNT_MAP[m_columnDepth];
+            m_context.BeginTable("EditorLayout", columnCount, flags);
+
+            for (var i = 0; i < columnCount; i++)
+            {
+                m_context.TableSetupColumn($"Column {i}", COLUMN_WEIGHT_MAP[m_columnDepth][i]);
+            }
+            
             m_context.TableNextRow();
             m_context.TableSetColumnIndex(0);
         }
-
-        COLUMN_COUNT_MAP[m_columnDepth] = 1;
+        else
+        {
+            COLUMN_COUNT_MAP[m_columnDepth] = 1;
+            COLUMN_TOTAL_WEIGHT_MAP[m_columnDepth] = firstColumnWeight;
+            COLUMN_WEIGHT_MAP[m_columnDepth] = [firstColumnWeight];
+        }
+        
     }
 
     /// <summary>
@@ -112,6 +126,18 @@ public static class EditorGUILayout
         {
             m_context.EndTable();
         }
+        else
+        {
+            var totalWeight = COLUMN_TOTAL_WEIGHT_MAP[m_columnDepth];
+            if (totalWeight != 0)
+            {
+                for (var i = 0; i < COLUMN_COUNT_MAP[m_columnDepth]; i++)
+                {
+                
+                    COLUMN_WEIGHT_MAP[m_columnDepth][i] /= totalWeight;
+                }
+            }
+        }
         
         m_columnDepth--;
     }
@@ -119,14 +145,18 @@ public static class EditorGUILayout
     /// <summary>
     /// Split columns in the current column layout.
     /// </summary>
-    public static void SplitColumns()
+    public static void SplitColumns(float nextColumnWeight = 1.0f)
     {
         if (!COLUMN_DIRTY_STACK.Peek())
         {
             m_context.TableNextColumn();
         }
-
-        COLUMN_COUNT_MAP[m_columnDepth]++;
+        else
+        {
+            COLUMN_COUNT_MAP[m_columnDepth]++;
+            COLUMN_TOTAL_WEIGHT_MAP[m_columnDepth] += nextColumnWeight;
+            COLUMN_WEIGHT_MAP[m_columnDepth].Add(nextColumnWeight);
+        }
     }
     
     /// <summary>
@@ -237,11 +267,19 @@ public static class EditorGUILayout
     {
         float width = MeasureWidth(() => m_context.Text(text));
         AlignNextItem(width);
-        
-        using (new DrawScope(enabled)) { m_context.Text(text); }
+
+        using (new DrawScope(enabled))
+        {
+            float textHeight = m_context.GetTextLineHeight(true);
+            float frameHeight = m_context.GetFrameHeight(false);
+            float verticalOffset = (frameHeight - textHeight) * 0.5f;
+            var cursorPos = m_context.GetCursorPos();
+            m_context.SetCursorPosY(cursorPos.y + verticalOffset);
+            m_context.Text(text);
+        }
     }
 
-        /// <summary>
+    /// <summary>
     /// Render a button; returns true if clicked
     /// </summary>
     public static bool Button(string label, bool enabled = true)

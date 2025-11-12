@@ -1,13 +1,11 @@
-using System.Runtime.InteropServices;
-
-namespace InnoEngine.Graphics.Mesh;
+namespace InnoEngine.Graphics.Resource;
 
 public class Mesh
 {
     private readonly List<VertexAttributeEntry> m_attributes = new();
     private readonly Dictionary<string, int> m_attributeIndex = new();
 
-    private readonly List<SubMesh> m_subMeshes = new();
+    private readonly List<MeshSegment> m_segments = new();
     private uint[] m_indices = [];
 
     public string name { get; }
@@ -15,7 +13,7 @@ public class Mesh
 
     public int vertexCount => m_attributes.Count == 0 ? 0 : m_attributes[0].data.Length;
     public int indexCount => m_indices.Length;
-    public int subMeshCount => m_subMeshes.Count;
+    public int segmentCount => m_segments.Count;
 
     public Mesh(string name)
     {
@@ -54,6 +52,6 @@ public class Mesh
     public void SetIndices(uint[] indices) => m_indices = indices;
     public uint[] GetIndices() => m_indices;
 
-    public void AddSubMesh(SubMesh subMesh) => m_subMeshes.Add(subMesh);
-    public IReadOnlyList<SubMesh> GetSubMeshes() => m_subMeshes;
+    public void AddSegment(MeshSegment meshSegment) => m_segments.Add(meshSegment);
+    public IReadOnlyList<MeshSegment> GetSegments() => m_segments;
 }

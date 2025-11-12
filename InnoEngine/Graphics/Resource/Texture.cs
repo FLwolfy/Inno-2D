@@ -1,6 +1,6 @@
 using InnoBase.Graphics;
 
-namespace InnoEngine.Graphics.RenderObject;
+namespace InnoEngine.Graphics.Resource;
 
 public class Texture(
     int width,
