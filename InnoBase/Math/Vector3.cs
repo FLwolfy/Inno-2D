@@ -102,6 +102,9 @@ public struct Vector3 : IEquatable<Vector3>
         MathHelper.AlmostEquals(a.z, b.z);
 
     public static bool operator !=(Vector3 a, Vector3 b) => !(a == b);
+    
+    public static implicit operator System.Numerics.Vector3(Vector3 v) => new(v.x, v.y, v.z);
+    public static implicit operator Vector3(System.Numerics.Vector3 v) => new(v.X, v.Y, v.Z);
 
     public override bool Equals(object? obj) => obj is Vector3 other && this == other;
     public bool Equals(Vector3 other) => this == other;

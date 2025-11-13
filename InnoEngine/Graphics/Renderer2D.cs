@@ -18,7 +18,7 @@ public class Renderer2D : IDisposable
     private GraphicsResource m_quadOpaqueResources = null!;
     private GraphicsResource m_quadAlphaResources = null!;
 
-    public Renderer2D(IGraphicsDevice graphicsDevice)
+    internal Renderer2D(IGraphicsDevice graphicsDevice)
     {
         m_graphicsDevice = graphicsDevice;
         m_commandList = graphicsDevice.CreateCommandList();

@@ -2,7 +2,6 @@ using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
-using Veldrid.Sdl2;
 
 using ImGuiNET;
 using InnoInternal.Render.Bridge;

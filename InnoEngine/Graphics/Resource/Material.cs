@@ -1,5 +1,3 @@
-using InnoEngine.Graphics.RenderObject;
-
 namespace InnoEngine.Graphics.Resource;
 
 public class Material

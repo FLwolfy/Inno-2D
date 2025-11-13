@@ -2,6 +2,7 @@ using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 
+// TODO: Make all Inno internal things to be internal
 public class RenderTargetPool : IDisposable
 {
     private readonly IGraphicsDevice m_device;
@@ -26,7 +27,7 @@ public class RenderTargetPool : IDisposable
 
     public void Create(string name, FrameBufferDescription desc)
     {
-        if (m_targets.TryGetValue(name, out var fb))
+        if (m_targets.TryGetValue(name, out _))
             throw new InvalidOperationException($"Already exists a framebuffer named {name}!");
 
         m_targets[name] = m_device.CreateFrameBuffer(desc);
