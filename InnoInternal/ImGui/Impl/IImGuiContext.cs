@@ -1,7 +1,10 @@
-using InnoBase;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoInternal.Render.Impl;
 
 namespace InnoInternal.ImGui.Impl;
+
+// TODO: Use Reflection LOAD_FUNCTION to get imguiNative Method
 
 /// <summary>
 /// A encapsulated immeadiate-mode GUI interface
@@ -92,6 +95,8 @@ public interface IImGuiContext
     void BeginInvisible();
     void EndInvisible();
     Vector2 GetInvisibleItemRectSize();
+    float GetTextLineHeight(bool spacing);
+    float GetFrameHeight(bool spacing);
     void SameLine();
     float CalcItemWidth();
     Vector2 GetItemRectSize();
@@ -233,6 +238,7 @@ public interface IImGuiContext
     void TableNextRow();
     void TableNextColumn();
     void TableSetColumnIndex(int index);
+    void TableSetupColumn(string columnName, float weight);
     
     // Tree
     [Flags]
@@ -285,6 +291,7 @@ public interface IImGuiContext
     // IO
     bool IsMouseDown(int button);
     bool IsMouseClicked(int button);
+    bool IsMouseDragging(int button);
     float GetMouseWheel();
     Vector2 GetMouseDelta();
     Vector2 GetMousePosition();

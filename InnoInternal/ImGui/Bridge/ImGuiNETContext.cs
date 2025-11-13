@@ -1,4 +1,5 @@
-using InnoBase;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
@@ -67,6 +68,8 @@ internal class ImGuiNETContext : IImGuiContext
         m_inInvisible = false;
     }
     public Vector2 GetInvisibleItemRectSize() => m_invisibleSizeCache;
+    public float GetTextLineHeight(bool spacing) => spacing ? ImGuiNET.ImGui.GetTextLineHeightWithSpacing() : ImGuiNET.ImGui.GetTextLineHeight();
+    public float GetFrameHeight(bool spacing) => spacing ? ImGuiNET.ImGui.GetFrameHeightWithSpacing() : ImGuiNET.ImGui.GetFrameHeight();
     public void SameLine() => ImGuiNET.ImGui.SameLine();
     public float CalcItemWidth() => ImGuiNET.ImGui.CalcItemWidth();
     public Vector2 GetItemRectSize() => new Vector2(ImGuiNET.ImGui.GetItemRectSize().X, ImGuiNET.ImGui.GetItemRectSize().Y);
@@ -152,6 +155,7 @@ internal class ImGuiNETContext : IImGuiContext
     public void TableNextRow() => ImGuiNET.ImGui.TableNextRow();
     public void TableNextColumn() => ImGuiNET.ImGui.TableNextColumn();
     public void TableSetColumnIndex(int index) => ImGuiNET.ImGui.TableSetColumnIndex(index);
+    public void TableSetupColumn(string columnName, float weight) => ImGuiNET.ImGui.TableSetupColumn(columnName, ImGuiNET.ImGuiTableColumnFlags.None, weight);
 
     // Tree
     public bool TreeNode(string text, IImGuiContext.TreeNodeFlags flags = IImGuiContext.TreeNodeFlags.None) => ImGuiNET.ImGui.TreeNodeEx(text, (ImGuiNET.ImGuiTreeNodeFlags)flags);
@@ -199,6 +203,7 @@ internal class ImGuiNETContext : IImGuiContext
     // IO
     public bool IsMouseDown(int button) => ImGuiNET.ImGui.GetIO().MouseDown[button];
     public bool IsMouseClicked(int button) => ImGuiNET.ImGui.GetIO().MouseClicked[button];
+    public bool IsMouseDragging(int button) => ImGuiNET.ImGui.IsMouseDragging((ImGuiNET.ImGuiMouseButton)button);
     public float GetMouseWheel() => ImGuiNET.ImGui.GetIO().MouseWheel;
     public Vector2 GetMouseDelta() => new Vector2(ImGuiNET.ImGui.GetIO().MouseDelta.X, ImGuiNET.ImGui.GetIO().MouseDelta.Y);
     public Vector2 GetMousePosition() => new Vector2(ImGuiNET.ImGui.GetIO().MousePos.X, ImGuiNET.ImGui.GetIO().MousePos.Y);

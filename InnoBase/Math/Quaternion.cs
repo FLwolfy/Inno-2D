@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Quaternion : IEquatable<Quaternion>
@@ -261,10 +261,16 @@ public struct Quaternion : IEquatable<Quaternion>
     }
 
     public static bool operator ==(Quaternion a, Quaternion b)
-        => (double) a.x == (double) b.x && (double) a.y == (double) b.y && (double) a.z == (double) b.z && (double) a.w == (double) b.w;
+        => MathHelper.AlmostEquals(a.x, b.x) &&
+           MathHelper.AlmostEquals(a.y, b.y) &&
+           MathHelper.AlmostEquals(a.z, b.z) &&
+           MathHelper.AlmostEquals(a.w, b.w);
 
     public static bool operator !=(Quaternion a, Quaternion b)
         => !(a == b);
+    
+    public static implicit operator System.Numerics.Quaternion(Quaternion q) => new(q.x, q.y, q.z, q.w);
+    public static implicit operator Quaternion(System.Numerics.Quaternion q) => new(q.X, q.Y, q.Z, q.W);
 
     public override bool Equals(object? obj) => obj is Quaternion q && this == q;
 

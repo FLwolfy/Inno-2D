@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Vector4 : IEquatable<Vector4>
@@ -45,7 +45,7 @@ public struct Vector4 : IEquatable<Vector4>
 
     // Lerp
     public static Vector4 Lerp(Vector4 a, Vector4 b, float t) =>
-        a + (b - a) * Mathematics.Clamp(t, 0f, 1f);
+        a + (b - a) * MathHelper.Clamp(t, 0f, 1f);
 
     // Reflect
     public static Vector4 Reflect(Vector4 vec, Vector4 normal) =>
@@ -97,12 +97,15 @@ public struct Vector4 : IEquatable<Vector4>
         new(v.x / s, v.y / s, v.z / s, v.w / s);
 
     public static bool operator ==(Vector4 a, Vector4 b) =>
-        MathF.Abs(a.x - b.x) < 1e-6f &&
-        MathF.Abs(a.y - b.y) < 1e-6f &&
-        MathF.Abs(a.z - b.z) < 1e-6f &&
-        MathF.Abs(a.w - b.w) < 1e-6f;
+        MathHelper.AlmostEquals(a.x, b.x) &&
+        MathHelper.AlmostEquals(a.y, b.y) &&
+        MathHelper.AlmostEquals(a.z, b.z) &&
+        MathHelper.AlmostEquals(a.w, b.w);
 
     public static bool operator !=(Vector4 a, Vector4 b) => !(a == b);
+    
+    public static implicit operator System.Numerics.Vector4(Vector4 v) => new(v.x, v.y, v.z, v.w);
+    public static implicit operator Vector4(System.Numerics.Vector4 v) => new(v.X, v.Y, v.Z, v.W);
 
     public override bool Equals(object? obj) => obj is Vector4 other && this == other;
     public bool Equals(Vector4 other) => this == other;

@@ -1,6 +1,8 @@
 using InnoBase;
+using InnoBase.Event;
 using InnoEngine.Core.Layer;
 using InnoEngine.Graphics;
+using InnoEngine.Graphics.RenderPass;
 using InnoEngine.Resource;
 using InnoEngine.Utility;
 using InnoInternal.ImGui.Impl;
@@ -18,17 +20,27 @@ public abstract class EngineCore
     private readonly LayerStack m_layerStack;
     private readonly RenderContext m_renderContext;
     
+    // Render Resources
+    private readonly Renderer2D m_renderer2D;
+    private readonly RenderTargetPool m_renderTargetPool;
+    private readonly IImGuiRenderer m_imGuiRenderer;
+    
     protected EngineCore()
     {
         // Initialize members
         m_gameShell = IGameShell.CreateShell(IGameShell.ShellType.Veldrid);
         m_layerStack = new LayerStack();
+        
+        // Initialize Render
+        m_renderer2D = new Renderer2D(m_gameShell.GetGraphicsDevice());
+        m_imGuiRenderer = IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid);
+        m_renderTargetPool = new RenderTargetPool(m_gameShell.GetGraphicsDevice());
         m_renderContext = new RenderContext
         (
-            m_gameShell.GetGraphicsDevice(),
-            new Renderer2D(m_gameShell.GetGraphicsDevice()),
-            IImGuiRenderer.CreateRenderer(IImGuiRenderer.ImGuiRendererType.Veldrid),
-            new RenderPassController()
+            m_renderer2D,
+            m_imGuiRenderer,
+            new RenderPassController(),
+            m_renderTargetPool
         );
         
         // Initialization Callbacks
@@ -43,7 +55,7 @@ public abstract class EngineCore
         m_gameShell.SetOnDraw(OnDraw);
         
         // Window Callback
-        m_gameShell.SetOnClose(AssetRegistry.SaveToDisk);
+        m_gameShell.SetOnClose(OnClose);
     }
     
     private void OnLoad()
@@ -53,7 +65,7 @@ public abstract class EngineCore
         AssetRegistry.LoadFromDisk();
         
         // Renderer Resource Load
-        m_renderContext.renderer.LoadResources();
+        m_renderContext.renderer2D.LoadResources();
         m_renderContext.imGuiRenderer.Initialize(m_gameShell.GetGraphicsDevice(), m_gameShell.GetWindow());
         m_renderContext.passController.LoadPasses();
     }
@@ -92,6 +104,16 @@ public abstract class EngineCore
         // Swap Buffers
         m_gameShell.GetGraphicsDevice().SwapBuffers();
         m_renderContext.imGuiRenderer.SwapExtraImGuiWindows();
+    }
+
+    private void OnClose()
+    {
+        AssetRegistry.SaveToDisk();
+        
+        // Dispose Resources
+        m_renderer2D.Dispose();
+        m_imGuiRenderer.Dispose();
+        m_renderTargetPool.Dispose();
     }
     
     /// <summary>

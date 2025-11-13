@@ -1,4 +1,6 @@
 using InnoBase;
+using InnoBase.Math;
+using InnoEngine.Graphics.Resource;
 
 namespace InnoEngine.Graphics.RenderObject;
 

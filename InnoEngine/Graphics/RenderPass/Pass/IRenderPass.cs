@@ -1,4 +1,4 @@
-namespace InnoEngine.Graphics.RenderPass;
+namespace InnoEngine.Graphics.RenderPass.Pass;
 
 /// <summary>
 /// Represents a rendering stage in the pipeline.

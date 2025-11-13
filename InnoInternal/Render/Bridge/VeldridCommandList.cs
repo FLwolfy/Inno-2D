@@ -1,4 +1,6 @@
 using InnoBase;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
@@ -55,7 +57,7 @@ internal class VeldridCommandList : ICommandList
     public void SetIndexBuffer(IIndexBuffer indexBuffer)
     {
         if (indexBuffer is VeldridIndexBuffer veldridIB)
-            inner.SetIndexBuffer(veldridIB.inner, IndexFormat.UInt16); // or UInt32 based on your index data
+            inner.SetIndexBuffer(veldridIB.inner, IndexFormat.UInt32);
     }
 
     public void SetResourceSet(int setIndex, IResourceSet resourceSet)

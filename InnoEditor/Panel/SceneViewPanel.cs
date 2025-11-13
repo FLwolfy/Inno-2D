@@ -1,4 +1,7 @@
 using InnoBase;
+using InnoBase.Event;
+using InnoBase.Graphics;
+using InnoBase.Math;
 using InnoEditor.Core;
 using InnoEditor.Gizmo;
 using InnoEditor.Utility;
@@ -20,9 +23,6 @@ public class SceneViewPanel : EditorPanel
     
     private readonly EditorCamera2D m_editorCamera2D = new EditorCamera2D();
     private readonly GridGizmo m_gridGizmo = new GridGizmo();
-
-    private ITexture? m_renderTexture;
-    private IFrameBuffer? m_renderTarget;
     
     private int m_width = 0;
     private int m_height = 0;
@@ -36,6 +36,9 @@ public class SceneViewPanel : EditorPanel
     
     internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
     {
+        // Ensure scene render target
+        EnsureSceneRenderTarget(renderContext);
+        
         // Check if region changed
         CheckRegionChange(imGuiContext, renderContext);
 
@@ -46,10 +49,38 @@ public class SceneViewPanel : EditorPanel
         RenderSceneToBuffer(renderContext);
 
         // display on scene view
-        DrawScene(imGuiContext);
+        DrawScene(imGuiContext, renderContext);
         
         // Draw axis gizmo
         DrawAxisGizmo(imGuiContext);
+    }
+    
+    private void EnsureSceneRenderTarget(RenderContext ctx)
+    {
+        if (ctx.targetPool.Get("scene") == null)
+        {
+            var renderTexDesc = new TextureDescription
+            {
+                format = PixelFormat.B8_G8_R8_A8_UNorm,
+                usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
+                dimension = TextureDimension.Texture2D
+            };
+            
+            var depthTexDesc = new TextureDescription
+            {
+                format = PixelFormat.D32_Float_S8_UInt,
+                usage = TextureUsage.DepthStencil,
+                dimension = TextureDimension.Texture2D
+            };
+            
+            var renderTargetDesc = new FrameBufferDescription
+            {
+                depthAttachmentDescription = depthTexDesc,
+                colorAttachmentDescriptions = [renderTexDesc]
+            };
+            
+            ctx.targetPool.Create("scene", renderTargetDesc);
+        }
     }
 
     private void CheckRegionChange(IImGuiContext imGuiContext, RenderContext renderContext)
@@ -59,59 +90,27 @@ public class SceneViewPanel : EditorPanel
         int newWidth = (int)Math.Max(available.x, 1);
         int newHeight = (int)Math.Max(available.y, 1);
         
-        // if region change, reset
-        if (newWidth != m_width || newHeight != m_height || m_renderTarget == null)
+        // if region change, resize
+        if (newWidth != m_width || newHeight != m_height)
         {
-            // Update size
             m_width = newWidth;
             m_height = newHeight;
-            m_editorCamera2D.SetViewportSize(m_width, m_height);
-
-            // Recreate render target
-            m_renderTexture?.Dispose();
-            m_renderTarget?.Dispose();
-
-            var renderTexDesc = new TextureDescription
-            {
-                width = m_width,
-                height = m_height,
-                format = PixelFormat.B8G8R8A8UNorm,
-                usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
-                dimension = TextureDimension.Texture2D
-            };
             
-            var depthTexDesc = new TextureDescription
-            {
-                width = m_width,
-                height = m_height,
-                format = PixelFormat.D32FloatS8UInt,
-                usage = TextureUsage.DepthStencil,
-                dimension = TextureDimension.Texture2D
-            };
-            
-            var depthTexture = renderContext.graphicsDevice.CreateTexture(depthTexDesc);
-            m_renderTexture = renderContext.graphicsDevice.CreateTexture(renderTexDesc);
-            
-            var renderTargetDesc = new FrameBufferDescription
-            {
-                depthAttachment = depthTexture,
-                colorAttachments = [m_renderTexture]
-            };
-            
-            m_renderTarget = renderContext.graphicsDevice.CreateFrameBuffer(renderTargetDesc);
+            m_editorCamera2D.SetViewportSize(newWidth, newHeight);
+            renderContext.targetPool.Get("scene")?.Resize(newWidth, newHeight);
         }
     }
 
     private void RenderSceneToBuffer(RenderContext renderContext)
     {
-        if (m_renderTarget != null)
+        if (renderContext.targetPool.Get("scene") != null)
         {
             var flipYViewMatrix = m_editorCamera2D.viewMatrix;
             flipYViewMatrix.m42 *= -1;
             
-            renderContext.renderer.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, m_renderTarget);
+            renderContext.renderer2D.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, renderContext.targetPool.Get("scene"));
             renderContext.passController.RenderPasses(renderContext);
-            renderContext.renderer.EndFrame();
+            renderContext.renderer2D.EndFrame();
         }
     }
     
@@ -119,17 +118,19 @@ public class SceneViewPanel : EditorPanel
     {
         Vector2 panDelta = Vector2.ZERO;
         float zoomDelta = imGuiContext.GetMouseWheel();
-
-        if (imGuiContext.IsWindowHovered() && (imGuiContext.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f))
-        {
-            if (imGuiContext.IsWindowFocused()) { panDelta = imGuiContext.GetMouseDelta(); }
-            else { imGuiContext.SetWindowFocus(); }
-        }
-
+        
         Vector2 windowPos = imGuiContext.GetWindowPos();
         Vector2 screenPos = imGuiContext.GetCursorStartPos();
         Vector2 mousePos = imGuiContext.GetMousePosition();
         Vector2 localMousePos = mousePos - screenPos - windowPos;
+
+        bool isMouseInContent = localMousePos.y > 0 && imGuiContext.IsWindowHovered();
+        bool isPanning = imGuiContext.IsMouseDown((int)MOUSE_BUTTON_PAN) || zoomDelta != 0.0f;
+        if (isMouseInContent && isPanning)
+        {
+            if (imGuiContext.IsWindowFocused()) { panDelta = imGuiContext.GetMouseDelta(); }
+            else { imGuiContext.SetWindowFocus(); }
+        }
 
         if (imGuiContext.IsWindowFocused())
         {
@@ -137,18 +138,19 @@ public class SceneViewPanel : EditorPanel
         }
     }
 
-    private void DrawScene(IImGuiContext imGuiContext)
+    private void DrawScene(IImGuiContext imGuiContext, RenderContext renderContext)
     {
-        if (m_renderTexture != null)
+        var targetTexture = renderContext.targetPool.Get("scene")?.GetColorAttachment(0);
+        if (targetTexture != null)
         {
-            imGuiContext.Image(m_renderTexture, m_width, m_height);
+            imGuiContext.Image(targetTexture, m_width, m_height);
         }
     }
     
     private void DrawAxisGizmo(IImGuiContext imGuiContext)
     {
         Vector2 axisOriginWorld = Vector2.Transform(Vector2.ZERO, m_editorCamera2D.GetScreenToWorldMatrix());
-        float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;;
+        float spacing = Vector2.Transform(axisOriginWorld + new Vector2(AXIS_INTERVAL, 0), m_editorCamera2D.GetWorldToScreenMatrix()).x;
         int newAxisInterval = AXIS_INTERVAL;
         
         while (spacing < AXIS_INTERVAL * AXIS_INTERVAL_SCALE_RATE)

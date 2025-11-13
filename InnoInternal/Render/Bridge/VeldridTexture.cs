@@ -1,11 +1,12 @@
+using InnoBase.Graphics;
 using InnoInternal.Render.Impl;
 using Veldrid;
 
 using InnoTEXDescription = InnoInternal.Render.Impl.TextureDescription;
 using VeldridTEXDescription = Veldrid.TextureDescription;
-using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
+using InnoPixelFormat = InnoBase.Graphics.PixelFormat;
 using VeldridPixelFormat = Veldrid.PixelFormat;
-using InnoTextureUsage = InnoInternal.Render.Impl.TextureUsage;
+using InnoTextureUsage = InnoBase.Graphics.TextureUsage;
 using VeldridTextureUsage = Veldrid.TextureUsage;
 
 using VTexture = Veldrid.Texture;
@@ -14,16 +15,25 @@ namespace InnoInternal.Render.Bridge;
 
 internal class VeldridTexture : ITexture
 {
+    private readonly GraphicsDevice m_graphicsDevice;
+    
     public int width { get; }
     public int height { get; }
-    
+
     internal readonly Texture inner;
 
     public VeldridTexture(GraphicsDevice graphicsDevice, Texture inner)
     {
+        m_graphicsDevice = graphicsDevice;
+        
         this.inner = inner;
         width = (int)inner.Width;
         height = (int)inner.Height;
+    }
+    
+    public void Set(ref byte[] data, int mipLevel = 0)
+    {
+        m_graphicsDevice.UpdateTexture(inner, data, 0, 0, 0, (uint)width, (uint)height, 1, (uint)mipLevel, 0);
     }
 
     public static VeldridTexture Create(GraphicsDevice graphicsDevice, InnoTEXDescription desc)
@@ -41,7 +51,7 @@ internal class VeldridTexture : ITexture
             width,
             height,
             1,
-            1,
+            (uint)desc.mipLevels,
             1,
             ToVeldridPixelFormat(desc.format),
             ToVeldridTextureUsage(desc.usage),
@@ -49,22 +59,22 @@ internal class VeldridTexture : ITexture
             TextureSampleCount.Count1);
     }
     
-    internal static VeldridPixelFormat ToVeldridPixelFormat(InnoPixelFormat format)
+    private static VeldridPixelFormat ToVeldridPixelFormat(InnoPixelFormat format)
     {
         return format switch
         {
-            InnoPixelFormat.B8G8R8A8UNorm => VeldridPixelFormat.B8_G8_R8_A8_UNorm,
-            InnoPixelFormat.D32FloatS8UInt => VeldridPixelFormat.D32_Float_S8_UInt,
+            InnoPixelFormat.B8_G8_R8_A8_UNorm => VeldridPixelFormat.B8_G8_R8_A8_UNorm,
+            InnoPixelFormat.D32_Float_S8_UInt => VeldridPixelFormat.D32_Float_S8_UInt,
             _ => throw new NotSupportedException($"Unsupported pixel format: {format}")
         };
     }
 
-    internal static VeldridTextureUsage ToVeldridTextureUsage(InnoTextureUsage usage)
+    private static VeldridTextureUsage ToVeldridTextureUsage(InnoTextureUsage usage)
     {
         return (VeldridTextureUsage)(byte)usage;
     }
 
-    internal static TextureType ToVeldridTextureType(TextureDimension dim)
+    private static TextureType ToVeldridTextureType(TextureDimension dim)
     {
         return dim switch
         {

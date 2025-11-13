@@ -24,7 +24,7 @@ internal class ImGuiTest
         
         shell.SetOnDraw(deltaTime =>
         {
-            imGuiRenderer.BeginLayout(deltaTime, null);
+            imGuiRenderer.BeginLayout(deltaTime, shell.GetGraphicsDevice().swapchainFrameBuffer);
             
             // Simple Window (Cannot be docked onto the main window)
             {

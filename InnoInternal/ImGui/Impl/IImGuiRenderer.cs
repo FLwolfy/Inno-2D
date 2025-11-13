@@ -9,7 +9,7 @@ namespace InnoInternal.ImGui.Impl;
 /// Responsible for handling frame lifecycle, rendering ImGui draw data,
 /// and binding textures for use in ImGui.
 /// </summary>
-public interface IImGuiRenderer
+public interface IImGuiRenderer : IDisposable
 {
     void Initialize(IGraphicsDevice graphicsDevice, IWindow windowHolder);
 
@@ -21,7 +21,7 @@ public interface IImGuiRenderer
     /// <summary>
     /// Starts a new ImGui frame. Should be called before any ImGui calls each frame.
     /// </summary>
-    void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer);
+    void BeginLayout(float deltaTime, IFrameBuffer frameBuffer);
 
     /// <summary>
     /// Ends the ImGui frame and finalizes draw data.

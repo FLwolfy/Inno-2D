@@ -1,9 +1,10 @@
 using System.Text;
-using System.Text.RegularExpressions;
 using InnoInternal.Render.Impl;
+
 using Veldrid;
 using Veldrid.SPIRV;
-using InnoShaderStage = InnoInternal.Render.Impl.ShaderStage;
+
+using InnoShaderStage = InnoBase.Graphics.ShaderStage;
 using InnoSDescription = InnoInternal.Render.Impl.ShaderDescription;
 using VeldridShaderStage = Veldrid.ShaderStages;
 using VeldridSDescription = Veldrid.ShaderDescription;
@@ -12,23 +13,14 @@ namespace InnoInternal.Render.Bridge;
 
 internal class VeldridShader : IShader
 {
-    private readonly GraphicsDevice m_graphicsDevice;
-    
     internal Shader inner { get; }
-    public ShaderStage stage { get; }
+    public InnoShaderStage stage { get; }
     
     
-    private VeldridShader(GraphicsDevice graphicsDevice, Shader inner, ShaderStage stage)
+    private VeldridShader(Shader inner, InnoShaderStage stage)
     {
-        m_graphicsDevice = graphicsDevice;
-        
         this.inner = inner;
         this.stage = stage;
-    }
-    
-    public void Dispose()
-    {
-        throw new NotImplementedException();
     }
 
     public static (VeldridShader, VeldridShader) CreateVertexFragment(
@@ -61,8 +53,8 @@ internal class VeldridShader : IShader
         var fragmentShader = graphicsDevice.ResourceFactory.CreateShader(veldridFragDesc);
 
         return (
-            new VeldridShader(graphicsDevice, vertexShader, vertDesc.stage),
-            new VeldridShader(graphicsDevice, fragmentShader, fragDesc.stage)
+            new VeldridShader(vertexShader, vertDesc.stage),
+            new VeldridShader(fragmentShader, fragDesc.stage)
         );
     }
 
@@ -83,7 +75,7 @@ internal class VeldridShader : IShader
         );
 
         var shader = graphicsDevice.ResourceFactory.CreateShader(veldridDesc);
-        return new VeldridShader(graphicsDevice, shader, ShaderStage.Compute);
+        return new VeldridShader(shader, InnoShaderStage.Compute);
     }
     
     private static string[] CrossCompileSpirv(GraphicsBackend backend, ShaderStages stage, params byte[][] spirvBytes)
@@ -131,6 +123,11 @@ internal class VeldridShader : IShader
     internal static VeldridShaderStage ToVeldridShaderStage(InnoShaderStage stage)
     {
         return (VeldridShaderStage)(byte)stage;
+    }
+    
+    public void Dispose()
+    {
+        inner.Dispose();
     }
 
 }

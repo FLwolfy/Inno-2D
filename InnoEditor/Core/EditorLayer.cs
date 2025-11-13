@@ -1,4 +1,3 @@
-using InnoBase;
 using InnoEditor.GUI;
 using InnoEditor.GUI.InspectorGUI;
 using InnoEditor.GUI.PropertyGUI;
@@ -6,6 +5,8 @@ using InnoEditor.Panel;
 using InnoEngine.Core.Layer;
 using InnoEngine.Graphics;
 using InnoEngine.Utility;
+
+using InnoInternal.Render.Impl;
 
 namespace InnoEditor.Core;
 
@@ -26,18 +27,9 @@ public class EditorLayer() : Layer("EditorLayer")
         EditorManager.RegisterPanel(new InspectorPanel());
     }
 
-    public override void OnEvent(Event e)
-    {
-        Console.WriteLine(e.type);
-    }
-
-    public override void OnUpdate()
-    {
-    }
-
     public override void OnRender(RenderContext ctx)
     {
-        ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, null);
+        ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, ctx.targetPool.GetMain()); // TODO: Use Renderer2D Blit
         EditorGUILayout.BeginFrame(ctx.imGuiRenderer.context);
         EditorManager.DrawPanels(ctx.imGuiRenderer.context, ctx);
         EditorGUILayout.EndFrame();

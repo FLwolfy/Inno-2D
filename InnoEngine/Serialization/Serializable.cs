@@ -12,7 +12,8 @@ public abstract class Serializable
         var result = new List<SerializedProperty>();
         var properties = GetType()
             .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .Where(p => p.CanRead && p.CanWrite && p.IsDefined(typeof(SerializablePropertyAttribute), true));
+            .Where(p => p.CanRead && p.CanWrite && p.IsDefined(typeof(SerializablePropertyAttribute), true))
+            .OrderBy(p => p.MetadataToken);
 
         foreach (var property in properties)
         {

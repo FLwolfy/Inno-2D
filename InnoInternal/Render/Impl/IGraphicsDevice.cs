@@ -1,14 +1,12 @@
-using InnoInternal.Render.Bridge;
-
 namespace InnoInternal.Render.Impl;
 
 public interface IGraphicsDevice : IDisposable
 {
-    IFrameBuffer swapChainFrameBuffer { get; }
+    IFrameBuffer swapchainFrameBuffer { get; }
     
     IVertexBuffer CreateVertexBuffer(uint sizeInBytes);
     IIndexBuffer CreateIndexBuffer(uint sizeInBytes);
-    IUniformBuffer CreateUniformBuffer<T>(string name) where T: unmanaged;
+    IUniformBuffer CreateUniformBuffer(string name, Type type);
     
     IFrameBuffer CreateFrameBuffer(FrameBufferDescription desc);
     IResourceSet CreateResourceSet(ResourceSetBinding binding);

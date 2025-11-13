@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 using ImGuiNET;
 using InnoBase;
+using InnoBase.Math;
 using Veldrid;
 using Veldrid.Sdl2;
 
@@ -41,7 +42,7 @@ internal class ImGuiNETVeldridController : IDisposable
     private readonly IntPtr m_fontAtlasId = 1;
 
     // Window info
-    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow; // This should not be removed.
+    private readonly ImGuiNETVeldridWindow m_mainImGuiWindow;
     private readonly Dictionary<uint, ImGuiNETVeldridWindow> m_windowHolders = new();
     private bool m_controlDown;
     private bool m_shiftDown;
@@ -99,29 +100,35 @@ internal class ImGuiNETVeldridController : IDisposable
         m_graphicsDevice = gd;
         m_assembly = typeof(ImGuiNETVeldridController).GetTypeInfo().Assembly;
         m_colorSpaceHandling = colorSpaceHandling;
-
+        
+        IntPtr context = ImGuiNET.ImGui.CreateContext();
+        ImGuiNET.ImGui.SetCurrentContext(context);
+        
+        // IO
+        var io = ImGuiNET.ImGui.GetIO();
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+        
+        // Config Flags
+        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
+        
+        // Window Platform Interface
         m_mainWindow = mainWindow;
         m_windowWidth = mainWindow.Width;
         m_windowHeight = mainWindow.Height;
+        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
+        ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
+        mainViewport.PlatformHandle = mainWindow.Handle;
         mainWindow.Resized += () =>
         {
             m_windowWidth = mainWindow.Width;
             m_windowHeight = mainWindow.Height;
         };
-
-        IntPtr context = ImGuiNET.ImGui.CreateContext();
-        ImGuiNET.ImGui.SetCurrentContext(context);
-        
-        // Config Flags
-        var io = ImGuiNET.ImGui.GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
-        
-        // Window Platform Interface
-        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
-        ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
-        mainViewport.PlatformHandle = mainWindow.Handle;
         m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_mainWindow);
+        mainWindow.FocusGained += () =>
+        {
+            ImGuiNETVeldridWindow.currentWindow = m_mainImGuiWindow;
+        };
 
         // Setup Platform
         SetupPlatformIO(platformIo);
@@ -561,12 +568,13 @@ internal class ImGuiNETVeldridController : IDisposable
             if ((ImGuiNET.ImGui.GetIO().ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
             {
                 ImGuiNET.ImGui.UpdatePlatformWindows();
+                
                 ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
                 for (int i = 1; i < platformIo.Viewports.Size; i++)
                 {
                     ImGuiViewportPtr vp = platformIo.Viewports[i];
                     ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?) GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-                    if (window is { swapchain: not null })
+                    if (window != null)
                     {
                         cl.SetFramebuffer(window.swapchain.Framebuffer);
                         RenderImDrawData(vp.DrawData, gd, cl);
@@ -699,29 +707,29 @@ internal class ImGuiNETVeldridController : IDisposable
     
     public void SwapExtraWindowBuffers(GraphicsDevice gd)
     {
-        ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
-        ImGuiNETVeldridWindow? focusWindow = ImGuiNETVeldridWindow.currentWindow;
-        if (focusWindow?.swapchain == null) return;
-        gd.SwapBuffers(focusWindow.swapchain);
+        var io = ImGuiNET.ImGui.GetPlatformIO();
+
+        var focus = ImGuiNETVeldridWindow.currentWindow;
+        focus = focus == m_mainImGuiWindow ? null : focus;
         
-        for (int i = 1; i < platformIo.Viewports.Size; i++)
+        var focusRect = focus != null
+            ? new Rect(focus.window.Bounds.X, focus.window.Bounds.Y, focus.window.Bounds.Width, focus.window.Bounds.Height)
+            : default;
+        
+        if (focus != null) gd.SwapBuffers(focus.swapchain);
+        for (int i = 1; i < io.Viewports.Size; i++)
         {
-            ImGuiViewportPtr vp = platformIo.Viewports[i];
-            if (vp.ID == focusWindow.viewportPtr.ID) continue;
+            var vp = io.Viewports[i];
+            if (focus != null && vp.ID == focus.viewportPtr.ID) continue;
 
-            ImGuiNETVeldridWindow? window = (ImGuiNETVeldridWindow?)GCHandle.FromIntPtr(vp.PlatformUserData).Target;
-            if (window?.swapchain == null) continue;
-            
-            Rect focusRect = new Rect(focusWindow.window.Bounds.X, focusWindow.window.Bounds.Y, focusWindow.window.Bounds.Width, focusWindow.window.Bounds.Height);
-            Rect rect = new Rect(window.window.Bounds.X, window.window.Bounds.Y, window.window.Bounds.Width, window.window.Bounds.Height);
+            var w = (ImGuiNETVeldridWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target!;
+            if (!w.window.Exists || !w.window.Visible) continue;
+            if (focus != null && focusRect.Contains(new Rect(w.window.Bounds.X, w.window.Bounds.Y, w.window.Bounds.Width, w.window.Bounds.Height))) continue;
 
-            if (focusRect.Contains(rect)) continue;
-            if (window is { swapchain: not null, window: { Exists: true, Visible: true } })
-            {
-                gd.SwapBuffers(window.swapchain);
-            }
+            gd.SwapBuffers(w.swapchain);
         }
     }
+
 
     /// <summary>
     /// Updates ImGui input and IO configuration state.
@@ -736,13 +744,18 @@ internal class ImGuiNETVeldridController : IDisposable
         SetPerFrameImGuiData(deltaSeconds);
         
         // Inputs
-        UpdateImGuiGlobalMouseInput(mainWindowSnapshot);
-        UpdateMouseCursor();
+        UpdateImGuiGlobalMouseButtonInput(mainWindowSnapshot);
+        UpdateImGuiMouseWheelInput(mainWindowSnapshot);
         UpdateImGuiKeyInput(mainWindowSnapshot);
+        
         foreach (var extraWindowSnapshot in extraWindowSnapshots)
         {
+            UpdateImGuiMouseWheelInput(extraWindowSnapshot);
             UpdateImGuiKeyInput(extraWindowSnapshot);
         }
+        
+        // Cursor
+        UpdateMouseCursor();
         
         // Monitor
         UpdateMonitors();
@@ -958,7 +971,7 @@ internal class ImGuiNETVeldridController : IDisposable
         }
     }
 
-    private void UpdateImGuiGlobalMouseInput(InputSnapshot mainWindowSnapShot)
+    private void UpdateImGuiGlobalMouseButtonInput(InputSnapshot mainWindowSnapShot)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
         
@@ -1002,7 +1015,12 @@ internal class ImGuiNETVeldridController : IDisposable
         }
         
         io.MousePos = new SYSVector2(x, y);
-        io.MouseWheel = mainWindowSnapShot.WheelDelta;
+    }
+
+    private void UpdateImGuiMouseWheelInput(InputSnapshot snapshot)
+    {
+        ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
+        io.MouseWheel = snapshot.WheelDelta == 0 ? io.MouseWheel : snapshot.WheelDelta;
     }
     
     private void UpdateImGuiKeyInput(InputSnapshot snapshot)

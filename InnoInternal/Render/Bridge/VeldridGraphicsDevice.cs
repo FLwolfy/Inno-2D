@@ -1,12 +1,11 @@
+using System.Runtime.InteropServices;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
-using Veldrid.SPIRV;
+
 using InnoFBDescription = InnoInternal.Render.Impl.FrameBufferDescription;
 using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
 using TextureDescription = InnoInternal.Render.Impl.TextureDescription;
-
-using VeldridFBDescription = Veldrid.FramebufferDescription;
 
 namespace InnoInternal.Render.Bridge;
 
@@ -16,14 +15,15 @@ public class VeldridGraphicsDevice : IGraphicsDevice
     private readonly ResourceFactory m_factory;
     
     internal GraphicsDevice inner => m_graphicsDevice;
-    public IFrameBuffer swapChainFrameBuffer { get; }
+
+    public IFrameBuffer swapchainFrameBuffer { get; }
 
     public VeldridGraphicsDevice(GraphicsDevice graphicsDevice)
     {
         m_graphicsDevice = graphicsDevice;
-        
-        swapChainFrameBuffer = new VeldridFrameBuffer(graphicsDevice, graphicsDevice.SwapchainFramebuffer);
         m_factory = graphicsDevice.ResourceFactory;
+        
+        swapchainFrameBuffer = new VeldridFrameBuffer(graphicsDevice, graphicsDevice.SwapchainFramebuffer);
     }
 
     public IVertexBuffer CreateVertexBuffer(uint sizeInBytes)
@@ -38,9 +38,10 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         return new VeldridIndexBuffer(m_graphicsDevice, ib);
     }
 
-    public unsafe IUniformBuffer CreateUniformBuffer<T>(String name) where T: unmanaged
+    public IUniformBuffer CreateUniformBuffer(string name, Type type)
     {
-        var ub = m_factory.CreateBuffer(new BufferDescription((uint)sizeof(T), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+        int size = Marshal.SizeOf(type);
+        var ub = m_factory.CreateBuffer(new BufferDescription((uint)size, BufferUsage.UniformBuffer | BufferUsage.Dynamic));
         return new VeldridUniformBuffer(m_graphicsDevice, ub, name);
     }
 
@@ -96,6 +97,7 @@ public class VeldridGraphicsDevice : IGraphicsDevice
 
     public void Dispose()
     {
+        swapchainFrameBuffer.Dispose();
         m_graphicsDevice.Dispose();
     }
 }

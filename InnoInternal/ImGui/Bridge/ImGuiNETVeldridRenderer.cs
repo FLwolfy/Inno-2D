@@ -2,7 +2,6 @@ using InnoInternal.ImGui.Impl;
 using InnoInternal.Render.Impl;
 
 using Veldrid;
-using Veldrid.Sdl2;
 
 using ImGuiNET;
 using InnoInternal.Render.Bridge;
@@ -16,8 +15,10 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
 {
     // Graphics
     private GraphicsDevice m_graphicsDevice = null!;
-    private CommandList m_commandList = null!;
     private VeldridSdl2Window m_veldridWindow = null!;
+    
+    // Resources
+    private CommandList m_commandList = null!;
     private ImGuiNETVeldridController m_imGuiVeldridController = null!;
     
     // Properties
@@ -61,16 +62,14 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         m_imGuiVeldridController.SwapExtraWindowBuffers(m_graphicsDevice);
     }
 
-    public void BeginLayout(float deltaTime, IFrameBuffer? frameBuffer)
+    public void BeginLayout(float deltaTime, IFrameBuffer frameBuffer)
     {
+        var buffer = frameBuffer as VeldridFrameBuffer;
+        if (buffer == null) throw new ArgumentException("Expected a VeldridFrameBuffer.", nameof(frameBuffer));
+        
         // Begin Render
         m_commandList.Begin();
-        m_commandList.SetFramebuffer(frameBuffer switch
-        {
-            null => m_graphicsDevice.SwapchainFramebuffer,
-            VeldridFrameBuffer fb => fb.inner,
-            _ => throw new ArgumentException("Expected a VeldridFrameBuffer.", nameof(frameBuffer))
-        });
+        m_commandList.SetFramebuffer(buffer.inner);
         
         // Virtual Context
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
@@ -165,6 +164,12 @@ internal class ImGuiNETVeldridRenderer : IImGuiRenderer
         style.FrameRounding = 3.0f;
         style.ScrollbarRounding = 3.0f;
         style.GrabRounding = 3.0f;
+    }
+    
+    public void Dispose()
+    {
+        m_commandList.Dispose();
+        m_imGuiVeldridController.Dispose();
     }
 }
 

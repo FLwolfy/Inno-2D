@@ -25,4 +25,8 @@
       </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="ImGui\Assets\Shaders\" />
+    </ItemGroup>
+
 </Project>

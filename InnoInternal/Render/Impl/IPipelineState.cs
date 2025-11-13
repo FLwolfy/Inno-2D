@@ -1,21 +1,16 @@
-namespace InnoInternal.Render.Impl;
+using InnoBase.Graphics;
 
-public enum DepthStencilState
-{
-    Disabled,
-    DepthOnlyLessEqual,
-    DepthOnlyGreaterEqual,
-    DepthReadOnlyLessEqual,
-    DepthReadOnlyGreaterEqual
-}
+namespace InnoInternal.Render.Impl;
 
 public struct PipelineStateDescription
 {
     public IShader vertexShader;
     public IShader fragmentShader;
-    public Type vertexLayoutType;
+    public List<Type> vertexLayoutTypes;
     
+    public PrimitiveTopology primitiveTopology;
     public DepthStencilState depthStencilState;
+    
     public ResourceSetBinding[]? resourceLayoutSpecifiers;
 }
 

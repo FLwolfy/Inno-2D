@@ -1,9 +1,8 @@
-
-using InnoBase;
+using InnoBase.Math;
 using InnoEngine.ECS;
 using InnoEngine.ECS.Component;
 
-namespace InnoEngine.Graphics.RenderPass;
+namespace InnoEngine.Graphics.RenderPass.Pass;
 
 /// <summary>
 /// Renders all SpriteRenderers in the scene.
@@ -24,19 +23,25 @@ internal class SpriteRenderPass : IRenderPass
                 var scale = Matrix.CreateScale(new Vector3(
                     spriteRenderer.sprite.size.x * spriteRenderer.transform.worldScale.x,
                     spriteRenderer.sprite.size.y * spriteRenderer.transform.worldScale.y,
-                    spriteRenderer.transform.worldScale.z
+                    1
                 ));
                 var rotation = Matrix.CreateFromQuaternion(spriteRenderer.transform.worldRotation);
+
+                var depth =
+                    (spriteRenderer.layerDepth +
+                     (float)((Math.Tanh(spriteRenderer.transform.worldPosition.z /
+                                        SpriteRenderer.MAX_LAYER_DEPTH) + 1.0) / 2.0)) /
+                    (SpriteRenderer.MAX_LAYER_DEPTH + 1);
                 var translation = Matrix.CreateTranslation(new Vector3(
                     spriteRenderer.transform.worldPosition.x,
                     spriteRenderer.transform.worldPosition.y,
-                    spriteRenderer.transform.worldPosition.z
+                    depth
                 ));
                 
                 var transform = scale * rotation * translation;
-                var color = spriteRenderer.color * spriteRenderer.opacity;
+                var color = spriteRenderer.color * spriteRenderer.opacity; // TODO: Handle alpha sequences
                 
-                ctx.renderer.DrawQuad(transform, color);
+                ctx.renderer2D.DrawQuad(transform, color);
             }
             
             // TODO: Support texture rendering logic here.

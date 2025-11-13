@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using InnoBase;
+using InnoBase.Event;
 using InnoInternal.Render.Bridge;
 using InnoInternal.Render.Impl;
 using InnoInternal.Shell.Impl;
+
 using Veldrid;
 using Veldrid.StartupUtilities;
-
-using InnoPixelFormat = InnoInternal.Render.Impl.PixelFormat;
 
 namespace InnoInternal.Shell.Bridge;
 
@@ -46,22 +46,22 @@ internal class VeldridShell : IGameShell
         
         var window = VeldridStartup.CreateWindow(ref windowCi);
         m_windowVeldrid = new VeldridSdl2Window(window);
-        
+
         var deviceOptions = new GraphicsDeviceOptions(
             debug: true,
-            swapchainDepthFormat: VeldridTexture.ToVeldridPixelFormat(InnoPixelFormat.D32FloatS8UInt),
+            null,
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,
             preferStandardClipSpaceYDirection: true
         );
-        
+
         var graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, deviceOptions);
         m_graphicsDeviceVeldrid = new VeldridGraphicsDevice(graphicsDevice);
         
         window.Resized += () =>
         {
-            graphicsDevice.MainSwapchain.Resize((uint)window.Width, (uint)window.Height);
+            m_graphicsDeviceVeldrid.swapchainFrameBuffer.Resize(window.Width, window.Height);
         };
     }
 

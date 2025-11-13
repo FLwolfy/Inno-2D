@@ -1,15 +1,20 @@
-using InnoBase;
+using InnoEngine.Graphics.RenderPass;
 using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
 
 namespace InnoEngine.Graphics;
 
-public class RenderContext(IGraphicsDevice graphicsDevice, Renderer2D renderer, IImGuiRenderer imGuiRenderer, RenderPassController passController)
+public class RenderContext
 {
-    public IGraphicsDevice graphicsDevice { get; } = graphicsDevice;
-    public Renderer2D renderer { get; } = renderer;
-    public IImGuiRenderer imGuiRenderer { get; } = imGuiRenderer;
-    public RenderPassController passController { get; } = passController;
-
-    public Matrix viewProjectionMatrix => renderer.viewProjection;
+    public Renderer2D renderer2D { get; }
+    public IImGuiRenderer imGuiRenderer { get; }
+    public RenderPassController passController { get; }
+    public RenderTargetPool targetPool { get; }
+    
+    internal RenderContext(Renderer2D renderer2D, IImGuiRenderer imGuiRenderer, RenderPassController passController, RenderTargetPool targetPool)
+    {
+        this.renderer2D = renderer2D;
+        this.imGuiRenderer = imGuiRenderer;
+        this.passController = passController;
+        this.targetPool = targetPool;
+    }
 }

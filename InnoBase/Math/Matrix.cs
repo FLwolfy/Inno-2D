@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Matrix : IEquatable<Matrix>
@@ -219,7 +219,7 @@ public struct Matrix : IEquatable<Matrix>
         float b11 = a22 * a33 - a23 * a32;
 
         float det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
-        if (MathF.Abs(det) < 1e-6f)
+        if (MathF.Abs(det) < MathHelper.C_TOLERANCE)
             return identity; // No Inverse, return identity matrix
 
         float invDet = 1f / det;
@@ -253,10 +253,47 @@ public struct Matrix : IEquatable<Matrix>
 
     public static bool operator ==(Matrix matrix1, Matrix matrix2)
     {
-        return (double) matrix1.m11 == (double) matrix2.m11 && (double) matrix1.m12 == (double) matrix2.m12 && (double) matrix1.m13 == (double) matrix2.m13 && (double) matrix1.m14 == (double) matrix2.m14 && (double) matrix1.m21 == (double) matrix2.m21 && (double) matrix1.m22 == (double) matrix2.m22 && (double) matrix1.m23 == (double) matrix2.m23 && (double) matrix1.m24 == (double) matrix2.m24 && (double) matrix1.m31 == (double) matrix2.m31 && (double) matrix1.m32 == (double) matrix2.m32 && (double) matrix1.m33 == (double) matrix2.m33 && (double) matrix1.m34 == (double) matrix2.m34 && (double) matrix1.m41 == (double) matrix2.m41 && (double) matrix1.m42 == (double) matrix2.m42 && (double) matrix1.m43 == (double) matrix2.m43 && (double) matrix1.m44 == (double) matrix2.m44;
+        return
+            MathHelper.AlmostEquals(matrix1.m11, matrix2.m11) &&
+            MathHelper.AlmostEquals(matrix1.m12, matrix2.m12) &&
+            MathHelper.AlmostEquals(matrix1.m13, matrix2.m13) &&
+            MathHelper.AlmostEquals(matrix1.m14, matrix2.m14) &&
+            MathHelper.AlmostEquals(matrix1.m21, matrix2.m21) &&
+            MathHelper.AlmostEquals(matrix1.m22, matrix2.m22) &&
+            MathHelper.AlmostEquals(matrix1.m23, matrix2.m23) &&
+            MathHelper.AlmostEquals(matrix1.m24, matrix2.m24) &&
+            MathHelper.AlmostEquals(matrix1.m31, matrix2.m31) &&
+            MathHelper.AlmostEquals(matrix1.m32, matrix2.m32) &&
+            MathHelper.AlmostEquals(matrix1.m33, matrix2.m33) &&
+            MathHelper.AlmostEquals(matrix1.m34, matrix2.m34) &&
+            MathHelper.AlmostEquals(matrix1.m41, matrix2.m41) &&
+            MathHelper.AlmostEquals(matrix1.m42, matrix2.m42) &&
+            MathHelper.AlmostEquals(matrix1.m43, matrix2.m43) &&
+            MathHelper.AlmostEquals(matrix1.m44, matrix2.m44);
     }
 
+
     public static bool operator !=(Matrix a, Matrix b) => !(a == b);
+    
+    public static implicit operator System.Numerics.Matrix4x4(Matrix m)
+    {
+        return new System.Numerics.Matrix4x4(
+            m.m11, m.m12, m.m13, m.m14,
+            m.m21, m.m22, m.m23, m.m24,
+            m.m31, m.m32, m.m33, m.m34,
+            m.m41, m.m42, m.m43, m.m44
+        );
+    }
+    public static implicit operator Matrix(System.Numerics.Matrix4x4 m)
+    {
+        return new Matrix
+        {
+            m11 = m.M11, m12 = m.M12, m13 = m.M13, m14 = m.M14,
+            m21 = m.M21, m22 = m.M22, m23 = m.M23, m24 = m.M24,
+            m31 = m.M31, m32 = m.M32, m33 = m.M33, m34 = m.M34,
+            m41 = m.M41, m42 = m.M42, m43 = m.M43, m44 = m.M44
+        };
+    }
 
     public bool Equals(Matrix other) => this == other;
 

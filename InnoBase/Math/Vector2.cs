@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace InnoBase;
+namespace InnoBase.Math;
 
 [DataContract]
 public struct Vector2 : IEquatable<Vector2>
@@ -76,11 +76,14 @@ public struct Vector2 : IEquatable<Vector2>
     public static Vector2 operator *(float scalar, Vector2 v) => v * scalar;
     public static Vector2 operator /(Vector2 v, float scalar) => new Vector2(v.x / scalar, v.y / scalar);
 
-    public static bool operator ==(Vector2 a, Vector2 b) => a.x == b.x && a.y == b.y;
+    public static bool operator ==(Vector2 a, Vector2 b) => MathHelper.AlmostEquals(a.x, b.x) && MathHelper.AlmostEquals(a.y, b.y);
     public static bool operator !=(Vector2 a, Vector2 b) => !(a == b);
+    
+    public static implicit operator System.Numerics.Vector2(Vector2 v) => new(v.x, v.y);
+    public static implicit operator Vector2(System.Numerics.Vector2 v) => new(v.X, v.Y);
 
     public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
-    public bool Equals(Vector2 other) => x == other.x && y == other.y;
+    public bool Equals(Vector2 other) => MathHelper.AlmostEquals(x, other.x) && MathHelper.AlmostEquals(y, other.y);
     public override int GetHashCode() => HashCode.Combine(x, y);
     public override string ToString() => $"({x:F2}, {y:F2})";
 }
