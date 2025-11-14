@@ -1,0 +1,12 @@
+using InnoEngine.ECS;
+
+namespace Inno.Editor.Core;
+public class EditorContext
+{
+    public static EditorContext current { get; } = new();
+
+    public GameObject? selectedGameObject { get; set; }
+    public EditorMode mode { get; set; } = EditorMode.Edit;
+
+    // Hovered 组件等也可加入
+}
