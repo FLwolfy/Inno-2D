@@ -13,7 +13,7 @@ public class ClearScreenPass : RenderPass
     
     public override RenderPassTag orderTag => RenderPassTag.ClearScreen;
 
-    public override void Render(RenderContext ctx)
+    public override void OnRender(RenderContext ctx)
     {
         ctx.renderer2D.ClearColor(CLEAR_COLOR);
     }

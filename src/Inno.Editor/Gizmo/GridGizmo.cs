@@ -1,7 +1,5 @@
-using InnoBase;
-using InnoBase.Graphics;
-using InnoBase.Math;
-using InnoInternal.ImGui.Impl;
+using Inno.Core.Math;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Gizmo;
 

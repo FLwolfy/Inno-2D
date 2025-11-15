@@ -5,8 +5,8 @@ internal static class Program
 
     public static void Main()
     {
-        // RenderTest rt = new RenderTest();
-        // rt.Run();
+        RenderTest rt = new RenderTest();
+        rt.Run();
         
         // ImGuiTest it = new ImGuiTest();
         // it.Run();
@@ -14,7 +14,7 @@ internal static class Program
         // RuntimeTest runtimeTest = new RuntimeTest();
         // runtimeTest.Run();
         
-        EditorTest editorTest = new EditorTest();
-        editorTest.Run();
+        // EditorTest editorTest = new EditorTest();
+        // editorTest.Run();
     }
 }

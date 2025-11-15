@@ -1,5 +1,5 @@
-using InnoEngine.Graphics;
-using InnoInternal.ImGui.Impl;
+using Inno.Graphics;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Core;
 

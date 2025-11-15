@@ -4,12 +4,10 @@ using Inno.Core.Events;
 using Inno.Core.Layers;
 using Inno.Core.Utility;
 using Inno.Graphics;
-using Inno.Graphics.Passes;
 using Inno.Platform;
 using Inno.Platform.Graphics;
 using Inno.Platform.ImGui;
 using Inno.Platform.Window;
-using Inno.Runtime.RenderPasses;
 
 namespace Inno.Runtime.Core;
 
@@ -25,12 +23,6 @@ public abstract class EngineCore
     
     private readonly Shell m_gameShell;
     private readonly LayerStack m_layerStack;
-    private readonly RenderContext m_renderContext;
-    
-    // Render Resources
-    private readonly Renderer2D m_renderer2D;
-    private readonly RenderTargetPool m_renderTargetPool;
-    private readonly RenderPassStack m_renderPassStack;
     
     protected EngineCore()
     {
@@ -48,28 +40,17 @@ public abstract class EngineCore
         // Initialize members
         m_gameShell = new Shell();
         m_layerStack = new LayerStack();
-        m_renderPassStack = new RenderPassStack();
         
         // Initialize Render
-        m_renderer2D = new Renderer2D(m_graphicsDevice);
-        m_renderTargetPool = new RenderTargetPool(m_graphicsDevice);
-        m_renderContext = new RenderContext
-        (
-            m_renderer2D,
-            m_renderPassStack,
-            m_renderTargetPool
-        );
+        RenderTargetPool.Initialize(m_graphicsDevice);
+        RenderContext.Initialize(m_graphicsDevice);
         
         // Initialization Callbacks
         m_gameShell.SetOnLoad(OnLoad);
         m_gameShell.SetOnSetup(OnSetup);
-        
-        // Update Callbacks
         m_gameShell.SetOnStep(OnStep);
         m_gameShell.SetOnEvent(OnEvent);
         m_gameShell.SetOnDraw(OnDraw);
-        
-        // Window Callback
         m_gameShell.SetOnClose(OnClose);
     }
     
@@ -78,16 +59,11 @@ public abstract class EngineCore
         // Asset Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
-        
-        // Renderer Resource Load
-        m_renderer2D.LoadResources();
-        m_renderPassStack.RegisterPass(new ClearScreenPass());
-        m_renderPassStack.RegisterPass(new SpriteRenderPass());
     }
 
     private void OnSetup()
     {
-        Setup(m_gameShell);
+        Setup();
         RegisterLayers(m_layerStack);
         
         // Type Cache Initialization
@@ -120,14 +96,12 @@ public abstract class EngineCore
         AssetRegistry.SaveToDisk();
         
         // Dispose Resources
-        m_renderer2D.Dispose();
         m_imGui.Dispose();
-        m_renderTargetPool.Dispose();
         m_graphicsDevice.Dispose();
     }
     
     /// <summary>
-    /// Runs the game shell, starting the main loop of the engine.
+    /// Starts the main loop of the engine.
     /// </summary>
     public void Run()
     {
@@ -135,9 +109,33 @@ public abstract class EngineCore
     }
 
     /// <summary>
+    /// Ends the engine core loop.
+    /// </summary>
+    public void End()
+    {
+        m_gameShell.Terminate();
+    }
+
+    /// <summary>
+    /// Resizes the main window of the engine.
+    /// </summary>
+    protected void SetWindowSize(int width, int height)
+    {
+        m_mainWindow.Resize(width, height);
+    }
+    
+    /// <summary>
+    /// Sets whether the main window is resizable.
+    /// </summary>
+    protected void SetWindowResizable(bool resizable)
+    {
+        m_mainWindow.resizable = resizable;
+    }
+
+    /// <summary>
     /// Sets up the engine core.
     /// </summary>
-    protected abstract void Setup(Shell gameShell);
+    protected abstract void Setup();
 
     /// <summary>
     /// Registers engine layers.

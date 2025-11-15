@@ -1,12 +1,10 @@
+using Inno.Core.Layers;
+using Inno.Core.Utility;
 using Inno.Editor.GUI;
 using Inno.Editor.GUI.InspectorGUI;
 using Inno.Editor.GUI.PropertyGUI;
 using Inno.Editor.Panel;
-using InnoEngine.Core.Layer;
-using InnoEngine.Graphics;
-using InnoEngine.Utility;
-
-using InnoInternal.Render.Impl;
+using Inno.Graphics;
 
 namespace Inno.Editor.Core;
 
@@ -27,12 +25,12 @@ public class EditorLayer() : Layer("EditorLayer")
         EditorManager.RegisterPanel(new InspectorPanel());
     }
 
-    public override void OnRender(RenderContext ctx)
-    {
-        ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, ctx.targetPool.GetMain()); // TODO: Use Renderer2D Blit
-        EditorGUILayout.BeginFrame(ctx.imGuiRenderer.context);
-        EditorManager.DrawPanels(ctx.imGuiRenderer.context, ctx);
-        EditorGUILayout.EndFrame();
-        ctx.imGuiRenderer.EndLayout();
-    }
+    // public override void OnRender(RenderContext ctx)
+    // {
+    //     ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, ctx.targetPool.GetMain()); // TODO: Use Renderer2D Blit
+    //     EditorGUILayout.BeginFrame(ctx.imGuiRenderer.context);
+    //     EditorManager.DrawPanels(ctx.imGuiRenderer.context, ctx);
+    //     EditorGUILayout.EndFrame();
+    //     ctx.imGuiRenderer.EndLayout();
+    // }
 }

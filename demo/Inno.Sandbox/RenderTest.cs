@@ -1,20 +1,15 @@
 ﻿using System.Reflection;
-using InnoBase;
-using InnoBase.Graphics;
-using InnoBase.Math;
-using InnoInternal.Render.Bridge;
-using InnoInternal.Render.Impl;
-using Veldrid;
-using Veldrid.Sdl2;
-using Veldrid.StartupUtilities;
-using PrimitiveTopology = InnoBase.Graphics.PrimitiveTopology;
-using ShaderDescription = InnoInternal.Render.Impl.ShaderDescription;
+using Inno.Core.Events;
+using Inno.Core.Math;
+using Inno.Platform;
+using Inno.Platform.Graphics;
+using Inno.Platform.Window;
 
 namespace Inno.Sandbox;
 
 internal class RenderTest
 {
-    private readonly Sdl2Window m_window;
+    private readonly IWindow m_window;
     private readonly IGraphicsDevice m_graphicsDevice;
     
     private ICommandList m_commandList = null!;
@@ -42,41 +37,22 @@ internal class RenderTest
     
     public RenderTest()
     { 
-        WindowCreateInfo windowCi = new WindowCreateInfo()
+        m_window = PlatformAPI.CreateWindow(new WindowInfo
         {
-            X = 100,
-            Y = 100,
-            WindowWidth = 600,
-            WindowHeight = 600,
-            WindowTitle = "Render Example"
-        }; 
-        m_window = VeldridStartup.CreateWindow(ref windowCi);
-        
-        var options = new GraphicsDeviceOptions(
-            debug: true,
-            swapchainDepthFormat: null,
-            syncToVerticalBlank: false,
-            resourceBindingModel: ResourceBindingModel.Improved,
-            preferDepthRangeZeroToOne: true,
-            preferStandardClipSpaceYDirection: true
-        );
-        
-        var innerGraphicsDevice = VeldridStartup.CreateGraphicsDevice(m_window, options);
-        m_graphicsDevice = new VeldridGraphicsDevice(innerGraphicsDevice);
-
-        m_window.Resized += () =>
-        {
-            innerGraphicsDevice.MainSwapchain.Resize((uint)m_window.Width, (uint)m_window.Height);
-        };
+            name = "Main Window",
+            width = 900,
+            height = 900
+        }, WindowBackend.Veldrid_Sdl2);
+        m_graphicsDevice = PlatformAPI.CreateGraphicsDevice(m_window, GraphicsBackend.Metal);
     }
 
     public void Run()
     {
         CreateResources();
 
-        while (m_window.Exists)
+        while (m_window.exists)
         {
-            m_window.PumpEvents();
+            m_window.PumpEvents(new EventDispatcher());
             Draw();
         }
         

@@ -1,5 +1,5 @@
-using InnoEngine.ECS;
-using InnoEngine.Utility;
+using Inno.Core.ECS;
+using Inno.Core.Utility;
 
 namespace Inno.Editor.GUI.InspectorGUI.InspectorEditor;
 

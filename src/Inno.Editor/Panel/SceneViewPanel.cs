@@ -1,13 +1,11 @@
+using Inno.Core.Events;
+using Inno.Core.Math;
 using Inno.Editor.Core;
 using Inno.Editor.Gizmo;
 using Inno.Editor.Utility;
-using InnoBase;
-using InnoBase.Event;
-using InnoBase.Graphics;
-using InnoBase.Math;
-using InnoEngine.Graphics;
-using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
+using Inno.Graphics;
+using Inno.Platform.Graphics;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Panel;
 
@@ -57,7 +55,7 @@ public class SceneViewPanel : EditorPanel
     
     private void EnsureSceneRenderTarget(RenderContext ctx)
     {
-        if (ctx.targetPool.Get("scene") == null)
+        if (RenderTargetPool.Get("scene") == null)
         {
             var renderTexDesc = new TextureDescription
             {
@@ -79,7 +77,7 @@ public class SceneViewPanel : EditorPanel
                 colorAttachmentDescriptions = [renderTexDesc]
             };
             
-            ctx.targetPool.Create("scene", renderTargetDesc);
+            RenderTargetPool.Create("scene", renderTargetDesc);
         }
     }
 
@@ -97,19 +95,19 @@ public class SceneViewPanel : EditorPanel
             m_height = newHeight;
             
             m_editorCamera2D.SetViewportSize(newWidth, newHeight);
-            renderContext.targetPool.Get("scene")?.Resize(newWidth, newHeight);
+            RenderTargetPool.Get("scene")?.Resize(newWidth, newHeight);
         }
     }
 
     private void RenderSceneToBuffer(RenderContext renderContext)
     {
-        if (renderContext.targetPool.Get("scene") != null)
+        if (RenderTargetPool.Get("scene") != null)
         {
             var flipYViewMatrix = m_editorCamera2D.viewMatrix;
             flipYViewMatrix.m42 *= -1;
             
-            renderContext.renderer2D.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, renderContext.targetPool.Get("scene"));
-            renderContext.passController.RenderPasses(renderContext);
+            renderContext.renderer2D.BeginFrame(flipYViewMatrix * m_editorCamera2D.projectionMatrix, null, RenderTargetPool.Get("scene")!);
+            renderContext.passStack.OnRender(renderContext);
             renderContext.renderer2D.EndFrame();
         }
     }
@@ -140,7 +138,7 @@ public class SceneViewPanel : EditorPanel
 
     private void DrawScene(IImGuiContext imGuiContext, RenderContext renderContext)
     {
-        var targetTexture = renderContext.targetPool.Get("scene")?.GetColorAttachment(0);
+        var targetTexture = RenderTargetPool.Get("scene")?.GetColorAttachment(0);
         if (targetTexture != null)
         {
             imGuiContext.Image(targetTexture, m_width, m_height);

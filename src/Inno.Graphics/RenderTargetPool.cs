@@ -2,56 +2,39 @@ using Inno.Platform.Graphics;
 
 namespace Inno.Graphics;
 
-public class RenderTargetPool : IDisposable
+public static class RenderTargetPool
 {
-    private readonly IGraphicsDevice m_device;
-    private readonly Dictionary<string, IFrameBuffer> m_targets = new();
-    
-    public RenderTargetPool(IGraphicsDevice device)
+    private static readonly Dictionary<string, IFrameBuffer> TARGETS = new();
+    private static IGraphicsDevice m_device = null!;
+
+    public static void Initialize(IGraphicsDevice device)
     {
         m_device = device;
-        m_targets["main"] = device.swapchainFrameBuffer;
+        TARGETS["main"] = device.swapchainFrameBuffer;
     }
 
-    public IFrameBuffer? Get(string name)
-    {
-        m_targets.TryGetValue(name, out var fb);
-        return fb;
-    }
+    public static IFrameBuffer? Get(string name) => TARGETS.GetValueOrDefault(name);
+    public static IFrameBuffer GetMain() => TARGETS["main"];
 
-    public IFrameBuffer GetMain()
+    public static void Create(string name, FrameBufferDescription desc)
     {
-        return m_targets["main"];
-    }
-
-    public void Create(string name, FrameBufferDescription desc)
-    {
-        if (m_targets.TryGetValue(name, out _))
+        if (TARGETS.ContainsKey(name))
             throw new InvalidOperationException($"Already exists a framebuffer named {name}!");
-
-        m_targets[name] = m_device.CreateFrameBuffer(desc);
+        TARGETS[name] = m_device.CreateFrameBuffer(desc);
     }
 
-    public void Release(string name)
+    public static void Release(string name)
     {
-        if (m_targets.TryGetValue(name, out var fb))
+        if (TARGETS.TryGetValue(name, out var fb))
         {
             fb.Dispose();
-            m_targets.Remove(name);
+            TARGETS.Remove(name);
         }
     }
 
-    public void Clear()
+    public static void Clear()
     {
-        foreach (var fb in m_targets.Values)
-        {
-            fb.Dispose();
-        }
-        m_targets.Clear();
-    }
-
-    public void Dispose()
-    {
-        Clear();
+        foreach (var fb in TARGETS.Values) fb.Dispose();
+        TARGETS.Clear();
     }
 }

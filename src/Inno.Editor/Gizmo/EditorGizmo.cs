@@ -1,4 +1,4 @@
-using InnoInternal.ImGui.Impl;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Gizmo;
 

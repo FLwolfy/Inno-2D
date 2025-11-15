@@ -1,7 +1,6 @@
+using Inno.Core.ECS;
+using Inno.Core.Serialization;
 using Inno.Editor.GUI.PropertyGUI;
-using InnoEngine.ECS;
-using InnoEngine.ECS.Component;
-using InnoEngine.Serialization;
 
 namespace Inno.Editor.GUI.InspectorGUI.InspectorEditor;
 

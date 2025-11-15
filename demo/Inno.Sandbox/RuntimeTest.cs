@@ -1,13 +1,10 @@
-using InnoBase;
-using InnoBase.Event;
-using InnoBase.Graphics;
-using InnoBase.Math;
-using InnoEngine.Core;
-using InnoEngine.Core.Layer;
-using InnoEngine.ECS;
-using InnoEngine.ECS.Component;
-using InnoEngine.Utility;
-using InnoInternal.Shell.Impl;
+using Inno.Core.ECS;
+using Inno.Core.Events;
+using Inno.Core.Layers;
+using Inno.Core.Math;
+using Inno.Core.Utility;
+using Inno.Runtime.Component;
+using Inno.Runtime.Core;
 
 namespace Inno.Sandbox;
 
@@ -23,12 +20,12 @@ public class RuntimeTest
     {
         private TestGameLayer m_gameLayer = null!;
         
-        protected override void Setup(IGameShell gameShell)
+        protected override void Setup()
         {
             m_gameLayer = new TestGameLayer();
             
-            gameShell.SetWindowSize(1280, 720);
-            gameShell.SetWindowResizable(true);
+            SetWindowSize(1280, 720);
+            SetWindowResizable(true);
         }
         protected override void RegisterLayers(LayerStack layerStack)
         {

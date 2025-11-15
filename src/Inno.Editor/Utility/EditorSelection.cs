@@ -1,4 +1,4 @@
-using InnoEngine.ECS;
+using Inno.Core.ECS;
 
 namespace Inno.Editor.Utility;
 

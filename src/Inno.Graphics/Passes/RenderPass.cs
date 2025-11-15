@@ -23,5 +23,5 @@ public abstract class RenderPass
     /// <summary>
     /// This method is used for each concrete renderPass class to render details based on the given RenderContext.
     /// </summary>
-    public abstract void Render(RenderContext ctx);
+    public abstract void OnRender(RenderContext ctx);
 }

@@ -1,4 +1,4 @@
-using InnoBase.Math;
+using Inno.Core.Math;
 
 namespace Inno.Editor.GUI.PropertyGUI.PropertyRenderer;
 

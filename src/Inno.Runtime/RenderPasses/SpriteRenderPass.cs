@@ -13,13 +13,16 @@ public class SpriteRenderPass : RenderPass
 {
     public override RenderPassTag orderTag => RenderPassTag.Geometry;
 
-    public override void Render(RenderContext ctx)
+    public override void OnRender(RenderContext ctx)
     {
         var scene = SceneManager.GetActiveScene();
         if (scene == null) { return; }
         
         foreach (var spriteRenderer in scene.GetAllComponents<SpriteRenderer>())
         {
+            if (!spriteRenderer.isActive) continue;
+            
+            // Solid Color Render
             if (spriteRenderer.sprite.texture == null)
             {
                 var scale = Matrix.CreateScale(new Vector3(

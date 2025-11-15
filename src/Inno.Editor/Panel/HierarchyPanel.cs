@@ -1,10 +1,8 @@
+using Inno.Core.ECS;
+using Inno.Core.Events;
 using Inno.Editor.Core;
-using InnoBase;
-using InnoBase.Event;
-using InnoEngine.ECS;
-using InnoEngine.Graphics;
-using InnoInternal.ImGui.Impl;
-using InnoInternal.Render.Impl;
+using Inno.Graphics;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Panel;
 

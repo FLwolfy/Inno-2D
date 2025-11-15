@@ -1,5 +1,5 @@
 using System.Reflection;
-using InnoEngine.Utility;
+using Inno.Core.Utility;
 
 namespace Inno.Editor.GUI.InspectorGUI;
 

@@ -1,5 +1,4 @@
-using InnoBase;
-using InnoBase.Math;
+using Inno.Core.Math;
 
 namespace Inno.Editor.Utility;
 
