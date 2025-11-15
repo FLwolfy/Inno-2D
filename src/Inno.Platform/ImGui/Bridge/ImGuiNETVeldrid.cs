@@ -22,7 +22,7 @@ internal class ImGuiNETVeldrid : IImGui
     public IntPtr mainMainContextPtr { get; }
     public IntPtr virtualContextPtr { get; }
     
-    public unsafe ImGuiNETVeldrid(VeldridGraphicsDevice graphicsDevice, VeldridSdl2Window window)
+    public unsafe ImGuiNETVeldrid(VeldridGraphicsDevice graphicsDevice, VeldridSdl2Window window, ImGuiColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = graphicsDevice;
         m_veldridWindow = window;
@@ -32,7 +32,7 @@ internal class ImGuiNETVeldrid : IImGui
             m_graphicsDevice.inner,
             m_veldridWindow.inner,
             m_graphicsDevice.inner.MainSwapchain.Framebuffer.OutputDescription,
-            ImGuiNETColorSpaceHandling.Legacy
+            colorSpaceHandling
         );
         
         // Main Context
@@ -60,9 +60,6 @@ internal class ImGuiNETVeldrid : IImGui
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
         m_imGuiVeldridController.Update(deltaTime, m_veldridWindow.inputSnapshot, m_imGuiVeldridController.PumpExtraWindowInputs());
-        
-        // Docking
-        ImGuiNET.ImGui.DockSpaceOverViewport(ImGuiNET.ImGui.GetMainViewport().ID);
     }
 
     public void EndLayout()
@@ -106,6 +103,7 @@ internal class ImGuiNETVeldrid : IImGui
 
         // Window Background
         colors[(int)ImGuiCol.WindowBg] = new SYSVector4(0.10f, 0.10f, 0.11f, 1.0f);
+        colors[(int)ImGuiCol.DockingPreview] = new SYSVector4(0.6f, 0.0f, 0.1f, 0.7f);
 
         // Headers
         colors[(int)ImGuiCol.Header] = new SYSVector4(0.20f, 0.205f, 0.25f, 1.0f);

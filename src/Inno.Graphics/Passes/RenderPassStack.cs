@@ -49,7 +49,6 @@ public class RenderPassStack
         {
             if (m_passes.TryGetValue(tag, out var list))
             {
-                // 按 push 顺序执行
                 foreach (var pass in list)
                 {
                     pass.OnRender(ctx);

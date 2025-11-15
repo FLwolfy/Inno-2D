@@ -28,7 +28,6 @@ public interface IWindow
     void Show();
     void Hide();
     void Close();
-    void Resize(int width, int height);
 
     void PumpEvents(EventDispatcher dispatcher);
 }

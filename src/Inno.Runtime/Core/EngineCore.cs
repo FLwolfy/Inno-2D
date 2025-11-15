@@ -35,7 +35,7 @@ public abstract class EngineCore
         }, WindowBackend.Veldrid_Sdl2);
         m_mainWindow.resizable = DEFAULT_WINDOW_RESIZABLE;
         m_graphicsDevice = PlatformAPI.CreateGraphicsDevice(m_mainWindow, GraphicsBackend.Metal);
-        m_imGui = PlatformAPI.CreateImGUI(m_mainWindow, m_graphicsDevice);
+        m_imGui = PlatformAPI.CreateImGUI(m_mainWindow, m_graphicsDevice, ImGuiColorSpaceHandling.Legacy);
         
         // Initialize members
         m_gameShell = new Shell();
@@ -79,13 +79,22 @@ public abstract class EngineCore
     private void OnEvent(EventDispatcher dispatcher)
     {
         m_mainWindow.PumpEvents(dispatcher);
-        dispatcher.Dispatch(m_layerStack.OnEvent);
+        dispatcher.Dispatch(e =>
+        {
+            m_layerStack.OnEvent(e);
+            if (e.type == EventType.WindowClose) End();
+        });
     }
 
     private void OnDraw()
     {
         // Layer Render
         m_layerStack.OnRender();
+        
+        // Layer ImGui
+        m_imGui.BeginLayout(Time.renderDeltaTime);
+        m_layerStack.OnImGui();
+        m_imGui.EndLayout();
         
         // Swap Buffers
         m_graphicsDevice.SwapBuffers();
@@ -121,7 +130,8 @@ public abstract class EngineCore
     /// </summary>
     protected void SetWindowSize(int width, int height)
     {
-        m_mainWindow.Resize(width, height);
+        m_mainWindow.width = width;
+        m_mainWindow.height = height;
     }
     
     /// <summary>

@@ -25,10 +25,10 @@ public static class PlatformAPI
         throw new NotSupportedException($"GraphicsDevice for window {window.GetType()} is not supported.");
     }
     
-    public static IImGui CreateImGUI(IWindow window, IGraphicsDevice graphicsDevice)
+    public static IImGui CreateImGUI(IWindow window, IGraphicsDevice graphicsDevice, ImGuiColorSpaceHandling colorSpaceHandling)
     {
         if (window is VeldridSdl2Window vsw && graphicsDevice is VeldridGraphicsDevice vgd)
-            return new ImGuiNETVeldrid(vgd, vsw);
+            return new ImGuiNETVeldrid(vgd, vsw, colorSpaceHandling);
 
         throw new NotSupportedException($"ImGuiRenderer for graphicsDevice {graphicsDevice.GetType()} or window {window.GetType()} is not supported.");
     }

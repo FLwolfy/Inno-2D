@@ -22,7 +22,7 @@ internal class ImGuiNETVeldridController : IDisposable
     private readonly GraphicsDevice m_graphicsDevice;
     private readonly Sdl2Window m_mainWindow;
     private readonly Assembly m_assembly;
-    private readonly ImGuiNETColorSpaceHandling m_colorSpaceHandling;
+    private readonly ImGuiColorSpaceHandling m_colorSpaceHandling;
     private int m_lastAssignedId = 100;
     private bool m_frameBegun;
 
@@ -94,7 +94,7 @@ internal class ImGuiNETVeldridController : IDisposable
     /// <param name="mainWindow">The main window to render.</param>
     /// <param name="outputDescription">The output format.</param>
     /// <param name="colorSpaceHandling">Identifies how the renderer should treat vertex colors.</param>
-    public ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window mainWindow, OutputDescription outputDescription, ImGuiNETColorSpaceHandling colorSpaceHandling)
+    public ImGuiNETVeldridController(GraphicsDevice gd, Sdl2Window mainWindow, OutputDescription outputDescription, ImGuiColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = gd;
         m_assembly = typeof(ImGuiNETVeldridController).GetTypeInfo().Assembly;
@@ -219,7 +219,7 @@ internal class ImGuiNETVeldridController : IDisposable
                 [m_vertexShader, m_fragmentShader],
                 [
                     new SpecializationConstant(0, m_graphicsDevice.IsClipSpaceYInverted),
-                    new SpecializationConstant(1, m_colorSpaceHandling == ImGuiNETColorSpaceHandling.Legacy)
+                    new SpecializationConstant(1, m_colorSpaceHandling == ImGuiColorSpaceHandling.Legacy)
                 ]),
             [m_layout, m_textureLayout],
             outputDescription,
@@ -239,25 +239,25 @@ internal class ImGuiNETVeldridController : IDisposable
         ResourceFactory factory,
         string name,
         ShaderStages stage,
-        ImGuiNETColorSpaceHandling colorSpaceHandling)
+        ImGuiColorSpaceHandling colorSpaceHandling)
     {
         switch (factory.BackendType)
         {
             case GraphicsBackend.Direct3D11:
             {
-                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiNETColorSpaceHandling.Legacy) { name += "-legacy"; }
+                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiColorSpaceHandling.Legacy) { name += "-legacy"; }
                 string resourceName = name + ".hlsl.bytes";
                 return GetEmbeddedResourceBytes(resourceName);
             }
             case GraphicsBackend.OpenGL:
             {
-                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiNETColorSpaceHandling.Legacy) { name += "-legacy"; }
+                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiColorSpaceHandling.Legacy) { name += "-legacy"; }
                 string resourceName = name + ".glsl";
                 return GetEmbeddedResourceBytes(resourceName);
             }
             case GraphicsBackend.OpenGLES:
             {
-                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiNETColorSpaceHandling.Legacy) { name += "-legacy"; }
+                if (stage == ShaderStages.Vertex && colorSpaceHandling == ImGuiColorSpaceHandling.Legacy) { name += "-legacy"; }
                 string resourceName = name + ".glsles";
                 return GetEmbeddedResourceBytes(resourceName);
             }

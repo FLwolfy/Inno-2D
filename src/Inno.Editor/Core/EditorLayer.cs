@@ -5,11 +5,20 @@ using Inno.Editor.GUI.InspectorGUI;
 using Inno.Editor.GUI.PropertyGUI;
 using Inno.Editor.Panel;
 using Inno.Graphics;
+using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Core;
 
-public class EditorLayer() : Layer("EditorLayer")
+public class EditorLayer: Layer
 {
+    private readonly RenderContext m_renderContext;
+    
+    public EditorLayer() : base("EditorLayer")
+    {
+        m_renderContext = new RenderContext();
+        
+    }
+    
     public override void OnAttach()
     {
         // GUI Initialization
@@ -25,12 +34,10 @@ public class EditorLayer() : Layer("EditorLayer")
         EditorManager.RegisterPanel(new InspectorPanel());
     }
 
-    // public override void OnRender(RenderContext ctx)
-    // {
-    //     ctx.imGuiRenderer.BeginLayout(Time.renderDeltaTime, ctx.targetPool.GetMain()); // TODO: Use Renderer2D Blit
-    //     EditorGUILayout.BeginFrame(ctx.imGuiRenderer.context);
-    //     EditorManager.DrawPanels(ctx.imGuiRenderer.context, ctx);
-    //     EditorGUILayout.EndFrame();
-    //     ctx.imGuiRenderer.EndLayout();
-    // }
+    public override void OnImGui()
+    {
+        // EditorGUILayout.BeginFrame();
+        // EditorManager.DrawPanels();
+        // EditorGUILayout.EndFrame();
+    }
 }

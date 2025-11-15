@@ -9,6 +9,8 @@ internal class VeldridSdl2Window : IWindow
 {
     internal Sdl2Window inner { get; }
     internal InputSnapshot inputSnapshot { get; private set; }
+    
+    private bool m_isWindowSizeDirty = false;
 
     public bool exists => inner.Exists;
     public int width
@@ -46,16 +48,22 @@ internal class VeldridSdl2Window : IWindow
             WindowHeight = info.height,
             WindowInitialState = WindowState.Normal
         });
+        inner.Resized += () => m_isWindowSizeDirty = true;
+        inputSnapshot = inner.PumpEvents();
     }
 
     public void Show() => inner.Visible = true;
     public void Hide() => inner.Visible = false;
     public void Close() => inner.Close();
-    public void Resize(int w, int h) => Sdl2Native.SDL_SetWindowSize(inner.Handle, w, h);
 
     public void PumpEvents(EventDispatcher dispatcher)
     {
+        // Application Events
+        if (m_isWindowSizeDirty) dispatcher.PushEvent(new WindowResizeEvent(width, height));
+        if (!exists) dispatcher.PushEvent(new WindowCloseEvent());
+        
+        // Input Events
         inputSnapshot = inner.PumpEvents();
-        VeldridSdl2EventAdapter.Adapt(inputSnapshot, dispatcher.PushEvent);
+        VeldridSdl2InputAdapter.AdaptInputEvents(inputSnapshot, dispatcher.PushEvent);
     }
 }

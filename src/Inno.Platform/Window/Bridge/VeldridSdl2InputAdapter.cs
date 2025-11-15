@@ -4,11 +4,11 @@ using SYSVector2 = System.Numerics.Vector2;
 
 namespace Inno.Platform.Window.Bridge;
 
-internal static class VeldridSdl2EventAdapter
+internal static class VeldridSdl2InputAdapter
 {
     private static SYSVector2? m_lastMousePos;
     
-    public static void Adapt(InputSnapshot snapshot, Action<Event> onEvent)
+    public static void AdaptInputEvents(InputSnapshot snapshot, Action<Event> onEvent)
     {
         // Key
         foreach (var keyEvent in snapshot.KeyEvents)

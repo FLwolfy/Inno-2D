@@ -6,7 +6,7 @@ using Veldrid.StartupUtilities;
 
 namespace Inno.Platform.ImGui.Bridge;
 
-public class ImGuiNETVeldridWindow : IDisposable
+internal class ImGuiNETVeldridWindow : IDisposable
 {
     private GCHandle m_gcHandle;
     
