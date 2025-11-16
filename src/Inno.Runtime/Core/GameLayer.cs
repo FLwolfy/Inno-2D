@@ -39,7 +39,8 @@ public class GameLayer : Layer
         // Render Passes
         m_renderPasses = new RenderPassStack();
         m_renderPasses.PushPass(new ClearScreenPass());
-        m_renderPasses.PushPass(new SpriteRenderPass());
+        m_renderPasses.PushPass(new RenderOpaqueSpritePass());
+        m_renderPasses.PushPass(new RenderAlphaSpritePass());
         
         // Console Logger
 #if DEBUG

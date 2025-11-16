@@ -95,7 +95,8 @@ public class SceneViewPanel : EditorPanel
     {
         m_renderPasses = new RenderPassStack();
         m_renderPasses.PushPass(new ClearScreenPass());
-        m_renderPasses.PushPass(new SpriteRenderPass());
+        m_renderPasses.PushPass(new RenderOpaqueSpritePass());
+        m_renderPasses.PushPass(new RenderAlphaSpritePass());
     }
 
     private void CheckRegionChange()
