@@ -1,7 +1,7 @@
 using Inno.Core.Math;
 using Inno.Graphics.Resources;
 
-namespace Inno.Graphics.RenderObject;
+namespace Inno.Runtime.RenderObject;
 
 public sealed class Sprite
 {

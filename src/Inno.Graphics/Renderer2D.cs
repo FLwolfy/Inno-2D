@@ -4,29 +4,26 @@ using Inno.Platform.Graphics;
 
 namespace Inno.Graphics;
 
-public class Renderer2D : IDisposable
+public static class Renderer2D
 {
-    private readonly IGraphicsDevice m_graphicsDevice;
-    private readonly ICommandList m_commandList;
-    
-    // Render Info 
-    private IFrameBuffer m_currentFrameBuffer = null!;
-    private Matrix m_currentViewProjection;
+    // Graphics Device Backend
+    private static IGraphicsDevice m_graphicsDevice = null!;
 
     // Quad Resources
-    private GraphicsResource m_quadOpaqueResources = null!;
-    private GraphicsResource m_quadAlphaResources = null!;
+    private static GraphicsResource m_quadOpaqueResources = null!;
+    private static GraphicsResource m_quadAlphaResources = null!;
 
-    internal Renderer2D(IGraphicsDevice graphicsDevice)
+    public static void Initialize(IGraphicsDevice graphicsDevice)
     {
         m_graphicsDevice = graphicsDevice;
-        m_commandList = graphicsDevice.CreateCommandList();
-        
-        // Create Resources
+    }
+
+    public static void LoadResources()
+    {
         CreateSolidQuadResources();
     }
 
-    private void CreateSolidQuadResources()
+    private static void CreateSolidQuadResources()
     {
         // Mesh
         var mesh = new Mesh("Quad");
@@ -79,88 +76,36 @@ public class Renderer2D : IDisposable
         m_quadAlphaResources.Create(m_graphicsDevice);
     }
     
-    public void DrawQuad(Matrix transform, Color color)
+    public static void DrawQuad(RenderContext ctx, Matrix transform, Color color)
     {
-        var mvp = transform * m_currentViewProjection;
+        var mvp = transform * ctx.viewProjection;
 
         if (MathHelper.AlmostEquals(color.a, 1.0f))
         {
-            m_quadOpaqueResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
-            m_quadOpaqueResources.UpdatePerObjectUniform(m_commandList, "Color", color);
-            m_quadOpaqueResources.ApplyAll(m_commandList);
+            m_quadOpaqueResources.UpdatePerObjectUniform(ctx.commandList, "MVP", mvp);
+            m_quadOpaqueResources.UpdatePerObjectUniform(ctx.commandList, "Color", color);
+            m_quadOpaqueResources.ApplyAll(ctx.commandList);
         }
         else
         {
-            m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
-            m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "Color", color);
-            m_quadAlphaResources.ApplyAll(m_commandList);
+            m_quadAlphaResources.UpdatePerObjectUniform(ctx.commandList, "MVP", mvp);
+            m_quadAlphaResources.UpdatePerObjectUniform(ctx.commandList, "Color", color);
+            m_quadAlphaResources.ApplyAll(ctx.commandList);
         }
     }
     
-    public void ClearColor(Color color)
+    public static void ClearColor(RenderContext ctx, Color color)
     {
         var mvp = Matrix.identity;
         
-        m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "MVP", mvp);
-        m_quadAlphaResources.UpdatePerObjectUniform(m_commandList, "Color", color);
-        m_quadAlphaResources.ApplyAll(m_commandList);
+        m_quadAlphaResources.UpdatePerObjectUniform(ctx.commandList, "MVP", mvp);
+        m_quadAlphaResources.UpdatePerObjectUniform(ctx.commandList, "Color", color);
+        m_quadAlphaResources.ApplyAll(ctx.commandList);
     }
 
-    public void BeginFrame(Matrix viewProjectionMatrix, float? aspectRatio, IFrameBuffer target)
+
+    public static void CleanResources()
     {
-        m_currentFrameBuffer = target;
-        m_currentViewProjection = viewProjectionMatrix;
-        
-        m_commandList.Begin();
-        m_commandList.SetFrameBuffer(m_currentFrameBuffer);
-        m_commandList.ClearColor(Color.BLACK);
-
-        if (aspectRatio.HasValue)
-        {
-            float targetWidth = m_currentFrameBuffer.width;
-            float targetHeight = m_currentFrameBuffer.height;
-
-            float screenAspect = targetWidth / targetHeight;
-            float sourceAspect = aspectRatio.Value;
-
-            Rect viewportRect;
-
-            // Left Right
-            if (screenAspect > sourceAspect)
-            {
-                float newWidth = targetHeight * sourceAspect;
-                float xOffset = (targetWidth - newWidth) / 2f;
-                viewportRect = new Rect((int)xOffset, 0, (int)newWidth, (int)targetHeight);
-            }
-        
-            // Top Bottom
-            else
-            {
-                float newHeight = targetWidth / sourceAspect;
-                float yOffset = (targetHeight - newHeight) / 2f;
-                viewportRect = new Rect(0, (int)yOffset, (int)targetWidth, (int)newHeight);
-            }
-
-            m_commandList.SetViewPort(0, viewportRect);
-            m_commandList.SetScissorRect(0, viewportRect);
-        }
-
-        if (m_currentFrameBuffer.GetDepthAttachment() != null)
-        {
-            m_commandList.ClearDepth(1.0f);
-        }
-    }
-
-    public void EndFrame()
-    {
-        m_commandList.End();
-        m_graphicsDevice.Submit(m_commandList);
-    }
-
-    public void Dispose()
-    {
-        m_commandList.Dispose();
-        
         // Quad
         m_quadOpaqueResources.Dispose();
         m_quadAlphaResources.Dispose();

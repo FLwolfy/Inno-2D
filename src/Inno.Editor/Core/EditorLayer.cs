@@ -1,23 +1,15 @@
+using ImGuiNET;
 using Inno.Core.Layers;
-using Inno.Core.Utility;
 using Inno.Editor.GUI;
 using Inno.Editor.GUI.InspectorGUI;
 using Inno.Editor.GUI.PropertyGUI;
 using Inno.Editor.Panel;
-using Inno.Graphics;
-using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Core;
 
 public class EditorLayer: Layer
 {
-    private readonly RenderContext m_renderContext;
-    
-    public EditorLayer() : base("EditorLayer")
-    {
-        m_renderContext = new RenderContext();
-        
-    }
+    public EditorLayer() : base("EditorLayer") {}
     
     public override void OnAttach()
     {
@@ -36,8 +28,12 @@ public class EditorLayer: Layer
 
     public override void OnImGui()
     {
-        // EditorGUILayout.BeginFrame();
-        // EditorManager.DrawPanels();
-        // EditorGUILayout.EndFrame();
+        // DockSpace
+        ImGui.DockSpaceOverViewport(ImGui.GetMainViewport().ID);
+        
+        // Layout GUI
+        EditorGUILayout.BeginFrame();
+        EditorManager.DrawPanels();
+        EditorGUILayout.EndFrame();
     }
 }

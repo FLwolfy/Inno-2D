@@ -13,5 +13,5 @@ public abstract class EditorGizmo
     /// This method is called to draw the gizmo in the ImGui context.
     /// It should be overridden by derived classes to implement the specific drawing logic.
     /// </summary>
-    internal abstract void Draw(IImGuiContext context);
+    internal abstract void Draw();
 }

@@ -1,4 +1,5 @@
 using Inno.Core.Math;
+using Inno.Core.Serialization;
 
 namespace Inno.Core.ECS;
 
@@ -17,6 +18,7 @@ public abstract class GameCamera : GameComponent
     /// <summary>
     /// Sets or gets whether this camera is the main camera in the scene.
     /// </summary>
+    [SerializableProperty]
     public bool isMainCamera
     {
         get => gameObject.scene.mainCamera == this;
@@ -34,6 +36,7 @@ public abstract class GameCamera : GameComponent
     /// Default is 16:9 (1.7777).
     /// This affects how the camera's view is rendered, especially in different screen resolutions.
     /// </summary>
+    [SerializableProperty]
     public float aspectRatio
     {
         get => m_aspectRatio;

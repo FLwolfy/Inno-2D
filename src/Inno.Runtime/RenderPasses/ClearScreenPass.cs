@@ -1,6 +1,6 @@
 using Inno.Core.Math;
 using Inno.Graphics;
-using Inno.Graphics.Passes;
+using Inno.Graphics.Pass;
 
 namespace Inno.Runtime.RenderPasses;
 
@@ -15,6 +15,6 @@ public class ClearScreenPass : RenderPass
 
     public override void OnRender(RenderContext ctx)
     {
-        ctx.renderer2D.ClearColor(CLEAR_COLOR);
+        Renderer2D.ClearColor(ctx, CLEAR_COLOR);
     }
 }

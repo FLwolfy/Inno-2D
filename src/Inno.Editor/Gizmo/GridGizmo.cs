@@ -1,4 +1,5 @@
 using Inno.Core.Math;
+using Inno.Editor.Core;
 using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Gizmo;
@@ -16,7 +17,7 @@ public class GridGizmo : EditorGizmo
     public Vector2 startCoords = Vector2.ZERO;
     public Vector2 coordsIncrement = Vector2.ONE;
     
-    internal override void Draw(IImGuiContext context)
+    internal override void Draw()
     {
         if (!isVisible || spacing <= 0f) return;
 
@@ -26,7 +27,7 @@ public class GridGizmo : EditorGizmo
         int xIndex = 0;
         for (float i = axisTopLeft.x; i < bottomRightBounds.x; i += spacing, xIndex++)
         {
-            context.DrawLine(
+            EditorImGuiEx.DrawLine(
                 new Vector2(i, startPos.y),
                 new Vector2(i, bottomRightBounds.y),
                 color,
@@ -35,14 +36,14 @@ public class GridGizmo : EditorGizmo
             if (showCoords)
             {
                 string label = $"{startCoords.x + xIndex * coordsIncrement.x:0.##}";
-                context.DrawText(new Vector2(i + 2, startPos.y + 2), label, color);
+                EditorImGuiEx.DrawText(new Vector2(i + 2, startPos.y + 2), label, color);
             }
         }
 
         int yIndex = 0;
         for (float j = axisTopLeft.y; j < bottomRightBounds.y; j += spacing, yIndex++)
         {
-            context.DrawLine(
+            EditorImGuiEx.DrawLine(
                 new Vector2(startPos.x, j),
                 new Vector2(bottomRightBounds.x, j),
                 color,
@@ -51,7 +52,7 @@ public class GridGizmo : EditorGizmo
             if (showCoords)
             {
                 string label = $"{-(startCoords.y + yIndex * coordsIncrement.y):0.##}";
-                context.DrawText(new Vector2(startPos.x + 2, j + 2), label, color);
+                EditorImGuiEx.DrawText(new Vector2(startPos.x + 2, j + 2), label, color);
             }
         }
     }

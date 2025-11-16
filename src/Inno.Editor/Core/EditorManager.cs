@@ -1,6 +1,5 @@
+using ImGuiNET;
 using Inno.Editor.Utility;
-using Inno.Graphics;
-using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Core;
 
@@ -18,15 +17,15 @@ public static class EditorManager
             throw new Exception("Panel already registered");
     }
     
-    internal static void DrawPanels(IImGuiContext imGuiContext, RenderContext renderContext)
+    internal static void DrawPanels()
     {
         foreach (var panel in PANELS.Values)
         {
             if (!panel.isOpen) continue;
 
-            imGuiContext.BeginWindow(panel.title);
-            panel.OnGUI(imGuiContext, renderContext);
-            imGuiContext.EndWindow();
+            ImGui.Begin(panel.title);
+            panel.OnGUI();
+            ImGui.End();
         }
     }
 }

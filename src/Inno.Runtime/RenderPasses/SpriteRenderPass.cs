@@ -1,7 +1,7 @@
 using Inno.Core.ECS;
 using Inno.Core.Math;
 using Inno.Graphics;
-using Inno.Graphics.Passes;
+using Inno.Graphics.Pass;
 using Inno.Runtime.Component;
 
 namespace Inno.Runtime.RenderPasses;
@@ -45,7 +45,7 @@ public class SpriteRenderPass : RenderPass
                 var transform = scale * rotation * translation;
                 var color = spriteRenderer.color * spriteRenderer.opacity; // TODO: Handle alpha sequences
                 
-                ctx.renderer2D.DrawQuad(transform, color);
+                Renderer2D.DrawQuad(ctx, transform, color);
             }
             
             // TODO: Support texture rendering logic here.

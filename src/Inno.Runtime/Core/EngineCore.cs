@@ -4,6 +4,7 @@ using Inno.Core.Events;
 using Inno.Core.Layers;
 using Inno.Core.Utility;
 using Inno.Graphics;
+using Inno.Graphics.Targets;
 using Inno.Platform;
 using Inno.Platform.Graphics;
 using Inno.Platform.ImGui;
@@ -19,12 +20,11 @@ public abstract class EngineCore
     
     private readonly IWindow m_mainWindow;
     private readonly IGraphicsDevice m_graphicsDevice;
-    private readonly IImGui m_imGui;
     
     private readonly Shell m_gameShell;
     private readonly LayerStack m_layerStack;
     
-    protected EngineCore()
+    protected EngineCore(bool imGui = true)
     {
         // Initialize platforms
         m_mainWindow = PlatformAPI.CreateWindow(new WindowInfo()
@@ -35,7 +35,7 @@ public abstract class EngineCore
         }, WindowBackend.Veldrid_Sdl2);
         m_mainWindow.resizable = DEFAULT_WINDOW_RESIZABLE;
         m_graphicsDevice = PlatformAPI.CreateGraphicsDevice(m_mainWindow, GraphicsBackend.Metal);
-        m_imGui = PlatformAPI.CreateImGUI(m_mainWindow, m_graphicsDevice, ImGuiColorSpaceHandling.Legacy);
+        if (imGui) PlatformAPI.CreateImGuiImpl(m_mainWindow, m_graphicsDevice, ImGuiColorSpaceHandling.Legacy);
         
         // Initialize members
         m_gameShell = new Shell();
@@ -43,7 +43,7 @@ public abstract class EngineCore
         
         // Initialize Render
         RenderTargetPool.Initialize(m_graphicsDevice);
-        RenderContext.Initialize(m_graphicsDevice);
+        Renderer2D.Initialize(m_graphicsDevice);
         
         // Initialization Callbacks
         m_gameShell.SetOnLoad(OnLoad);
@@ -59,6 +59,9 @@ public abstract class EngineCore
         // Asset Initialization
         AssetManager.SetRootDirectory("Assets");
         AssetRegistry.LoadFromDisk();
+        
+        // Graphics Resources
+        Renderer2D.LoadResources();
     }
 
     private void OnSetup()
@@ -92,9 +95,9 @@ public abstract class EngineCore
         m_layerStack.OnRender();
         
         // Layer ImGui
-        m_imGui.BeginLayout(Time.renderDeltaTime);
+        IImGui.BeginLayout(Time.renderDeltaTime);
         m_layerStack.OnImGui();
-        m_imGui.EndLayout();
+        IImGui.EndLayout();
         
         // Swap Buffers
         m_graphicsDevice.SwapBuffers();
@@ -104,8 +107,12 @@ public abstract class EngineCore
     {
         AssetRegistry.SaveToDisk();
         
+        // Clean Graphics Cache
+        RenderTargetPool.Clear();
+        Renderer2D.CleanResources();
+        
         // Dispose Resources
-        m_imGui.Dispose();
+        IImGui.DisposeImpl();
         m_graphicsDevice.Dispose();
     }
     

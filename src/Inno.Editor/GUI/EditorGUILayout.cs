@@ -1,5 +1,6 @@
+using ImGuiNET;
 using Inno.Core.Math;
-using Inno.Platform.ImGui;
+using Inno.Editor.Core;
 
 namespace Inno.Editor.GUI;
 
@@ -22,22 +23,18 @@ public static class EditorGUILayout
     private static int m_autoMeasureID = 0;
     private static int m_columnDepth = 0;
     private static bool m_frameBegin = false;
-    
-    private static IImGuiContext m_context = null!;
 
     #region Lifecycles
 
     /// <summary>
     /// Reset auto ID.
     /// </summary>
-    public static void BeginFrame(IImGuiContext context)
+    public static void BeginFrame()
     {
         if (m_frameBegin)
         {
             throw new InvalidOperationException("BeginFrame() can only be called once.");
         }
-        
-        m_context = context;
 
         m_autoID = 0;
         m_autoMeasureID = 0;
@@ -62,7 +59,7 @@ public static class EditorGUILayout
     /// </summary>
     public static void BeginScope(int id)
     {
-        m_context.PushID(id);
+        ImGui.PushID(id);
         SCOPE_STACK.Push(id);
     }
 
@@ -71,7 +68,7 @@ public static class EditorGUILayout
     /// </summary>
     public static void EndScope()
     {
-        m_context.PopID();
+        ImGui.PopID();
         SCOPE_STACK.Pop();
     }
     
@@ -84,11 +81,11 @@ public static class EditorGUILayout
     /// </summary>
     public static void BeginColumns(float firstColumnWeight = 1.0f, bool bordered = false)
     {
-        var flags = IImGuiContext.TableFlags.SizingStretchProp;
+        var flags = ImGuiTableFlags.SizingStretchProp;
         
         if (bordered)
         {
-            flags |= IImGuiContext.TableFlags.BordersInner | IImGuiContext.TableFlags.BordersOuter;
+            flags |= ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersOuter;
         }
         
         m_columnDepth++;
@@ -97,15 +94,15 @@ public static class EditorGUILayout
         if (!COLUMN_DIRTY_STACK.Peek())
         {
             var columnCount = COLUMN_COUNT_MAP[m_columnDepth];
-            m_context.BeginTable("EditorLayout", columnCount, flags);
+            ImGui.BeginTable("EditorLayout", columnCount, flags);
 
             for (var i = 0; i < columnCount; i++)
             {
-                m_context.TableSetupColumn($"Column {i}", COLUMN_WEIGHT_MAP[m_columnDepth][i]);
+                ImGui.TableSetupColumn($"Column {i}", ImGuiTableColumnFlags.None, COLUMN_WEIGHT_MAP[m_columnDepth][i]);
             }
             
-            m_context.TableNextRow();
-            m_context.TableSetColumnIndex(0);
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
         }
         else
         {
@@ -123,7 +120,7 @@ public static class EditorGUILayout
     {
         if (!COLUMN_DIRTY_STACK.Peek())
         {
-            m_context.EndTable();
+            ImGui.EndTable();
         }
         else
         {
@@ -148,7 +145,7 @@ public static class EditorGUILayout
     {
         if (!COLUMN_DIRTY_STACK.Peek())
         {
-            m_context.TableNextColumn();
+            ImGui.TableNextColumn();
         }
         else
         {
@@ -163,7 +160,7 @@ public static class EditorGUILayout
     /// </summary>
     public static void Space(float pixels = 8f)
     {
-        m_context.Dummy(new Vector2(1, pixels));
+        ImGui.Dummy(new Vector2(1, pixels));
     }
     
     /// <summary>
@@ -171,8 +168,8 @@ public static class EditorGUILayout
     /// </summary>
     public static void Indent(float pixels = 8f)
     {
-        m_context.Dummy(new Vector2(pixels, 1));
-        m_context.SameLine();
+        ImGui.Dummy(new Vector2(pixels, 1));
+        ImGui.SameLine();
     }
     
     /// <summary>
@@ -181,7 +178,7 @@ public static class EditorGUILayout
     public static void BeginAlignment(LayoutAlign align)
     {
         ALIGN_STACK.Push(align);
-        m_context.BeginGroup();
+        ImGui.BeginGroup();
     }
 
     /// <summary>
@@ -191,7 +188,7 @@ public static class EditorGUILayout
     {
         if (ALIGN_STACK.Count == 0) {throw new InvalidOperationException("EditorLayout.End called without matching Begin");}
         ALIGN_STACK.Pop();
-        m_context.EndGroup();
+        ImGui.EndGroup();
     }
     
     private readonly struct DrawScope : IDisposable
@@ -200,11 +197,11 @@ public static class EditorGUILayout
 
         public DrawScope(bool enabled)
         {
-            m_context.PushID(m_autoID++);
+            ImGui.PushID(m_autoID++);
             if (!enabled)
             {
                 m_enabled = enabled;
-                m_context.BeginDisabled();
+                ImGui.BeginDisabled();
             }
         }
 
@@ -212,9 +209,9 @@ public static class EditorGUILayout
         {
             if (!m_enabled)
             {
-                m_context.EndDisabled();
+                ImGui.EndDisabled();
             }
-            m_context.PopID();
+            ImGui.PopID();
         }
     }
 
@@ -224,10 +221,10 @@ public static class EditorGUILayout
         if (ALIGN_STACK.Count == 0) return;
 
         var align = ALIGN_STACK.Peek();
-        var cursorPos = m_context.GetCursorPos();
-        var regionAvail = m_context.GetContentRegionAvail();
+        Vector2 cursorPos = ImGui.GetCursorPos();
+        Vector2 regionAvail = ImGui.GetContentRegionAvail();
 
-        var offsetX = 0f;
+        float offsetX;
         switch (align)
         {
             case LayoutAlign.Center:
@@ -242,18 +239,18 @@ public static class EditorGUILayout
                 break;
         }
 
-        m_context.SetCursorPosX(cursorPos.x + offsetX);
+        ImGui.SetCursorPosX(cursorPos.x + offsetX);
     }
 
     private static float MeasureWidth(Action onMeasure)
     {
-        m_context.BeginInvisible();
-        m_context.PushID(m_autoMeasureID++);
+        EditorImGuiEx.BeginInvisible();
+        ImGui.PushID(m_autoMeasureID++);
         onMeasure.Invoke();
-        m_context.PopID();
-        m_context.EndInvisible();
+        ImGui.PopID();
+        EditorImGuiEx.EndInvisible();
 
-        return m_context.GetInvisibleItemRectSize().x;
+        return EditorImGuiEx.GetInvisibleItemRectSize().x;
     }
     
     #endregion
@@ -264,17 +261,17 @@ public static class EditorGUILayout
     /// </summary>
     public static void Label(string text, bool enabled = true)
     {
-        float width = MeasureWidth(() => m_context.Text(text));
+        float width = MeasureWidth(() => ImGui.Text(text));
         AlignNextItem(width);
 
         using (new DrawScope(enabled))
         {
-            float textHeight = m_context.GetTextLineHeight(true);
-            float frameHeight = m_context.GetFrameHeight(false);
+            float textHeight = ImGui.GetTextLineHeightWithSpacing();
+            float frameHeight = ImGui.GetFrameHeight();
             float verticalOffset = (frameHeight - textHeight) * 0.5f;
-            var cursorPos = m_context.GetCursorPos();
-            m_context.SetCursorPosY(cursorPos.y + verticalOffset);
-            m_context.Text(text);
+            Vector2 cursorPos = ImGui.GetCursorPos();
+            ImGui.SetCursorPosY(cursorPos.y + verticalOffset);
+            ImGui.Text(text);
         }
     }
 
@@ -283,10 +280,10 @@ public static class EditorGUILayout
     /// </summary>
     public static bool Button(string label, bool enabled = true)
     {
-        float width = MeasureWidth(() => m_context.Button(label));
+        float width = MeasureWidth(() => ImGui.Button(label));
         AlignNextItem(width);
 
-        using (new DrawScope(enabled)) { return m_context.Button(label); }
+        using (new DrawScope(enabled)) { return ImGui.Button(label); }
     }
 
     /// <summary>
@@ -295,10 +292,10 @@ public static class EditorGUILayout
     public static bool IntField(string label, ref int value, bool enabled = true)
     {
         var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputInt(label, ref dummyValue));
+        float width = MeasureWidth(() => ImGui.InputInt(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.InputInt(label, ref value); }
+        using (new DrawScope(enabled)) { return ImGui.InputInt(label, ref value); }
     }
 
     /// <summary>
@@ -307,10 +304,10 @@ public static class EditorGUILayout
     public static bool FloatField(string label, ref float value, bool enabled = true)
     {
         var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputFloat(label, ref dummyValue));
+        float width = MeasureWidth(() => ImGui.InputFloat(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.InputFloat(label, ref value); }
+        using (new DrawScope(enabled)) { return ImGui.InputFloat(label, ref value); }
     }
 
     /// <summary>
@@ -318,11 +315,17 @@ public static class EditorGUILayout
     /// </summary>
     public static bool Vector2Field(string label, ref Vector2 value, bool enabled = true)
     {
-        var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputFloat2(label, ref dummyValue));
+        System.Numerics.Vector2 dummyValue = value;
+        float width = MeasureWidth(() => ImGui.InputFloat2(label, ref dummyValue));
         AlignNextItem(width);
-        
-        using (new DrawScope(enabled)) { return m_context.InputFloat2(label, ref value); }
+
+        System.Numerics.Vector2 sysValue = value;
+        using (new DrawScope(enabled))
+        {
+            var result = ImGui.InputFloat2(label, ref sysValue);
+            value = sysValue;
+            return result;
+        }
     }
 
     /// <summary>
@@ -330,11 +333,17 @@ public static class EditorGUILayout
     /// </summary>
     public static bool Vector3Field(string label, ref Vector3 value, bool enabled = true)
     {
-        var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputFloat3(label, ref dummyValue));
+        System.Numerics.Vector3 dummyValue = value;
+        float width = MeasureWidth(() => ImGui.InputFloat3(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.InputFloat3(label, ref value); }
+        System.Numerics.Vector3 sysValue = value;
+        using (new DrawScope(enabled))
+        {
+            var result = ImGui.InputFloat3(label, ref sysValue);
+            value = sysValue;
+            return result;
+        }
     }
 
     /// <summary>
@@ -342,11 +351,20 @@ public static class EditorGUILayout
     /// </summary>
     public static bool QuaternionField(string label, ref Quaternion value, bool enabled = true)
     {
-        var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputQuaternion(label, ref dummyValue));
+        System.Numerics.Vector4 dummyValue = new(value.x, value.y, value.z, value.w);
+        float width = MeasureWidth(() => ImGui.InputFloat4(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.InputQuaternion(label, ref value); }
+        System.Numerics.Vector4 sysValue = new(value.x, value.y, value.z, value.w);
+        using (new DrawScope(enabled))
+        {
+            var result = ImGui.InputFloat4(label, ref sysValue);
+            value.x = sysValue.X;
+            value.y = sysValue.Y;
+            value.z = sysValue.Z;
+            value.w = sysValue.W;
+            return result;
+        }
     }
 
     /// <summary>
@@ -355,10 +373,10 @@ public static class EditorGUILayout
     public static bool TextField(string label, ref string value, uint maxLength = 256, bool enabled = true)
     {
         var dummyValue = value;
-        float width = MeasureWidth(() => m_context.InputText(label, ref dummyValue, maxLength));
+        float width = MeasureWidth(() => ImGui.InputText(label, ref dummyValue, maxLength));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.InputText(label, ref value, maxLength); }
+        using (new DrawScope(enabled)) { return ImGui.InputText(label, ref value, maxLength); }
     }
 
     /// <summary>
@@ -367,10 +385,10 @@ public static class EditorGUILayout
     public static bool Checkbox(string label, ref bool value, bool enabled = true)
     {
         var dummyValue = value;
-        float width = MeasureWidth(() => m_context.Checkbox(label, ref dummyValue));
+        float width = MeasureWidth(() => ImGui.Checkbox(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.Checkbox(label, ref value); }
+        using (new DrawScope(enabled)) { return ImGui.Checkbox(label, ref value); }
     }
     
     /// <summary>
@@ -378,11 +396,17 @@ public static class EditorGUILayout
     /// </summary>
     public static bool ColorField(string label, in Color input, out Color output, bool enabled = true)
     {
-        var dummyValue = input;
-        float width = MeasureWidth(() => m_context.ColorEdit4(label, in dummyValue, out _));
+        System.Numerics.Vector4 dummyValue = new(input.r, input.g, input.b, input.a);
+        float width = MeasureWidth(() => ImGui.ColorEdit4(label, ref dummyValue));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.ColorEdit4(label, in input, out output); }
+        System.Numerics.Vector4 sysValue = new(input.r, input.g, input.b, input.a);
+        using (new DrawScope(enabled)) 
+        { 
+            var result = ImGui.ColorEdit4(label, ref sysValue); 
+            output = new Color(sysValue.X, sysValue.Y, sysValue.Z, sysValue.W);
+            return result;
+        }
     }
     
     /// <summary>
@@ -391,16 +415,16 @@ public static class EditorGUILayout
     public static bool CollapsingHeader(string label, Action? onClose = null, bool defaultOpen = true, bool enabled = true)
     {
         bool visibility = true;
-        var openFlag = defaultOpen ? IImGuiContext.TreeNodeFlags.DefaultOpen : IImGuiContext.TreeNodeFlags.None;
+        var openFlag = defaultOpen ? ImGuiTreeNodeFlags.DefaultOpen : ImGuiTreeNodeFlags.None;
 
         bool result;
         if (onClose == null)
         {
-            result = m_context.CollapsingHeader(label, openFlag);
+            result = ImGui.CollapsingHeader(label, openFlag);
         }
         else
         {
-            using (new DrawScope(enabled)) { result = m_context.CollapsingHeader(label, ref visibility, openFlag); }
+            using (new DrawScope(enabled)) { result = ImGui.CollapsingHeader(label, ref visibility, openFlag); }
             if (!visibility) { onClose.Invoke(); }
         }
         
@@ -413,10 +437,10 @@ public static class EditorGUILayout
     public static bool Combo(string label, string[] list, ref int selectedIndex, bool enabled = true)
     {
         var demmySelected = selectedIndex;
-        float width = MeasureWidth(() => m_context.Combo(label, ref demmySelected, list));
+        float width = MeasureWidth(() => ImGui.Combo(label, ref demmySelected, list, list.Length));
         AlignNextItem(width);
         
-        using (new DrawScope(enabled)) { return m_context.Combo(label, ref selectedIndex, list); }
+        using (new DrawScope(enabled)) { return ImGui.Combo(label, ref selectedIndex, list, list.Length); }
     }
 
     /// <summary>
@@ -429,30 +453,30 @@ public static class EditorGUILayout
 
         using (new DrawScope(enabled))
         {
-            AlignNextItem(MeasureWidth(() => m_context.Button(label)));
-            if (m_context.Button(label))
+            AlignNextItem(MeasureWidth(() => ImGui.Button(label)));
+            if (ImGui.Button(label))
             {
-                m_context.OpenPopup(label);
+                ImGui.OpenPopup(label);
             }
 
-            if (m_context.BeginPopup(label))
+            if (ImGui.BeginPopup(label))
             {
                 if (itemNameList.Length == 0)
                 {
-                    m_context.Text(emptyMsg);
+                    ImGui.Text(emptyMsg);
                 }
                 
                 for (int i = 0; i < itemNameList.Length; i++)
                 {
-                    if (m_context.MenuItem(itemNameList[i]))
+                    if (ImGui.MenuItem(itemNameList[i]))
                     {
                         selectedIndex = i;
                         changed = true;
-                        m_context.CloseCurrentPopup();
+                        ImGui.CloseCurrentPopup();
                     }
                 }
 
-                m_context.EndPopup();
+                ImGui.EndPopup();
             }
         }
 

@@ -19,8 +19,8 @@ internal class ImGuiNETVeldrid : IImGui
     private ImGuiNETVeldridController m_imGuiVeldridController;
     
     // Properties
-    public IntPtr mainMainContextPtr { get; }
-    public IntPtr virtualContextPtr { get; }
+    public IntPtr mainMainContextPtrImpl { get; }
+    public IntPtr virtualContextPtrImpl { get; }
     
     public unsafe ImGuiNETVeldrid(VeldridGraphicsDevice graphicsDevice, VeldridSdl2Window window, ImGuiColorSpaceHandling colorSpaceHandling)
     {
@@ -36,40 +36,40 @@ internal class ImGuiNETVeldrid : IImGui
         );
         
         // Main Context
-        mainMainContextPtr = ImGuiNET.ImGui.GetCurrentContext();
-        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
+        mainMainContextPtrImpl = ImGuiNET.ImGui.GetCurrentContext();
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
         
         // Virtual Context
-        virtualContextPtr = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
+        virtualContextPtrImpl = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
         
         // Setups
         SetupThemes();
     }
 
-    public void BeginLayout(float deltaTime)
+    public void BeginLayoutImpl(float deltaTime)
     {
         // Begin Render
         m_commandList.Begin();
         m_commandList.SetFramebuffer(m_graphicsDevice.inner.SwapchainFramebuffer);
         
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
         ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_veldridWindow.width, m_veldridWindow.height);
         ImGuiNET.ImGui.NewFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
         m_imGuiVeldridController.Update(deltaTime, m_veldridWindow.inputSnapshot, m_imGuiVeldridController.PumpExtraWindowInputs());
     }
 
-    public void EndLayout()
+    public void EndLayoutImpl()
     {
         // Virtual Context
-        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
         ImGuiNET.ImGui.EndFrame();
         
         // Main Context
-        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtr);
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
         
         // Render
         m_imGuiVeldridController.Render(m_graphicsDevice.inner, m_commandList);
@@ -78,7 +78,7 @@ internal class ImGuiNETVeldrid : IImGui
         m_imGuiVeldridController.SwapExtraWindowBuffers(m_graphicsDevice.inner);
     }
 
-    public IntPtr BindTexture(ITexture texture)
+    public IntPtr GetOrBindTextureImpl(ITexture texture)
     {
         if (texture is not VeldridTexture veldridTexture)
             throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));
@@ -86,7 +86,7 @@ internal class ImGuiNETVeldrid : IImGui
         return m_imGuiVeldridController.GetOrCreateImGuiBinding(m_graphicsDevice.inner.ResourceFactory, veldridTexture.inner);
     }
     
-    public void UnbindTexture(ITexture texture)
+    public void UnbindTextureImpl(ITexture texture)
     {
         if (texture is not VeldridTexture veldridTexture)
             throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));

@@ -16,7 +16,7 @@ public class RuntimeTest
         testCore.Run();
     }
     
-    private class TestEngineCore: EngineCore
+    private class TestEngineCore : EngineCore
     {
         private TestGameLayer m_gameLayer = null!;
         
@@ -44,6 +44,7 @@ public class RuntimeTest
             if (m_shouldRotate)
             {
                 m_mainTestObj.transform.localRotationZ += Time.deltaTime * 100f;
+                Console.WriteLine(1 / Time.deltaTime);
             }
             
             base.OnUpdate();

@@ -1,4 +1,4 @@
-namespace Inno.Graphics.Passes;
+namespace Inno.Graphics.Pass;
 
 /// <summary>
 /// Defines the order of rendering passes.

@@ -1,6 +1,9 @@
+using ImGuiNET;
+
 using Inno.Core.ECS;
 using Inno.Core.Layers;
-using Inno.Graphics;
+using Inno.Graphics.Pass;
+using Inno.Graphics.Targets;
 using Inno.Platform.Graphics;
 using Inno.Runtime.RenderPasses;
 
@@ -8,15 +11,42 @@ namespace Inno.Runtime.Core;
 
 public class GameLayer : Layer
 {
-    private readonly RenderContext m_renderContext;
+    private readonly RenderTarget m_renderTarget;
+    private readonly RenderPassStack m_renderPasses;
+    private readonly StringWriter m_consoleWriter;
 
     public GameLayer() : base("GameLayer")
     {
-        m_renderContext = new RenderContext();
+        // Render Target
+        var renderTexDesc = new TextureDescription
+        {
+            format = PixelFormat.B8_G8_R8_A8_UNorm,
+            usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
+            dimension = TextureDimension.Texture2D
+        };
+        var depthTexDesc = new TextureDescription
+        {
+            format = PixelFormat.D32_Float_S8_UInt,
+            usage = TextureUsage.DepthStencil,
+            dimension = TextureDimension.Texture2D
+        };
+        var renderTargetDesc = new FrameBufferDescription
+        {
+            depthAttachmentDescription = depthTexDesc,
+            colorAttachmentDescriptions = [renderTexDesc]
+        };
+        m_renderTarget = RenderTargetPool.Create("scene", renderTargetDesc);
+        m_renderTarget = RenderTargetPool.GetMain(); // TODO: Remove this until texture blit is supported
         
-        // Passes
-        m_renderContext.passStack.PushPass(new ClearScreenPass());
-        m_renderContext.passStack.PushPass(new SpriteRenderPass());
+        // Render Passes
+        m_renderPasses = new RenderPassStack();
+        m_renderPasses.PushPass(new ClearScreenPass());
+        m_renderPasses.PushPass(new SpriteRenderPass());
+        
+        // Console Logger
+        m_consoleWriter = new StringWriter();
+        Console.SetOut(m_consoleWriter);
+        Console.SetError(m_consoleWriter); 
     }
     
     public override void OnAttach()
@@ -26,7 +56,7 @@ public class GameLayer : Layer
 
     public override void OnDetach()
     {
-        m_renderContext.Dispose();
+        m_renderTarget.Dispose();
     }
 
     public override void OnUpdate()
@@ -40,40 +70,37 @@ public class GameLayer : Layer
         var camera = SceneManager.GetActiveScene()?.GetMainCamera();
         if (camera == null) { return; }
         
-        // Render Pipeline
-        EnsureSceneRenderTarget();
-        
         // TODO: Use Renderer2D Blit
-        m_renderContext.renderer2D.BeginFrame(camera.viewMatrix * camera.projectionMatrix, camera.aspectRatio, RenderTargetPool.GetMain());
-        m_renderContext.passStack.OnRender(m_renderContext);
-        m_renderContext.renderer2D.EndFrame();
+        m_renderTarget.GetRenderContext().BeginFrame(camera.viewMatrix * camera.projectionMatrix, camera.aspectRatio);
+        m_renderPasses.OnRender(m_renderTarget.GetRenderContext());
+        m_renderTarget.GetRenderContext().EndFrame();
     }
-    
-    private void EnsureSceneRenderTarget()
+
+    public override void OnImGui()
     {
-        if (RenderTargetPool.Get("scene") == null)
+        ImGui.Begin("Console");
+
+        string consoleText = m_consoleWriter.ToString();
+        string[] lines = consoleText.Split('\n');
+
+        if (lines.Length > 1000)
         {
-            var renderTexDesc = new TextureDescription
-            {
-                format = PixelFormat.B8_G8_R8_A8_UNorm,
-                usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
-                dimension = TextureDimension.Texture2D
-            };
-            
-            var depthTexDesc = new TextureDescription
-            {
-                format = PixelFormat.D32_Float_S8_UInt,
-                usage = TextureUsage.DepthStencil,
-                dimension = TextureDimension.Texture2D
-            };
-            
-            var renderTargetDesc = new FrameBufferDescription
-            {
-                depthAttachmentDescription = depthTexDesc,
-                colorAttachmentDescriptions = [renderTexDesc]
-            };
-            
-            RenderTargetPool.Create("scene", renderTargetDesc);
+            lines = lines[^1000..];
+            consoleText = string.Join("\n", lines);
         }
+
+        if (m_consoleWriter.GetStringBuilder().Length > 20000)
+        {
+            m_consoleWriter.GetStringBuilder().Clear();
+            m_consoleWriter.Write(consoleText); 
+        }
+
+        ImGui.TextUnformatted(consoleText);
+
+        if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+            ImGui.SetScrollHereY(1.0f);
+
+        ImGui.End();
     }
+
 }

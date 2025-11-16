@@ -1,4 +1,4 @@
-using Inno.Graphics.RenderObject;
+using Inno.Runtime.RenderObject;
 
 namespace Inno.Editor.GUI.PropertyGUI.PropertyRenderer;
 

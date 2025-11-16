@@ -1,4 +1,4 @@
-namespace Inno.Graphics.Passes;
+namespace Inno.Graphics.Pass;
 
 /// <summary>
 /// System to update and render all Renderer components in scene.
@@ -6,8 +6,6 @@ namespace Inno.Graphics.Passes;
 public class RenderPassStack
 {
     private readonly Dictionary<RenderPassTag, List<RenderPass>> m_passes = new();
-
-    internal RenderPassStack() {}
 
     /// <summary>
     /// Push a render pass onto the stack for the given tag.

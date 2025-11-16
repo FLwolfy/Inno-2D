@@ -11,7 +11,7 @@ namespace Inno.Editor.Panel
 
         internal InspectorPanel() {}
 
-        internal override void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext)
+        internal override void OnGUI()
         {
             // TODO: Change this to any type that needs to show Inspector View.
             var selectedObject = EditorManager.selection.selectedObject;

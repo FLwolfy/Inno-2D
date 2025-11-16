@@ -15,7 +15,7 @@ public class EditorTest
         testCore.Run();
     }
     
-    private class TestEngineCore: EngineCore
+    private class TestEngineCore : EngineCore
     {
         private TestEditorLayer m_editorLayer = null!;
         

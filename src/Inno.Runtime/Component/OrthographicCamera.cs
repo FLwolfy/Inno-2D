@@ -1,5 +1,6 @@
 using Inno.Core.ECS;
 using Inno.Core.Math;
+using Inno.Core.Serialization;
 
 namespace Inno.Runtime.Component;
 
@@ -16,6 +17,7 @@ public class OrthographicCamera : GameCamera
     /// <summary>
     /// The size of the camera's view in world units.
     /// </summary>
+    [SerializableProperty]
     public float size
     {
         get => m_size;

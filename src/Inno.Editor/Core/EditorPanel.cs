@@ -1,6 +1,3 @@
-using Inno.Graphics;
-using Inno.Platform.ImGui;
-
 namespace Inno.Editor.Core;
 
 public abstract class EditorPanel
@@ -11,5 +8,5 @@ public abstract class EditorPanel
     public virtual void OnClose() { }
     
     public abstract string title { get; }
-    internal abstract void OnGUI(IImGuiContext imGuiContext, RenderContext renderContext);
+    internal abstract void OnGUI();
 }
