@@ -79,7 +79,7 @@ public class GameLayer : Layer
     
     public override void OnImGui()
     {
-#if DEBUG1
+#if DEBUG
         ImGuiNET.ImGui.Begin("Console");
 
         string consoleText = m_consoleWriter.ToString();

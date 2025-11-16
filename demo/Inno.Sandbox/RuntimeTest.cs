@@ -20,7 +20,7 @@ public class RuntimeTest
         testCore.Run();
     }
     
-    private class TestEngineCore(bool debug) : EngineCore(!debug)
+    private class TestEngineCore(bool debug) : EngineCore(debug)
     {
         private TestGameLayer m_gameLayer = null!;
         
