@@ -1,0 +1,67 @@
+using Inno.Core.ECS;
+using Inno.Core.Layers;
+using Inno.Core.Math;
+using Inno.Editor.Core;
+using Inno.Runtime.Component;
+using Inno.Runtime.Core;
+
+namespace Inno.Sandbox;
+
+public class EditorTest
+{
+    public void Run()
+    {
+        TestEngineCore testCore = new TestEngineCore();
+        testCore.Run();
+    }
+    
+    private class TestEngineCore : EngineCore
+    {
+        private TestEditorLayer m_editorLayer = null!;
+        
+        protected override void Setup()
+        {
+            m_editorLayer = new TestEditorLayer();
+            
+            SetWindowSize(1280, 720);
+            SetWindowResizable(true);
+        }
+        protected override void RegisterLayers(LayerStack layerStack)
+        {
+            layerStack.PushLayer(m_editorLayer);
+        }
+    }
+    
+    private class TestEditorLayer : EditorLayer
+    {
+        public override void OnAttach()
+        {
+            // Editor Initialization
+            base.OnAttach();
+            
+            // TEST SCENE SETUP
+            GameScene testScene = SceneManager.CreateScene("Test Scene");
+            SceneManager.SetActiveScene(testScene);
+        
+            // Object 1
+            GameObject testObject = new GameObject("Test Object 1");
+            testObject.transform.worldPosition = new Vector3(0, 0, 0);
+            testObject.transform.worldScale = new Vector3(100f, 100f, 1f);
+            testObject.transform.localRotationZ = 45;
+            testObject.AddComponent<SpriteRenderer>();
+        
+            // Object 2 - 5
+            for (int i = 2; i <= 5; i++)
+            {
+                GameObject to = new GameObject("Test Object" + i);
+                to.transform.worldPosition = new Vector3(150 * (i - 2), 0, 0);
+                to.transform.worldScale = new Vector3(50f, 50f, 1f);
+                SpriteRenderer sr = to.AddComponent<SpriteRenderer>();
+                sr.color = Color.BLACK;
+            
+                to.transform.SetParent(testObject.transform);
+            }
+        }
+    }
+}
+
