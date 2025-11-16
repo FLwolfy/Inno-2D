@@ -1,5 +1,3 @@
-using ImGuiNET;
-
 using Inno.Core.ECS;
 using Inno.Core.Layers;
 using Inno.Graphics.Pass;
@@ -44,9 +42,11 @@ public class GameLayer : Layer
         m_renderPasses.PushPass(new SpriteRenderPass());
         
         // Console Logger
+#if DEBUG
         m_consoleWriter = new StringWriter();
         Console.SetOut(m_consoleWriter);
         Console.SetError(m_consoleWriter); 
+#endif
     }
     
     public override void OnAttach()
@@ -76,9 +76,11 @@ public class GameLayer : Layer
         m_renderTarget.GetRenderContext().EndFrame();
     }
 
+    
     public override void OnImGui()
     {
-        ImGui.Begin("Console");
+#if DEBUG1
+        ImGuiNET.ImGui.Begin("Console");
 
         string consoleText = m_consoleWriter.ToString();
         string[] lines = consoleText.Split('\n');
@@ -95,12 +97,13 @@ public class GameLayer : Layer
             m_consoleWriter.Write(consoleText); 
         }
 
-        ImGui.TextUnformatted(consoleText);
+        ImGuiNET.ImGui.TextUnformatted(consoleText);
 
-        if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
-            ImGui.SetScrollHereY(1.0f);
+        if (ImGuiNET.ImGui.GetScrollY() >= ImGuiNET.ImGui.GetScrollMaxY())
+            ImGuiNET.ImGui.SetScrollHereY(1.0f);
 
-        ImGui.End();
+        ImGuiNET.ImGui.End();
+#endif
     }
 
 }

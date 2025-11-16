@@ -12,11 +12,15 @@ public class RuntimeTest
 {
     public void Run()
     {
-        TestEngineCore testCore = new TestEngineCore();
+#if DEBUG
+        TestEngineCore testCore = new TestEngineCore(true);
+#else
+        TestEngineCore testCore = new TestEngineCore(false);
+#endif
         testCore.Run();
     }
     
-    private class TestEngineCore : EngineCore
+    private class TestEngineCore(bool debug) : EngineCore(!debug)
     {
         private TestGameLayer m_gameLayer = null!;
         
