@@ -1,0 +1,109 @@
+using Inno.Core.ECS;
+using Inno.Core.Layers;
+using Inno.Graphics.Pass;
+using Inno.Graphics.Targets;
+using Inno.Platform.Graphics;
+using Inno.Runtime.RenderPasses;
+
+namespace Inno.Runtime.Core;
+
+public class GameLayer : Layer
+{
+    private readonly RenderTarget m_renderTarget;
+    private readonly RenderPassStack m_renderPasses;
+    private readonly StringWriter m_consoleWriter;
+
+    public GameLayer() : base("GameLayer")
+    {
+        // Render Target
+        var renderTexDesc = new TextureDescription
+        {
+            format = PixelFormat.B8_G8_R8_A8_UNorm,
+            usage = TextureUsage.RenderTarget | TextureUsage.Sampled,
+            dimension = TextureDimension.Texture2D
+        };
+        var depthTexDesc = new TextureDescription
+        {
+            format = PixelFormat.D32_Float_S8_UInt,
+            usage = TextureUsage.DepthStencil,
+            dimension = TextureDimension.Texture2D
+        };
+        var renderTargetDesc = new FrameBufferDescription
+        {
+            depthAttachmentDescription = depthTexDesc,
+            colorAttachmentDescriptions = [renderTexDesc]
+        };
+        m_renderTarget = RenderTargetPool.Create("scene", renderTargetDesc);
+        m_renderTarget = RenderTargetPool.GetMain(); // TODO: Remove this until texture blit is supported
+        
+        // Render Passes
+        m_renderPasses = new RenderPassStack();
+        m_renderPasses.PushPass(new ClearScreenPass());
+        m_renderPasses.PushPass(new SpriteRenderPass());
+        
+        // Console Logger
+#if DEBUG
+        m_consoleWriter = new StringWriter();
+        Console.SetOut(m_consoleWriter);
+        Console.SetError(m_consoleWriter); 
+#endif
+    }
+    
+    public override void OnAttach()
+    {
+        SceneManager.BeginRuntime();
+    }
+
+    public override void OnDetach()
+    {
+        m_renderTarget.Dispose();
+    }
+
+    public override void OnUpdate()
+    {
+        SceneManager.UpdateActiveScene();
+    }
+
+    public override void OnRender()
+    {
+        // Get Camera
+        var camera = SceneManager.GetActiveScene()?.GetMainCamera();
+        if (camera == null) { return; }
+        
+        // TODO: Use Renderer2D Blit
+        m_renderTarget.GetRenderContext().BeginFrame(camera.viewMatrix * camera.projectionMatrix, camera.aspectRatio);
+        m_renderPasses.OnRender(m_renderTarget.GetRenderContext());
+        m_renderTarget.GetRenderContext().EndFrame();
+    }
+
+    
+    public override void OnImGui()
+    {
+#if DEBUG
+        ImGuiNET.ImGui.Begin("Console");
+
+        string consoleText = m_consoleWriter.ToString();
+        string[] lines = consoleText.Split('\n');
+
+        if (lines.Length > 1000)
+        {
+            lines = lines[^1000..];
+            consoleText = string.Join("\n", lines);
+        }
+
+        if (m_consoleWriter.GetStringBuilder().Length > 20000)
+        {
+            m_consoleWriter.GetStringBuilder().Clear();
+            m_consoleWriter.Write(consoleText); 
+        }
+
+        ImGuiNET.ImGui.TextUnformatted(consoleText);
+
+        if (ImGuiNET.ImGui.GetScrollY() >= ImGuiNET.ImGui.GetScrollMaxY())
+            ImGuiNET.ImGui.SetScrollHereY(1.0f);
+
+        ImGuiNET.ImGui.End();
+#endif
+    }
+
+}

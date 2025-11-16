@@ -1,0 +1,155 @@
+using Veldrid;
+
+using ImGuiNET;
+using Inno.Platform.Graphics;
+using Inno.Platform.Graphics.Bridge;
+using Inno.Platform.Window.Bridge;
+using SYSVector4 = System.Numerics.Vector4;
+
+namespace Inno.Platform.ImGui.Bridge;
+
+internal class ImGuiNETVeldrid : IImGui
+{
+    // Graphics
+    private readonly VeldridGraphicsDevice m_graphicsDevice;
+    private readonly VeldridSdl2Window m_veldridWindow;
+    
+    // Resources
+    private CommandList m_commandList;
+    private ImGuiNETVeldridController m_imGuiVeldridController;
+    
+    // Properties
+    public IntPtr mainMainContextPtrImpl { get; }
+    public IntPtr virtualContextPtrImpl { get; }
+    
+    public unsafe ImGuiNETVeldrid(VeldridGraphicsDevice graphicsDevice, VeldridSdl2Window window, ImGuiColorSpaceHandling colorSpaceHandling)
+    {
+        m_graphicsDevice = graphicsDevice;
+        m_veldridWindow = window;
+        
+        m_commandList = m_graphicsDevice.inner.ResourceFactory.CreateCommandList();
+        m_imGuiVeldridController = new ImGuiNETVeldridController(
+            m_graphicsDevice.inner,
+            m_veldridWindow.inner,
+            m_graphicsDevice.inner.MainSwapchain.Framebuffer.OutputDescription,
+            colorSpaceHandling
+        );
+        
+        // Main Context
+        mainMainContextPtrImpl = ImGuiNET.ImGui.GetCurrentContext();
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
+        
+        // Virtual Context
+        virtualContextPtrImpl = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
+        
+        // Setups
+        SetupThemes();
+    }
+
+    public void BeginLayoutImpl(float deltaTime)
+    {
+        // Begin Render
+        m_commandList.Begin();
+        m_commandList.SetFramebuffer(m_graphicsDevice.inner.SwapchainFramebuffer);
+        
+        // Virtual Context
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
+        ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_veldridWindow.width, m_veldridWindow.height);
+        ImGuiNET.ImGui.NewFrame();
+        
+        // Main Context
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
+        m_imGuiVeldridController.Update(deltaTime, m_veldridWindow.inputSnapshot, m_imGuiVeldridController.PumpExtraWindowInputs());
+    }
+
+    public void EndLayoutImpl()
+    {
+        // Virtual Context
+        ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
+        ImGuiNET.ImGui.EndFrame();
+        
+        // Main Context
+        ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
+        
+        // Render
+        m_imGuiVeldridController.Render(m_graphicsDevice.inner, m_commandList);
+        m_commandList.End();
+        m_graphicsDevice.inner.SubmitCommands(m_commandList);
+        m_imGuiVeldridController.SwapExtraWindowBuffers(m_graphicsDevice.inner);
+    }
+
+    public IntPtr GetOrBindTextureImpl(ITexture texture)
+    {
+        if (texture is not VeldridTexture veldridTexture)
+            throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));
+        
+        return m_imGuiVeldridController.GetOrCreateImGuiBinding(m_graphicsDevice.inner.ResourceFactory, veldridTexture.inner);
+    }
+    
+    public void UnbindTextureImpl(ITexture texture)
+    {
+        if (texture is not VeldridTexture veldridTexture)
+            throw new ArgumentException("Expected a Veldrid Texture.", nameof(texture));
+        
+        m_imGuiVeldridController.RemoveImGuiBinding(veldridTexture.inner);
+    }
+    
+    private void SetupThemes()
+    {
+        ImGuiNET.ImGui.StyleColorsDark();
+        
+        var style = ImGuiNET.ImGui.GetStyle();
+        var colors = style.Colors;
+
+        // Window Background
+        colors[(int)ImGuiCol.WindowBg] = new SYSVector4(0.10f, 0.10f, 0.11f, 1.0f);
+        colors[(int)ImGuiCol.DockingPreview] = new SYSVector4(0.6f, 0.0f, 0.1f, 0.7f);
+
+        // Headers
+        colors[(int)ImGuiCol.Header] = new SYSVector4(0.20f, 0.205f, 0.25f, 1.0f);
+        colors[(int)ImGuiCol.HeaderHovered] = new SYSVector4(0.35f, 0.30f, 0.45f, 1.0f); // muted purple
+        colors[(int)ImGuiCol.HeaderActive] = new SYSVector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Buttons
+        colors[(int)ImGuiCol.Button] = new SYSVector4(0.20f, 0.205f, 0.21f, 1.0f);
+        colors[(int)ImGuiCol.ButtonHovered] = new SYSVector4(0.35f, 0.30f, 0.45f, 1.0f);
+        colors[(int)ImGuiCol.ButtonActive] = new SYSVector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Frame BG
+        colors[(int)ImGuiCol.FrameBg] = new SYSVector4(0.18f, 0.18f, 0.20f, 1.0f);
+        colors[(int)ImGuiCol.FrameBgHovered] = new SYSVector4(0.35f, 0.30f, 0.45f, 1.0f);
+        colors[(int)ImGuiCol.FrameBgActive] = new SYSVector4(0.30f, 0.25f, 0.40f, 1.0f);
+
+        // Tabs
+        colors[(int)ImGuiCol.Tab] = new SYSVector4(0.13f, 0.13f, 0.16f, 1.0f);
+        colors[(int)ImGuiCol.TabHovered] = new SYSVector4(0.45f, 0.35f, 0.60f, 1.0f);
+        colors[(int)ImGuiCol.TabSelected] = new SYSVector4(0.38f, 0.32f, 0.50f, 1.0f);
+        colors[(int)ImGuiCol.TabDimmed] = new SYSVector4(0.10f, 0.10f, 0.12f, 1.0f);
+        colors[(int)ImGuiCol.TabDimmedSelected] = new SYSVector4(0.28f, 0.23f, 0.36f, 1.0f);
+
+        // Title bar
+        colors[(int)ImGuiCol.TitleBg] = new SYSVector4(0.12f, 0.12f, 0.15f, 1.0f);
+        colors[(int)ImGuiCol.TitleBgActive] = new SYSVector4(0.18f, 0.18f, 0.22f, 1.0f);
+        colors[(int)ImGuiCol.TitleBgCollapsed] = new SYSVector4(0.08f, 0.08f, 0.10f, 1.0f);
+
+        // Optional: Resize grip, scrollbar, etc. for more polish
+        colors[(int)ImGuiCol.ResizeGrip] = new SYSVector4(0.3f, 0.3f, 0.35f, 0.6f);
+        colors[(int)ImGuiCol.ResizeGripHovered] = new SYSVector4(0.4f, 0.35f, 0.5f, 0.7f);
+        colors[(int)ImGuiCol.ScrollbarGrab] = new SYSVector4(0.30f, 0.30f, 0.35f, 1.0f);
+        colors[(int)ImGuiCol.ScrollbarGrabHovered] = new SYSVector4(0.40f, 0.35f, 0.50f, 1.0f);
+        colors[(int)ImGuiCol.CheckMark] = new SYSVector4(0.7f, 0.6f, 0.9f, 1.0f);
+
+        // Style tweaks
+        style.WindowRounding = 4.0f;
+        style.FrameRounding = 3.0f;
+        style.ScrollbarRounding = 3.0f;
+        style.GrabRounding = 3.0f;
+    }
+    
+    public void Dispose()
+    {
+        m_commandList.Dispose();
+        m_imGuiVeldridController.Dispose();
+    }
+}
+
