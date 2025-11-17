@@ -1,7 +1,5 @@
 using Inno.Editor.Core;
 using Inno.Editor.GUI.InspectorGUI;
-using Inno.Graphics;
-using Inno.Platform.ImGui;
 
 namespace Inno.Editor.Panel
 {

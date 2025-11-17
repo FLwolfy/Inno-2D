@@ -47,9 +47,6 @@ internal class ImGuiNETVeldridController : IDisposable
     private bool m_shiftDown;
     private bool m_altDown;
     private bool m_winKeyDown;
-    private int m_windowWidth;
-    private int m_windowHeight;
-    private readonly SYSVector2 m_scaleFactor = SYSVector2.One;
     
     // Window Delegate
     private Platform_CreateWindow m_createWindow = null!;
@@ -116,17 +113,10 @@ internal class ImGuiNETVeldridController : IDisposable
         
         // Window Platform Interface
         m_mainWindow = mainWindow;
-        m_windowWidth = mainWindow.Width;
-        m_windowHeight = mainWindow.Height;
         ImGuiPlatformIOPtr platformIo = ImGuiNET.ImGui.GetPlatformIO();
         ImGuiViewportPtr mainViewport = platformIo.Viewports[0];
-        mainViewport.PlatformHandle = mainWindow.Handle;
-        mainWindow.Resized += () =>
-        {
-            m_windowWidth = mainWindow.Width;
-            m_windowHeight = mainWindow.Height;
-        };
         m_mainImGuiWindow = new ImGuiNETVeldridWindow(gd, mainViewport, m_mainWindow);
+        mainViewport.PlatformHandle = mainWindow.Handle;
         mainWindow.FocusGained += () =>
         {
             ImGuiNETVeldridWindow.currentWindow = m_mainImGuiWindow;
@@ -603,6 +593,8 @@ internal class ImGuiNETVeldridController : IDisposable
                     if (window != null)
                     {
                         cl.SetFramebuffer(window.swapchain.Framebuffer);
+                        var color = ImGuiNET.ImGui.GetStyle().Colors[(int)ImGuiCol.WindowBg];
+                        cl.ClearColorTarget(0, new RgbaFloat(color.X, color.Y, color.Z, color.W));
                         RenderImDrawData(vp.DrawData, gd, cl);
                     }
                 }
@@ -816,12 +808,9 @@ internal class ImGuiNETVeldridController : IDisposable
     private void SetPerFrameImGuiData(float deltaSeconds)
     {
         ImGuiIOPtr io = ImGuiNET.ImGui.GetIO();
-        io.DisplaySize = new SYSVector2(
-            m_windowWidth / m_scaleFactor.X,
-            m_windowHeight / m_scaleFactor.Y);
-        io.DisplayFramebufferScale = m_scaleFactor;
+        io.DisplaySize = new SYSVector2(m_mainWindow.Width, m_mainWindow.Height);
         io.DeltaTime = deltaSeconds; // DeltaTime is in seconds.
-        
+
         ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Pos = new SYSVector2(m_mainWindow.X, m_mainWindow.Y);
         ImGuiNET.ImGui.GetPlatformIO().Viewports[0].Size = new SYSVector2(m_mainWindow.Width, m_mainWindow.Height);
     }

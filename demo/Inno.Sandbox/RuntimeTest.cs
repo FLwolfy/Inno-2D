@@ -87,6 +87,7 @@ public class RuntimeTest
         
             // Camera Setup
             GameObject cameraObject = new GameObject("Main Camera");
+            cameraObject.transform.worldPosition = new Vector3(500, 200, 0);
             OrthographicCamera camera = cameraObject.AddComponent<OrthographicCamera>();
             camera.isMainCamera = true;
             camera.aspectRatio = 16f / 9f;
