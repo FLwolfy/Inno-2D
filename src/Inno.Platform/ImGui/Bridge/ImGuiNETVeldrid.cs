@@ -23,6 +23,7 @@ internal class ImGuiNETVeldrid : IImGui
     public IntPtr virtualContextPtrImpl { get; }
     
     // Fonts
+    private static readonly float DEFAULT_FONT_SIZE = 16.0f;
     private ImFontPtr m_fontRegular;
     private ImFontPtr m_fontBold;
     private ImFontPtr m_fontItalic;
@@ -46,13 +47,13 @@ internal class ImGuiNETVeldrid : IImGui
         mainMainContextPtrImpl = ImGuiNET.ImGui.GetCurrentContext();
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
         SetupImGuiStyle();
-        SetupFonts();
+        SetupFonts(DEFAULT_FONT_SIZE);
         
         // Virtual Context
         virtualContextPtrImpl = ImGuiNET.ImGui.CreateContext(ImGuiNET.ImGui.GetIO().Fonts.NativePtr);
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
         SetupImGuiStyle();
-        SetupFonts();
+        SetupFonts(DEFAULT_FONT_SIZE);
         
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
     }
@@ -127,28 +128,33 @@ internal class ImGuiNETVeldrid : IImGui
 	    ImGuiNET.ImGui.PopFont();
 	    ImGuiNET.ImGui.PushFont(font);
     }
+
+    public void ZoomImpl(float zoomRate)
+    {
+	    var sizePixels = zoomRate * DEFAULT_FONT_SIZE;
+	    SetupFonts(sizePixels);
+    }
     
-    private void SetupFonts()
+    private void SetupFonts(float sizePixels)
     {
 	    var io = ImGuiNET.ImGui.GetIO();
 	    io.Fonts.Clear();
-	    io.FontGlobalScale = 1.0f;
 
 	    // Load Regular
 	    var regularPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Regular.ttf", out var regularLen);
-	    m_fontRegular = io.Fonts.AddFontFromMemoryTTF(regularPtr, regularLen, 20.0f);
+	    m_fontRegular = io.Fonts.AddFontFromMemoryTTF(regularPtr, regularLen, sizePixels);
 
 	    // Load Bold
 	    var boldPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Bold.ttf", out var boldLen);
-	    m_fontBold = io.Fonts.AddFontFromMemoryTTF(boldPtr, boldLen, 20.0f);
+	    m_fontBold = io.Fonts.AddFontFromMemoryTTF(boldPtr, boldLen, sizePixels);
 
 	    // Load Italic
 	    var italicPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Italic.ttf", out var italicLen);
-	    m_fontItalic = io.Fonts.AddFontFromMemoryTTF(italicPtr, italicLen, 20.0f);
+	    m_fontItalic = io.Fonts.AddFontFromMemoryTTF(italicPtr, italicLen, sizePixels);
 
 	    // Load Bold Italic
 	    var boldItalicPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-BoldItalic.ttf", out var boldItalicLen);
-	    m_fontBoldItalic = io.Fonts.AddFontFromMemoryTTF(boldItalicPtr, boldItalicLen, 20.0f);
+	    m_fontBoldItalic = io.Fonts.AddFontFromMemoryTTF(boldItalicPtr, boldItalicLen, sizePixels);
 
 	    m_imGuiVeldridController.RecreateFontDeviceTexture();
     }
@@ -201,7 +207,7 @@ internal class ImGuiNETVeldrid : IImGui
 		style.Colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.61960787f, 0.5764706f, 0.76862746f, 0.54901963f);
 		style.Colors[(int)ImGuiCol.TitleBg] = new Vector4(0.09803922f, 0.09803922f, 0.09803922f, 1.0f);
 		style.Colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.09803922f, 0.09803922f, 0.09803922f, 1.0f);
-		style.Colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.25882354f, 0.25882354f, 0.25882354f, 0.0f);
+		style.Colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.09803922f, 0.09803922f, 0.09803922f, 1.0f);
 		style.Colors[(int)ImGuiCol.MenuBarBg] = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
 		style.Colors[(int)ImGuiCol.ScrollbarBg] = new Vector4(0.15686275f, 0.15686275f, 0.15686275f, 0.0f);
 		style.Colors[(int)ImGuiCol.ScrollbarGrab] = new Vector4(0.15686275f, 0.15686275f, 0.15686275f, 1.0f);

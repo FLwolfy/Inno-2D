@@ -54,11 +54,11 @@ public class RuntimeTest
             base.OnUpdate();
         }
 
-        public override void OnEvent(Event e)
+        public override void OnEvent(EventSnapshot snapshot)
         {
-            base.OnEvent(e);
-            
-            if (e.type == EventType.KeyPressed)
+            base.OnEvent(snapshot);
+
+            foreach (var e in snapshot.GetEvents(EventType.KeyPressed))
             {
                 var keyEvent = (e as KeyPressedEvent);
 
@@ -67,7 +67,8 @@ public class RuntimeTest
                     m_shouldRotate = true;
                 }
             }
-            else if (e.type == EventType.KeyReleased)
+
+            foreach (var e in snapshot.GetEvents(EventType.KeyReleased))
             {
                 var keyEvent = e as KeyReleasedEvent;
 

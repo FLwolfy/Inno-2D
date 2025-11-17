@@ -77,6 +77,12 @@ public interface IImGui : IDisposable
     internal void UseFontImpl(ImGuiFontStyle style);
     
     /// <summary>
+    /// Zoom in or out based on the given zoom rate.
+    /// </summary>
+    static void Zoom(float zoomRate) => impl.ZoomImpl(zoomRate);
+    internal void ZoomImpl(float zoomRate);
+    
+    /// <summary>
     /// Gets the pointer to the main ImGui context.
     /// </summary>
     static IntPtr mainMainContextPtr => impl.mainMainContextPtrImpl;

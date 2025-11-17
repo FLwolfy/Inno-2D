@@ -23,6 +23,7 @@ public abstract class EngineCore
     
     private readonly Shell m_gameShell;
     private readonly LayerStack m_layerStack;
+    private readonly EventSnapshot m_eventSnapshot;
     
     protected EngineCore(bool imGui = true)
     {
@@ -40,6 +41,7 @@ public abstract class EngineCore
         // Initialize members
         m_gameShell = new Shell();
         m_layerStack = new LayerStack();
+        m_eventSnapshot = new EventSnapshot();
         
         // Initialize Render
         RenderTargetPool.Initialize(m_graphicsDevice);
@@ -82,11 +84,16 @@ public abstract class EngineCore
     private void OnEvent(EventDispatcher dispatcher)
     {
         m_mainWindow.PumpEvents(dispatcher);
+        
+        var shouldCloseWindow = false;
+        m_eventSnapshot.Clear();
         dispatcher.Dispatch(e =>
         {
-            m_layerStack.OnEvent(e);
-            if (e.type == EventType.WindowClose) End();
+            m_eventSnapshot.AddEvent(e);
+            if (e.type == EventType.WindowClose) shouldCloseWindow = true;
         });
+        m_layerStack.OnEvent(m_eventSnapshot);
+        if (shouldCloseWindow) End();
     }
 
     private void OnDraw()
