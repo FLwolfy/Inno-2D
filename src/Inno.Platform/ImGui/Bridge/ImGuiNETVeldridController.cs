@@ -80,6 +80,9 @@ internal class ImGuiNETVeldridController : IDisposable
     private readonly Dictionary<IntPtr, ResourceSetInfo> m_viewsById = new();
     private readonly List<IDisposable> m_ownedResources = new();
     
+    // Font trackers
+    private readonly Dictionary<string, (IntPtr, int)> m_fontCache;
+    
     
     // ============================================================
     // Initialization and Loads
@@ -139,6 +142,7 @@ internal class ImGuiNETVeldridController : IDisposable
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
 
         // Fonts
+        m_fontCache = new Dictionary<string, (IntPtr, int)>();
         ImGuiNET.ImGui.GetIO().Fonts.AddFontDefault();
         ImGuiNET.ImGui.GetIO().Fonts.Flags |= ImFontAtlasFlags.NoBakedLines;
 
@@ -502,6 +506,29 @@ internal class ImGuiNETVeldridController : IDisposable
     // ============================================================
     
     #region Fonts
+    
+    public IntPtr LoadEmbeddedFontTTF(string shortName, out int length)
+    {
+        var resources = m_assembly.GetManifestResourceNames();
+        var match = resources.FirstOrDefault(r => r.EndsWith(shortName, StringComparison.OrdinalIgnoreCase));
+        if (match == null)
+            throw new FileNotFoundException($"Embedded resource '{shortName}' not found.");
+
+        byte[] fontData;
+        using (var s = m_assembly.GetManifestResourceStream(match)!)
+        using (var ms = new MemoryStream())
+        {
+            s.CopyTo(ms);
+            fontData = ms.ToArray();
+        }
+
+        var ptr = Marshal.AllocHGlobal(fontData.Length);
+        Marshal.Copy(fontData, 0, ptr, fontData.Length);
+        m_fontCache[shortName] = (ptr, fontData.Length);
+	    
+        length = fontData.Length;
+        return ptr;
+    }
     
     /// <summary>
     /// Recreates the device texture used to render text.
@@ -1100,11 +1127,9 @@ internal class ImGuiNETVeldridController : IDisposable
         m_pipeline?.Dispose();
         m_mainResourceSet?.Dispose();
         m_fontTextureResourceSet?.Dispose();
-
-        foreach (IDisposable resource in m_ownedResources)
-        {
-            resource.Dispose();
-        }
+        
+	    foreach (var (ptr, _) in m_fontCache.Values) if (ptr != IntPtr.Zero) Marshal.FreeHGlobal(ptr);
+        foreach (IDisposable resource in m_ownedResources) resource.Dispose();
     }
     
     #endregion

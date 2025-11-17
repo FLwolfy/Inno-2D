@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Runtime.InteropServices;
 using Veldrid;
 using ImGuiNET;
 
@@ -17,8 +15,6 @@ internal class ImGuiNETVeldrid : IImGui
     private readonly VeldridSdl2Window m_veldridWindow;
     
     // Resources
-    private Assembly m_assembly;
-    private Dictionary<string, (IntPtr, int)> m_fontCache;
     private CommandList m_commandList;
     private ImGuiNETVeldridController m_imGuiVeldridController;
     
@@ -26,13 +22,18 @@ internal class ImGuiNETVeldrid : IImGui
     public IntPtr mainMainContextPtrImpl { get; }
     public IntPtr virtualContextPtrImpl { get; }
     
+    // Fonts
+    private ImFontPtr m_fontRegular;
+    private ImFontPtr m_fontBold;
+    private ImFontPtr m_fontItalic;
+    private ImFontPtr m_fontBoldItalic;
+    private bool m_fontPushed;
+    
     public unsafe ImGuiNETVeldrid(VeldridGraphicsDevice graphicsDevice, VeldridSdl2Window window, ImGuiColorSpaceHandling colorSpaceHandling)
     {
         m_graphicsDevice = graphicsDevice;
         m_veldridWindow = window;
         
-        m_assembly = typeof(ImGuiNETVeldrid).Assembly;
-        m_fontCache = new Dictionary<string, (IntPtr, int)>();
         m_commandList = m_graphicsDevice.inner.ResourceFactory.CreateCommandList();
         m_imGuiVeldridController = new ImGuiNETVeldridController(
             m_graphicsDevice.inner,
@@ -66,20 +67,24 @@ internal class ImGuiNETVeldrid : IImGui
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
         ImGuiNET.ImGui.GetIO().DisplaySize = new System.Numerics.Vector2(m_veldridWindow.width, m_veldridWindow.height);
         ImGuiNET.ImGui.NewFrame();
+        ImGuiNET.ImGui.PushFont(m_fontRegular);
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
         m_imGuiVeldridController.Update(deltaTime, m_veldridWindow.inputSnapshot, m_imGuiVeldridController.PumpExtraWindowInputs());
+        ImGuiNET.ImGui.PushFont(m_fontRegular);
     }
 
     public void EndLayoutImpl()
     {
         // Virtual Context
         ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
+	    ImGuiNET.ImGui.PopFont();
         ImGuiNET.ImGui.EndFrame();
         
         // Main Context
         ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
+        ImGuiNET.ImGui.PopFont();
         
         // Render
         m_imGuiVeldridController.Render(m_graphicsDevice.inner, m_commandList);
@@ -103,51 +108,49 @@ internal class ImGuiNETVeldrid : IImGui
         
         m_imGuiVeldridController.RemoveImGuiBinding(veldridTexture.inner);
     }
+
+    public void UseFontImpl(ImGuiFontStyle style)
+    {
+	    ImFontPtr font = style switch
+	    {
+		    ImGuiFontStyle.Bold => m_fontBold,
+		    ImGuiFontStyle.Italic => m_fontItalic,
+		    ImGuiFontStyle.BoldItalic => m_fontBoldItalic,
+		    _ => m_fontRegular
+	    };
+		
+	    ImGuiNET.ImGui.SetCurrentContext(virtualContextPtrImpl);
+	    ImGuiNET.ImGui.PopFont();
+	    ImGuiNET.ImGui.PushFont(font);
+	    
+	    ImGuiNET.ImGui.SetCurrentContext(mainMainContextPtrImpl);
+	    ImGuiNET.ImGui.PopFont();
+	    ImGuiNET.ImGui.PushFont(font);
+    }
     
     private void SetupFonts()
     {
 	    var io = ImGuiNET.ImGui.GetIO();
 	    io.Fonts.Clear();
+	    io.FontGlobalScale = 1.0f;
 
-		// Regular
-	    var (regularPtr, regularLen) = LoadEmbeddedFontTTF("JetBrainsMono-Regular.ttf");
-	    io.Fonts.AddFontFromMemoryTTF(regularPtr, regularLen, 20.0f);
+	    // Load Regular
+	    var regularPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Regular.ttf", out var regularLen);
+	    m_fontRegular = io.Fonts.AddFontFromMemoryTTF(regularPtr, regularLen, 20.0f);
 
-		// Bold
-	    var (boldPtr, boldLen) = LoadEmbeddedFontTTF("JetBrainsMono-Bold.ttf");
-	    var boldFont = io.Fonts.AddFontFromMemoryTTF(boldPtr, boldLen, 20.0f);
+	    // Load Bold
+	    var boldPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Bold.ttf", out var boldLen);
+	    m_fontBold = io.Fonts.AddFontFromMemoryTTF(boldPtr, boldLen, 20.0f);
 
-		// Italic
-	    var (italicPtr, italicLen) = LoadEmbeddedFontTTF("JetBrainsMono-Italic.ttf");
-	    var italicFont = io.Fonts.AddFontFromMemoryTTF(italicPtr, italicLen, 20.0f);
+	    // Load Italic
+	    var italicPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-Italic.ttf", out var italicLen);
+	    m_fontItalic = io.Fonts.AddFontFromMemoryTTF(italicPtr, italicLen, 20.0f);
 
-		// Bold Italic
-	    var (boldItalicPtr, boldItalicLen) = LoadEmbeddedFontTTF("JetBrainsMono-BoldItalic.ttf");
-	    var boldItalicFont = io.Fonts.AddFontFromMemoryTTF(boldItalicPtr, boldItalicLen, 20.0f);
-	    
+	    // Load Bold Italic
+	    var boldItalicPtr = m_imGuiVeldridController.LoadEmbeddedFontTTF("JetBrainsMono-BoldItalic.ttf", out var boldItalicLen);
+	    m_fontBoldItalic = io.Fonts.AddFontFromMemoryTTF(boldItalicPtr, boldItalicLen, 20.0f);
+
 	    m_imGuiVeldridController.RecreateFontDeviceTexture();
-    }
-    
-    private (IntPtr, int) LoadEmbeddedFontTTF(string shortName)
-    {
-	    var resources = m_assembly.GetManifestResourceNames();
-	    var match = resources.FirstOrDefault(r => r.EndsWith(shortName, StringComparison.OrdinalIgnoreCase));
-	    if (match == null)
-		    throw new FileNotFoundException($"Embedded resource '{shortName}' not found.");
-
-	    byte[] fontData;
-	    using (var s = m_assembly.GetManifestResourceStream(match)!)
-	    using (var ms = new MemoryStream())
-	    {
-		    s.CopyTo(ms);
-		    fontData = ms.ToArray();
-	    }
-
-	    var ptr = Marshal.AllocHGlobal(fontData.Length);
-	    Marshal.Copy(fontData, 0, ptr, fontData.Length);
-	    m_fontCache[shortName] = (ptr, fontData.Length);
-	    
-	    return (ptr, fontData.Length);
     }
     
     private void SetupImGuiStyle()
@@ -239,11 +242,11 @@ internal class ImGuiNETVeldrid : IImGui
 		style.Colors[(int)ImGuiCol.NavWindowingHighlight] = new Vector4(1.0f, 1.0f, 1.0f, 0.7f);
 		style.Colors[(int)ImGuiCol.NavWindowingDimBg] = new Vector4(0.8f, 0.8f, 0.8f, 0.2f);
 		style.Colors[(int)ImGuiCol.ModalWindowDimBg] = new Vector4(0.8f, 0.8f, 0.8f, 0.35f);
+		style.Colors[(int)ImGuiCol.DockingPreview] = new Vector4(0.8156863f, 0.77254903f, 0.9647059f, 0.54901963f);
 	}
     
     public void Dispose()
     {
-	    foreach (var (ptr, _) in m_fontCache.Values) if (ptr != IntPtr.Zero) Marshal.FreeHGlobal(ptr);
         m_commandList.Dispose();
         m_imGuiVeldridController.Dispose();
     }
