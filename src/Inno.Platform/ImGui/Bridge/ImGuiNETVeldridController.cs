@@ -742,12 +742,11 @@ internal class ImGuiNETVeldridController : IDisposable
 
             var w = (ImGuiNETVeldridWindow)GCHandle.FromIntPtr(vp.PlatformUserData).Target!;
             if (!w.window.Exists || !w.window.Visible) continue;
-            if (focus != null && focusRect.Contains(new Rect(w.window.Bounds.X, w.window.Bounds.Y, w.window.Bounds.Width, w.window.Bounds.Height))) continue;
-
+            
+            if (focusRect.Overlaps(new Rect(w.window.Bounds.X, w.window.Bounds.Y, w.window.Bounds.Width, w.window.Bounds.Height))) continue;
             gd.SwapBuffers(w.swapchain);
         }
     }
-
 
     /// <summary>
     /// Updates ImGui input and IO configuration state.

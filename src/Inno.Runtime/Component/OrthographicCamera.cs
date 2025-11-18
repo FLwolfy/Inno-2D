@@ -12,7 +12,7 @@ public class OrthographicCamera : GameCamera
     private const float C_NEAR = 0f;
     private const float C_FAR = 1f;
 
-    private float m_size = 720f;
+    private float m_size = 1080f;
 
     /// <summary>
     /// The size of the camera's view in world units.

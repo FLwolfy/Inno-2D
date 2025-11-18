@@ -23,7 +23,7 @@ public class EditorTest
         {
             m_editorLayer = new TestEditorLayer();
             
-            SetWindowSize(1280, 720);
+            SetWindowSize(1920, 1080);
             SetWindowResizable(true);
         }
         protected override void RegisterLayers(LayerStack layerStack)
