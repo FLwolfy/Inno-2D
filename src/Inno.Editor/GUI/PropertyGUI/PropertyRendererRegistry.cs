@@ -7,7 +7,7 @@ public static class PropertyRendererRegistry
     private static readonly Dictionary<Type, IPropertyRenderer> RENDERERS = new();
     private static readonly Dictionary<Type, Type> OPEN_GENERIC_RENDERERS = new();
 
-    internal static void Initialize()
+    internal static void SubscribeToTypeCache()
     {
         TypeCacheManager.OnRefreshed += () =>
         {
@@ -19,6 +19,8 @@ public static class PropertyRendererRegistry
                 Register(type);
             }
         };
+        
+        TypeCacheManager.Refresh();
     }
 
     private static void Register(Type type)

@@ -1,10 +1,8 @@
-using System.Reflection;
-
 namespace Inno.Core.Utility;
 
 public static class TypeCacheManager
 {
-    private const string C_ASSEMBLYCOMPANY_NAME = "Inno";
+    private const string C_INNO_NAMESPACE = "Inno";
     
     private static readonly Dictionary<Type, List<Type>> SUBCLASS_CACHE = new();
     private static readonly Dictionary<Type, List<Type>> INTERFACE_CACHE = new();
@@ -14,28 +12,22 @@ public static class TypeCacheManager
     
     public static event Action? OnRefreshed;
 
-    /// <summary>
-    /// This needs to wait until all the OnRefreshed methods are set up and subscribe to the event.
-    /// </summary>
+
     public static void Initialize()
     {
         AppDomain.CurrentDomain.AssemblyLoad += (_, __) =>
         {
             m_isDirty = true;
         };
-        
-        Refresh();
     }
-
-    private static void Refresh()
+    
+    /// <summary>
+    /// This needs to be called when a new type is registered to the cache.
+    /// </summary>
+    public static void Refresh()
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a =>
-            {
-                if (a.IsDynamic) return false;
-                var attr = a.GetCustomAttribute<AssemblyCompanyAttribute>();
-                return attr != null && attr.Company == C_ASSEMBLYCOMPANY_NAME;
-            });
+            .Where(a => !a.IsDynamic);
 
         var allTypes = assemblies
             .SelectMany(a =>
@@ -43,6 +35,7 @@ public static class TypeCacheManager
                 try { return a.GetTypes(); }
                 catch { return Type.EmptyTypes; }
             })
+            .Where(t => !t.IsAbstract && (t.Namespace?.StartsWith(C_INNO_NAMESPACE) ?? false))
             .ToArray();
 
         SUBCLASS_CACHE.Clear();

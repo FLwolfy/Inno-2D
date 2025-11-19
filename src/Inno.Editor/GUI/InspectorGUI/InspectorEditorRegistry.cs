@@ -7,7 +7,7 @@ public static class InspectorEditorRegistry
 {
     private static readonly Dictionary<Type, IInspectorEditor> REGISTRY = new();
 
-    internal static void Initialize()
+    internal static void SubscribeToTypeCache()
     {
         TypeCacheManager.OnRefreshed += () =>
         {
@@ -18,6 +18,8 @@ public static class InspectorEditorRegistry
                 Register(editorType);
             }
         };
+        
+        TypeCacheManager.Refresh();
     }
 
     private static void Register(Type type)

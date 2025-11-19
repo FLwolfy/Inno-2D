@@ -1,3 +1,5 @@
+using Inno.Assets;
+using Inno.Assets.Types;
 using Inno.Core.ECS;
 using Inno.Core.Layers;
 using Inno.Core.Math;
@@ -25,6 +27,9 @@ public class EditorTest
             
             SetWindowSize(1920, 1080);
             SetWindowResizable(true);
+
+            var sa = AssetManager.Load<ShaderAsset>("TestShaders/Vertex.vert");
+            Console.WriteLine("Test Asset Loader: " + sa!.shaderBinaryPath);
         }
         protected override void RegisterLayers(LayerStack layerStack)
         {
@@ -42,6 +47,14 @@ public class EditorTest
             // TEST SCENE SETUP
             GameScene testScene = SceneManager.CreateScene("Test Scene");
             SceneManager.SetActiveScene(testScene);
+            
+            // Camera Setup
+            GameObject cameraObject = new GameObject("Main Camera");
+            cameraObject.transform.worldPosition = new Vector3(200, 0, 0);
+            OrthographicCamera camera = cameraObject.AddComponent<OrthographicCamera>();
+            camera.isMainCamera = true;
+            camera.aspectRatio = 16f / 9f;
+            camera.size = 1080f;
         
             // Object 1
             GameObject testObject = new GameObject("Test Object 1");

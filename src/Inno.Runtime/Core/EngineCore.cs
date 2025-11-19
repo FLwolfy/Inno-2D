@@ -1,5 +1,5 @@
+using Inno.Assets;
 using Inno.Core.Application;
-using Inno.Core.Asset;
 using Inno.Core.Events;
 using Inno.Core.Layers;
 using Inno.Core.Utility;
@@ -58,9 +58,14 @@ public abstract class EngineCore
     
     private void OnLoad()
     {
-        // Asset Initialization
-        AssetManager.SetRootDirectory("Assets");
-        AssetRegistry.LoadFromDisk();
+        // Type Cache Initial Refresh
+        TypeCacheManager.Initialize();
+        
+        // InnoAsset Initialization
+        AssetManager.Initialize(
+            assetDir: "Project/Assets",
+            libraryDir: "Project/Library"
+        );
         
         // Graphics Resources
         Renderer2D.LoadResources();
@@ -70,9 +75,6 @@ public abstract class EngineCore
     {
         Setup();
         RegisterLayers(m_layerStack);
-        
-        // Type Cache Initialization
-        TypeCacheManager.Initialize();
     }
 
     private void OnStep()
@@ -112,8 +114,6 @@ public abstract class EngineCore
 
     private void OnClose()
     {
-        AssetRegistry.SaveToDisk();
-        
         // Clean Graphics Cache
         RenderTargetPool.Clear();
         Renderer2D.CleanResources();
